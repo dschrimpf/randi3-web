@@ -1,0 +1,82 @@
+<lift:surround with="default" at="content">
+
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialShowTabs').tabs();
+        });
+
+
+    </script>
+    <h1>General Information</h1><hr />
+    <lift:TrialGeneralInformationSnippet.show>
+
+    <div id="trialShowTabs">
+        <ul>
+            <li><a href="#generalInformation">General data</a></li>
+            <li><a href="#trialSites">Trial sites</a></li>
+            <li><a href="#properties">Subject properties</a></li>
+            <li><a href="#stages">Stages</a></li>
+            <li><a href="#algorithm">Algorithm</a></li>
+        </ul>
+
+        <div id="generalInformation">
+
+            <table>
+                <tbody>
+                <tr>
+                    <td style="text-align: right;" width="50em">Abbreviation:</td>
+                    <td style="font-weight:bold;"><trial:abbreviation /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Name:</td>
+                    <td style="font-weight:bold;"><trial:name /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Description:</td>
+                    <td style="font-weight:bold;"><trial:description /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Start date:</td>
+                    <td style="font-weight:bold;"><trial:startDate /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">End date:</td>
+                    <td style="font-weight:bold;"><trial:endDate /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">Status:</td>
+                    <td style="font-weight:bold;"><trial:status /></td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div id="trialSites">
+
+           <trial:sites />
+
+        </div>
+
+        <div id="properties">
+
+            <trial:properties />
+
+        </div>
+
+        <div id="stages">
+
+            <h3>Stages:</h3><hr />
+
+              <trial:stages />
+        </div>
+
+        <div id="algorithm">
+
+            <trial:algorithm />
+        </div>
+    </div>
+
+    </lift:TrialGeneralInformationSnippet.show>
+</lift:surround>

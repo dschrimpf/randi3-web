@@ -1,0 +1,45 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialSiteTabs').tabs();
+        });
+    </script>
+
+
+	<h1>Create a trial site</h1><hr />
+
+    <form class="lift:TrialSiteSnippet.create?form=post">
+        <lift:msg id="trialSiteMsg" errorClass="err"/>
+
+
+        <div id="trialSiteTabs">
+            <ul>
+                <li><a href="#trialSiteTab-1">General data</a></li>
+                <li><a href="#trialSiteTab-2">Password</a></li>
+            </ul>
+
+            <fieldset>
+
+                <div id="trialSiteTab-1">
+                    <ul>
+                        <trialSite:name/>
+                        <trialSite:street/>
+                        <trialSite:postCode/>
+                        <trialSite:city/>
+                        <trialSite:country/>
+                    </ul>
+                </div>
+
+                <div id="trialSiteTab-2">
+                    <ul>
+                        <trialSite:password/>
+                        <trialSite:passwordCheck/>
+                    </ul>
+                </div>
+             </fieldset>
+         </div>
+             <trialSite:submit />
+    </form>
+
+</lift:surround>

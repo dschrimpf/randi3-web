@@ -1,0 +1,48 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#registerTabs').tabs();
+        });
+    </script>
+
+    <h1>Registration</h1> <hr />
+
+    <form class="lift:RegisterForm?form=post">
+
+        <lift:msg id="registerMsg" errorClass="err"/>
+        <div id="registerTabs">
+            <ul>
+                <li><a href="#registerTab-1">User account data</a></li>
+                <li><a href="#registerTab-2">Contact data</a></li>
+                <li><a href="#registerTab-3">Trial site</a></li>
+            </ul>
+            <fieldset>
+
+                <div id="registerTab-1">
+                    <ul>
+                        <register:username/>
+                        <register:password/>
+                        <register:passwordCheck/>
+                    </ul>
+                </div>
+                <div id="registerTab-2">
+                    <ul>
+                        <register:firstName/>
+                        <register:lastName/>
+                        <register:email/>
+                        <register:phoneNumber/>
+                    </ul>
+                </div>
+                <div id="registerTab-3">
+                    <ul>
+                        <register:trialSite/>
+                        <register:trialSitePassword/>
+                    </ul>
+                </div>
+            </fieldset>
+            <register:submit/>
+        </div>
+
+    </form>
+</lift:surround>

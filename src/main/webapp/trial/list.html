@@ -1,0 +1,27 @@
+<lift:surround with="default" at="content">
+    <h1>Trials</h1>
+    <hr/>
+
+    <table class="randi2Table">
+        <thead>
+        <tr>
+            <th>Abbreviation</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Start date</th>
+            <th>End date</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <td colspan="7">only trials with role shown</td>
+        </tr>
+        </tfoot>
+        <tbody>
+        <tr class="lift:trialSnippet.trials"></tr>
+        </tbody>
+
+    </table>
+</lift:surround>

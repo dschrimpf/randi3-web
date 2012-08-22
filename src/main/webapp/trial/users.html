@@ -1,0 +1,53 @@
+<lift:surround with="default" at="content">
+
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialShowTabs').tabs();
+        });
+
+
+    </script>
+    <h1>Show users</h1>
+    <hr/>
+
+    <lift:TrialUserSnippet.render>
+        <div id="trialShowTabs">
+            <ul>
+                <li><a href="#all">All</a></li>
+                <li><a href="#trialAdmin">Administrators</a></li>
+                <li><a href="#principalInvestigator">Principal investigators</a></li>
+                <li><a href="#investigators">Investigators</a></li>
+                <li><a href="#monitors">Monitors</a></li>
+                <li><a href="#statistician">Statisticians</a></li>
+            </ul>
+
+            <div id="all">
+                <user:all/>
+            </div>
+
+            <div id="trialAdmin">
+                <user:trialAdministrator/>
+            </div>
+
+            <div id="principalInvestigator">
+                <user:principalInvestigator/>
+            </div>
+
+            <div id="investigators">
+                <user:investigator/>
+            </div>
+
+            <div id="monitors">
+                <user:monitor/>
+            </div>
+
+            <div id="statistician">
+                <user:statistician/>
+            </div>
+
+        </div>
+
+    </lift:TrialUserSnippet.render>
+
+</lift:surround>

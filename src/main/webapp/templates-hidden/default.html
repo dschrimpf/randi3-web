@@ -1,0 +1,85 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:lift="http://liftweb.net/">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <meta name="description" content=""/>
+    <meta name="keywords" content=""/>
+
+    <title>RANDI2</title>
+    <style class="lift:CSS.blueprint"/>
+    <style class="lift:CSS.fancyType"/>
+    <script id="jquery" type="text/javascript" src="/js/jquery-1.8.0.min.js"/>
+    <script type="text/javascript" src="/js/jquery-ui-1.8.22.custom.min.js"/>
+
+    <script id="json" src="/classpath/json.js" type="text/javascript"/>
+
+    <link type="text/css" href="/css/redmond/jquery-ui-1.8.22.custom.css" rel="stylesheet"/>
+
+
+    <link type="text/css" href="/css/style.css" rel="stylesheet"/>
+
+
+</head>
+<body>
+<div class="container">
+
+
+    <div class="column span-12 last headerRow">
+
+        <img alt="RANDI2 logo" src="/images/randi2_beta.png" height="60px"/>
+
+        <div class="headerCenter">
+            <lift:trialSelectForm>
+                <trial:name/>
+            </lift:trialSelectForm>
+        </div>
+
+        <div class="headerRight">
+
+            <div class="userFieldLeft">
+                <lift:userLoggedInForm>
+                    <user:username>Please log in</user:username>
+                    <user:action/>
+                    <user:logInOut/>
+                </lift:userLoggedInForm>
+            </div>
+            <div class="userFieldRight">
+                <img alt="" id="ajax-loader" style="display:none; margin-bottom: 0px; margin-left: 5px"
+                     src="/images/ajax-loader.gif"/>
+                <img alt="" id="ajax-loader-fix" style="margin-bottom: 0px; margin-left: 5px"
+                     src="/images/ajax-loader-fix.gif"/>
+            </div>
+
+        </div>
+
+    </div>
+
+    <hr/>
+
+    <div class="column span-6 colborder sidebar">
+        <hr class="space"/>
+        <span class="lift:Menu.builder"/>
+
+        <div>
+            <span class="lift:Msgs"/>
+            <hr class="space"/>
+        </div>
+    </div>
+
+    <div class="column span-17 last" style="min-height: 400px; margin-bottom: 15px;">
+        <div id="content">
+            <!-- The HTML content will go here -->
+        </div>
+    </div>
+
+    <hr/>
+    <div class="column span-23 last" style="text-align: center;">
+        <h4 class="alt">
+            <a href="http://randi2.org"><i>RANDI2</i></a>
+            Distributed under GPL v3.</h4>
+    </div>
+
+</div>
+
+</body>
+</html>

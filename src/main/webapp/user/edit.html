@@ -1,0 +1,71 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#userTabs').tabs();
+        });
+    </script>
+
+    <h1>Edit user </h1>
+    <hr/>
+
+    <form class="lift:UserSnippet.edit?form=post">
+
+        <lift:msg id="userMsg" errorClass="err"/>
+        <div id="userTabs" style="margin-bottom: 5px;">
+            <ul>
+                <li><a href="#userTab-1">Personal and Contact Information </a></li>
+                <li><a href="#userTab-2">Center</a></li>
+                <li><a href="#userTab-3">Rights</a></li>
+            </ul>
+
+
+            <div id="userTab-1">
+                <fieldset>
+                    <legend>Account information</legend>
+                    <ul>
+                        <user:username/>
+                        <user:password/>
+                        <user:passwordCheck/>
+                    </ul>
+                </fieldset>
+                <fieldset>
+                    <legend>Personal information</legend>
+                    <ul>
+                        <user:firstName/>
+                        <user:lastName/>
+
+                    </ul>
+                </fieldset>
+                <fieldset>
+                    <legend>Contact information</legend>
+                    <ul>
+                        <user:email/>
+                        <user:phoneNumber/>
+                    </ul>
+                </fieldset>
+            </div>
+            <div id="userTab-2">
+
+                <ul>
+                    <user:trialSite/>
+                </ul>
+                <user:trialSiteInfo/>
+            </div>
+            <div id="userTab-3">
+                <ul>
+                    <user:administrator/>
+                    <user:canCreateTrials/>
+                    <hr />
+                    <user:trialsSelect />
+                    <user:roleSelect />
+                    <user:addRight />
+                    <br />
+                    <user:rights/>
+                </ul>
+            </div>
+
+        </div>
+        <user:submit/>
+    </form>
+</lift:surround>

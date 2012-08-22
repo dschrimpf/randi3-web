@@ -1,0 +1,31 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialAddTabs').tabs();
+
+        $('#stagesTabs').tabs();
+
+        $('#startDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
+
+        $('#endDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
+
+        });
+
+    </script>
+
+    <h1>Edit users</h1>
+    <hr/>
+
+    <form class="lift:TrialSnippet.editUsers?form=post">
+
+        <trial:userSelect/>
+        <trial:roleSelect/>
+        <trial:addRight/>
+
+        <trial:rights/>
+
+        <trial:submit/>
+
+    </form>
+</lift:surround>

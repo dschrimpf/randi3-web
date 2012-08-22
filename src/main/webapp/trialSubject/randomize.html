@@ -1,0 +1,26 @@
+<lift:surround with="default" at="content">
+    <h1>Randomize</h1>
+    <hr/>
+
+    <form class="lift:TrialSnippet.randomize?form=post">
+        <lift:msg id="randomizeMsg" errorClass="err"/>
+        <fieldset>
+            <legend>Identification</legend>
+            <ul>
+                <li>
+                    <form:identifier/>
+                </li>
+            </ul>
+        </fieldset>
+        <fieldset>
+            <legend>Subject properties</legend>
+            <ul>
+                <form:data/>
+            </ul>
+        </fieldset>
+        <form:submit/>
+        <form:cancel/>
+
+
+    </form>
+</lift:surround>

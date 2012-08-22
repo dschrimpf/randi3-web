@@ -1,0 +1,28 @@
+<lift:surround with="default" at="content">
+
+    <lift:ConfigurationSnippet.configured>
+        <script type="text/javascript">
+            $(function(){
+            // Tabs
+            $('#loginTabs').tabs();
+            });
+        </script>
+
+        <h1>Login</h1>
+        <hr/>
+        <div id="loginTabs" style="width: 50%; margin-left:auto; margin-right:auto;">
+            <div id="loginTab">
+                <form class="lift:LoginForm.login?form=post" style="font-weight: bold;">
+                    Username: <br/>
+                    <login:username/>
+                    <br/>
+                    Password: <br/>
+                    <login:password/>
+                    <br/>
+                    <login:submit/>
+                </form>
+            </div>
+        </div>
+    </lift:ConfigurationSnippet.configured>
+    <lift:ConfigurationSnippet.install/>
+</lift:surround>

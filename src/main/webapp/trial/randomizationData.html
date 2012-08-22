@@ -1,0 +1,77 @@
+<lift:surround with="default" at="content">
+
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialShowTabs').tabs();
+        });
+
+
+    </script>
+    <h1>Randomization data</h1>
+    <hr/>
+
+    <lift:TrialRandomizationDataSnippet.show>
+
+        <div id="trialShowTabs">
+            <ul>
+                <li><a href="#randomizations">Randomizations</a></li>
+                <li><a href="#stages">Stages</a></li>
+                <li><a href="#treatmentArms">Treatments</a></li>
+                <li><a href="#trialSites">Trial sites</a></li>
+                <li><a href="#recruitment">Recruitment chart</a></li>
+                <li><a href="#subgroups">Subgroups</a></li>
+            </ul>
+
+            <div id="randomizations">
+
+                <div style="border:1px;border-style:solid;border-color:lightgrey;padding:10px;width:600px;max-height:600px;overflow:auto;">
+                    <trial:randomizationDataTable/>
+                </div>
+
+                <div>
+                    <trial:randomizationDataFile/>
+                </div>
+            </div>
+
+            <div id="stages">
+
+                TODO
+            </div>
+
+            <div id="treatmentArms">
+                <h4>Treatment arm chart:</h4>
+
+                <div align="center">
+                    <div id="treatmentArmChart_area" style="width:600px;height:300px;"></div>
+                </div>
+                <trial:treatmentArmChart/>
+                <br/><br/>
+                <trial:treatmentArmTable/>
+            </div>
+
+            <div id="trialSites">
+                <div align="center">
+                    <div id="trialSitesChart_area" style="width:600px;height:300px;"></div>
+                </div>
+                <trial:trialSitesChart/>
+                <br/><br/>
+                <trial:trialSitesTable/>
+            </div>
+
+            <div id="recruitment">
+                <div align="center">
+                    <div id="recruitmentChart_area" style="width:600px;height:500px;"></div>
+                </div>
+                <trial:recruitmentChart/>
+            </div>
+
+            <div id="subgroups">
+                subgroups
+            </div>
+
+        </div>
+
+    </lift:TrialRandomizationDataSnippet.show>
+
+</lift:surround>

@@ -1,0 +1,120 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialAddTabs').tabs();
+
+        $('#stagesTabs').tabs();
+
+        $('#startDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
+
+        $('#endDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
+
+        });
+
+    </script>
+
+    <h1>Edit a trial</h1>
+    <hr/>
+
+
+    <form class="lift:TrialSnippet.edit?form=post">
+
+        <lift:msg id="trialMsg" errorClass="err"/>
+        <div id="trialAddTabs">
+            <ul>
+                <li><a href="#tabs-1">General data</a></li>
+                <li><a href="#tabs-2">Centers</a></li>
+                <li><a href="#tabs-3">Treatments</a></li>
+                <li><a href="#tabs-4">Properties</a></li>
+                <li><a href="#tabs-5">Stages</a></li>
+                <li><a href="#tabs-6">Randomization</a></li>
+            </ul>
+
+            <div id="tabs-1">
+
+                <fieldset>
+                    <legend>General informations</legend>
+                    <ul>
+                        <trial:name/>
+                        <trial:abbreviation/>
+                        <trial:description/>
+                    </ul>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Duration</legend>
+
+                    <ul>
+                        <trial:startDate/>
+                        <trial:endDate/>
+                    </ul>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Status</legend>
+
+                    <ul>
+                        <trial:status/>
+                    </ul>
+                </fieldset>
+            </div>
+
+            <div id="tabs-2">
+                <span>Please select: </span>
+                <trial:participatingSiteSelect/>
+                <trial:addParticipatingSite/>
+                <hr/>
+                <div id="participatedTrialSiteTable">
+                    <trial:pSites>
+                        <table width="90%">
+                            <tr>
+                                <th>Name</th>
+                                <th>Street</th>
+                                <th>Post code</th>
+                                <th>City</th>
+                                <th>Country</th>
+                                <th></th>
+                            </tr>
+                        </table>
+                    </trial:pSites>
+                </div>
+            </div>
+
+            <div id="tabs-3">
+                <div style="text-align: center;">
+                    <trial:addTreatmentArm/>
+                </div>
+                <hr/>
+                <trial:treatmentArms/>
+            </div>
+
+            <div id="tabs-4">
+                <span>Identification creation:</span>
+                <trial:identificationCreationTypeSelect/>
+                <hr/>
+                <span>Please Select:</span>
+                <trial:criterionSelect/>
+                <trial:addSelectedCriterion/>
+                <hr/>
+                <trial:criterions/>
+            </div>
+
+            <div id="tabs-5">
+                <trial:stageName/>
+                <trial:addStage/>
+                <hr/>
+                <trial:stages/>
+            </div>
+
+            <div id="tabs-6">
+                <span>Please Select:</span>
+                <trial:randomizationMethodSelect/>
+            </div>
+
+
+        </div>
+        <trial:submit/>
+    </form>
+
+</lift:surround>
