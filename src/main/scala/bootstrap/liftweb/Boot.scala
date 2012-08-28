@@ -17,15 +17,19 @@ import org.randi3.configuration.{ConfigurationSchema, ConfigurationService, Conf
 import org.randi3.web.lib.DependencyFactory
 import org.scalaquery.meta.MTable
 import org.randi3.web.snippet.DownloadRandomizationData
+import org.randi3.schema.DatabaseSchema
 
 /**
  * A class that's instantiated early and run.  It allows the application
  * to modify lift's environment
  */
 class Boot {
+
   def boot {
 
-    checkAndGenerateConfigDatabase
+    checkAndGenerateConfigDatabase()
+
+    checkAndGenerateRandomizationTables()
 
     // where to search snippet
     LiftRules.addToPackages("org.randi3.web")
@@ -218,5 +222,30 @@ class Boot {
     if (tableList.isEmpty) {
       ConfigurationSchema.createDatabase
     }
+  }
+
+  private def checkAndGenerateRandomizationTables() {
+
+    val database =   DependencyFactory.database
+    import org.scalaquery.session.Database.threadLocalSession
+    import DependencyFactory.driver.Implicit._
+
+    val tableList = MTable.getTables.list()( database.createSession()).map(entry => entry.name.name)
+
+    val plugins = DependencyFactory.randomizationPluginManager.randomizationMethodMap.map(entry => entry._2)
+
+    plugins.foreach(plugin => {
+      if (plugin.databaseTables().isDefined){
+        try {
+        database withSession {
+          plugin.databaseTables().get.create
+        }
+        }catch {
+          case e: Exception =>
+        }
+      }
+
+    })
+
   }
 }

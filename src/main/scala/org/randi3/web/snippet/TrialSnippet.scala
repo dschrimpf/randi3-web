@@ -15,19 +15,20 @@ import org.randi3.web.lib.DependencyFactory
 
 import net.liftweb.common._
 import net.liftweb.http.S._
-import net.liftweb.http.js.JsCmds._
+
 import net.liftweb.http._
 import js.JE
 
 import js.JsCmds.Replace
+
 import js.JsCmds.SetHtml
 import net.liftweb.util.Helpers._
-import net.liftweb.util._
 import net.liftweb._
 
 import common.Full
 import http.SHtml._
 import org.randi3.randomization._
+import org.randi3.randomization.configuration._
 import org.apache.commons.math3.random.MersenneTwister
 
 
@@ -126,7 +127,7 @@ class TrialSnippet extends StatefulSnippet {
       s => (s, s)
     } toSeq
   }
-  private var randomizationMethodTmp = ""
+  private var randomizationMethodTmp = generateEmptyRondomizationMethodConfig(randomizationMethods.head)
 
   private def createCriterionsList(criterions: ListBuffer[CriterionTmp]): List[Criterion[Any, Constraint[Any]]] = {
     val result = ListBuffer[Criterion[Any, Constraint[Any]]]()
@@ -191,7 +192,7 @@ class TrialSnippet extends StatefulSnippet {
 
   private def createStages(actStages: HashMap[String, ListBuffer[CriterionTmp]]): Map[String, List[Criterion[Any, Constraint[Any]]]] = {
     val result = new HashMap[String, List[Criterion[Any, Constraint[Any]]]]()
-
+                                                                            randomizationMethodTmp
     actStages.foreach(entry => result.put(entry._1, createCriterionsList(entry._2)))
 
     result.toMap
@@ -206,7 +207,7 @@ class TrialSnippet extends StatefulSnippet {
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(trial) => {
           //TODO Random Config
-          val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp).get.randomizationMethod(new MersenneTwister(), trial, Nil).toOption.get
+          val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
           val trialWithMethod = trial.copy(randomizationMethod = Some(randomMethod))
           trialService.create(trialWithMethod, principleInvestigator).either match {
             case Left(x) => S.error("trialMsg", x)
@@ -478,7 +479,7 @@ class TrialSnippet extends StatefulSnippet {
         } else {
           val first = principleInvestigators.head
 
-          untrustedSelect(principleInvestigators.map(pInvestigator => (pInvestigator.id.toString(), pInvestigator.lastName)), Full(first.id.toString()), setPrincipleInvestigator(_), "id" -> id)
+          untrustedSelect(principleInvestigators.map(pInvestigator => (pInvestigator.id.toString, pInvestigator.lastName)), Full(first.id.toString), setPrincipleInvestigator(_), "id" -> id)
         }
       })
     }
@@ -511,7 +512,7 @@ class TrialSnippet extends StatefulSnippet {
           </td>
           <td>
             {ajaxButton(Text("remove"), () => {
-            participatingSites.remove(trialSite);
+            participatingSites.remove(trialSite)
             Replace("participatedTrialSiteTable", participatedSitesTable)
           })}
           </td>
@@ -521,6 +522,13 @@ class TrialSnippet extends StatefulSnippet {
 
     }
 
+
+    def randomizationMethodSelectField: NodeSeq = {
+      ajaxSelect(randomizationMethodSelect, Empty, v=> {
+        randomizationMethodTmp = generateEmptyRondomizationMethodConfig(v)
+        Replace("randomizationConfig",  generateRandomizationConfigField)
+      })
+    }
 
     bind("trial", xhtml,
       "name" -> nameField(),
@@ -559,11 +567,51 @@ class TrialSnippet extends StatefulSnippet {
         Replace("stagesTabs", generateStages(xhtml))
       }),
       "stages" -> generateStages(xhtml),
-      "randomizationMethodSelect" -> select(randomizationMethodSelect, Empty, randomizationMethodTmp = _),
+      "randomizationMethodSelect" -> randomizationMethodSelectField,
+     "randomizationConfig" -> generateRandomizationConfigField,
       "submit" -> submit("save", code _)
     )
   }
 
+  private def generateRandomizationConfigField: Elem = {
+    <div id ="randomizationConfig">
+      <fieldset>
+        <legend>General informations</legend>
+        <ul>
+          <li>
+            <label for="randomizationMethodName">Name:
+            </label>
+            <span id ="randomizationMethodName">{randomizationMethodTmp.name}</span>
+          </li>
+          <li>
+            <label for="randomizationMethodDescription">Description:
+            </label>
+            <span id ="randomizationMethodDescription">{randomizationMethodTmp.description}</span>
+          </li>
+        </ul>
+      </fieldset>
+      <fieldset>
+        <legend>Configurations</legend>
+        <ul>
+          {randomizationMethodTmp.configurationEntries.flatMap(configuration => {
+          <li>
+            <label for={configuration.configurationType.name}>{configuration.configurationType.name}:
+            <span class="tooltip">
+              <img src="/images/icons/help16.png" alt={configuration.configurationType.description} title={configuration.configurationType.description}/> <span class="info">
+              {configuration.configurationType.description}
+            </span>
+            </span>
+            </label>
+            {ajaxText(configuration.value.toString, v => {
+            //TODO check value
+            configuration.value = v
+          }, "id" -> configuration.configurationType.name)}
+          </li>
+        })}
+        </ul>
+      </fieldset>
+     </div>
+  }
 
   private def addSelectedCriterion(criterionType: String, criterionList: ListBuffer[CriterionTmp]) {
     def emptyValues = {
@@ -780,7 +828,7 @@ class TrialSnippet extends StatefulSnippet {
             <li>
               <label for={id + "Description" + +i}>Description</label>{ajaxTextarea(criterion.description, criterion.description = _, "id" -> (id + "Description" + +i))}
             </li>{createValues(criterion, xhtml, id, criterionList)}
-          </ul>{if (criterion.typ != "FreeTextCriterion") generateInclusionConstriant(xhtml, "inclusionConstraintFieldset" + i, criterion)}
+          </ul>{if (criterion.typ != "FreeTextCriterion") generateInclusionConstraint(xhtml, "inclusionConstraintFieldset" + i, criterion)}
 
         </fieldset>
       </div>
@@ -793,7 +841,7 @@ class TrialSnippet extends StatefulSnippet {
     generateGeneralCriterions(xhtml, "criterions", criterionsTmp)
   }
 
-  private def generateInclusionConstriant(xhtml: NodeSeq, id: String, criterion: CriterionTmp): NodeSeq = {
+  private def generateInclusionConstraint(xhtml: NodeSeq, id: String, criterion: CriterionTmp): NodeSeq = {
 
     <fieldset id={id} class="inclusionConstraint">
       <legend>Inclusion constraint
@@ -808,7 +856,7 @@ class TrialSnippet extends StatefulSnippet {
             })
           }
         }
-        Replace(id, generateInclusionConstriant(xhtml, id, criterion))
+        Replace(id, generateInclusionConstraint(xhtml, id, criterion))
       }, "style" -> "width: 20px;")}
       </legend>{if (criterion.inclusionConstraint.isDefined) {
       if (criterion.typ != "OrdinalCriterion") {
@@ -820,7 +868,7 @@ class TrialSnippet extends StatefulSnippet {
             } else {
               criterion.inclusionConstraint.get.minValue = Some("")
             }
-            Replace(id, generateInclusionConstriant(xhtml, id, criterion))
+            Replace(id, generateInclusionConstraint(xhtml, id, criterion))
           }, "style" -> "width: 20px;")}
             lower boundary?
             {if (criterion.inclusionConstraint.get.minValue.isDefined) {
@@ -836,7 +884,7 @@ class TrialSnippet extends StatefulSnippet {
             } else {
               criterion.inclusionConstraint.get.maxValue = Some("")
             }
-            Replace(id, generateInclusionConstriant(xhtml, id, criterion))
+            Replace(id, generateInclusionConstraint(xhtml, id, criterion))
           }, "style" -> "width: 20px;")}
             upper boundary?
             {if (criterion.inclusionConstraint.get.maxValue.isDefined) {
@@ -853,7 +901,7 @@ class TrialSnippet extends StatefulSnippet {
             {ajaxCheckbox(value._1, v => {
             ordinalValues.remove(value)
             ordinalValues.add((v, value._2))
-            Replace(id, generateInclusionConstriant(xhtml, id, criterion))
+            Replace(id, generateInclusionConstraint(xhtml, id, criterion))
           })}<span>
             {value._2}
           </span>
@@ -1183,6 +1231,24 @@ class TrialSnippet extends StatefulSnippet {
 
   }
 
+  private def generateEmptyRondomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
+    val plugin =  randomizationPluginManager.getPlugin(randomizationMethodName).get
+     val configurations = plugin.randomizationConfigurations()
+    val methodConfigsTmp = configurations.map(config => {
+      if(config.getClass == classOf[BooleanConfigurationType]){
+          new RandomizationMethodConfigEntryTmp(config.asInstanceOf[BooleanConfigurationType], true)
+      }else if(config.getClass == classOf[DoubleConfigurationType]){
+        new RandomizationMethodConfigEntryTmp(config.asInstanceOf[DoubleConfigurationType], 0.0)
+      }else if(config.getClass == classOf[IntegerConfigurationType]){
+        new RandomizationMethodConfigEntryTmp(config.asInstanceOf[IntegerConfigurationType], 0)
+      }else if(config.getClass == classOf[OrdinalConfigurationType]){
+        new RandomizationMethodConfigEntryTmp(config.asInstanceOf[OrdinalConfigurationType], config.asInstanceOf[OrdinalConfigurationType].options.head)
+      }
+
+    })
+        new RandomizationMethodConfigTmp(name = randomizationMethodName, description = "description", configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+  }
+
 }
 
 case class TreatmentArmTmp(id: Int, version: Int, var name: String, var description: String, var plannedSize: Int) {}
@@ -1193,3 +1259,21 @@ case class ConstraintTmp(id: Int = Int.MinValue, version: Int = 0, var minValue:
 
 case class SubjectDataTmp(criterion: Criterion[Any, Constraint[Any]], var value: Any) {}
 
+case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0, name: String, description : String, configurationEntries: List[RandomizationMethodConfigEntryTmp[Any]]){
+
+  def getConfigurationProperties: List[ConfigurationProperty[Any]] = {
+    configurationEntries.map(config => {
+      if(config.configurationType.getClass == classOf[BooleanConfigurationType]){
+        new ConfigurationProperty(config.configurationType, config.value.toString.toBoolean)
+      }else if(config.configurationType.getClass == classOf[DoubleConfigurationType]){
+        new ConfigurationProperty(config.configurationType, config.value.toString.toDouble)
+      }else if(config.configurationType.getClass == classOf[IntegerConfigurationType]){
+        new ConfigurationProperty(config.configurationType, config.value.toString.toInt)
+      }else if(config.configurationType.getClass == classOf[OrdinalConfigurationType]){
+        new ConfigurationProperty(config.configurationType, config.value)
+      }
+    }).asInstanceOf[List[ConfigurationProperty[Any]]]
+  }
+}
+
+case class RandomizationMethodConfigEntryTmp[T](configurationType: ConfigurationType[T], var value: T){}
