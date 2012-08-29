@@ -127,7 +127,7 @@ class TrialSnippet extends StatefulSnippet {
       s => (s, s)
     } toSeq
   }
-  private var randomizationMethodTmp = generateEmptyRondomizationMethodConfig(randomizationMethods.head)
+  private var randomizationMethodTmp = generateEmptyRandomizationMethodConfig(randomizationMethods.head)
 
   private def createCriterionsList(criterions: ListBuffer[CriterionTmp]): List[Criterion[Any, Constraint[Any]]] = {
     val result = ListBuffer[Criterion[Any, Constraint[Any]]]()
@@ -192,7 +192,7 @@ class TrialSnippet extends StatefulSnippet {
 
   private def createStages(actStages: HashMap[String, ListBuffer[CriterionTmp]]): Map[String, List[Criterion[Any, Constraint[Any]]]] = {
     val result = new HashMap[String, List[Criterion[Any, Constraint[Any]]]]()
-                                                                            randomizationMethodTmp
+    randomizationMethodTmp
     actStages.foreach(entry => result.put(entry._1, createCriterionsList(entry._2)))
 
     result.toMap
@@ -485,7 +485,7 @@ class TrialSnippet extends StatefulSnippet {
     }
 
     def participatedSitesTable: NodeSeq = {
-      <div id="participatedTrialSiteTable">
+      <div id="participatedTrialSiteTable">                                      crit
         <table width="90%">
           <tr>
             <th>Name</th>
@@ -524,9 +524,9 @@ class TrialSnippet extends StatefulSnippet {
 
 
     def randomizationMethodSelectField: NodeSeq = {
-      ajaxSelect(randomizationMethodSelect, Empty, v=> {
-        randomizationMethodTmp = generateEmptyRondomizationMethodConfig(v)
-        Replace("randomizationConfig",  generateRandomizationConfigField)
+      ajaxSelect(randomizationMethodSelect, Empty, v => {
+        randomizationMethodTmp = generateEmptyRandomizationMethodConfig(v)
+        Replace("randomizationConfig", generateRandomizationConfigField)
       })
     }
 
@@ -568,41 +568,46 @@ class TrialSnippet extends StatefulSnippet {
       }),
       "stages" -> generateStages(xhtml),
       "randomizationMethodSelect" -> randomizationMethodSelectField,
-     "randomizationConfig" -> generateRandomizationConfigField,
+      "randomizationConfig" -> generateRandomizationConfigField,
       "submit" -> submit("save", code _)
     )
   }
 
   private def generateRandomizationConfigField: Elem = {
-    <div id ="randomizationConfig">
+    <div id="randomizationConfig">
       <fieldset>
         <legend>General informations</legend>
         <ul>
           <li>
             <label for="randomizationMethodName">Name:
             </label>
-            <span id ="randomizationMethodName">{randomizationMethodTmp.name}</span>
+            <span id="randomizationMethodName">
+              {randomizationMethodTmp.name}
+            </span>
           </li>
           <li>
             <label for="randomizationMethodDescription">Description:
             </label>
-            <span id ="randomizationMethodDescription">{randomizationMethodTmp.description}</span>
+            <span id="randomizationMethodDescription">
+              {randomizationMethodTmp.description}
+            </span>
           </li>
         </ul>
-      </fieldset>
+      </fieldset>{if (!randomizationMethodTmp.configurationEntries.isEmpty) {
       <fieldset>
         <legend>Configurations</legend>
         <ul>
           {randomizationMethodTmp.configurationEntries.flatMap(configuration => {
           <li>
-            <label for={configuration.configurationType.name}>{configuration.configurationType.name}:
-            <span class="tooltip">
-              <img src="/images/icons/help16.png" alt={configuration.configurationType.description} title={configuration.configurationType.description}/> <span class="info">
-              {configuration.configurationType.description}
-            </span>
-            </span>
-            </label>
-            {ajaxText(configuration.value.toString, v => {
+            <label for={configuration.configurationType.name}>
+              {configuration.configurationType.name}
+              :
+              <span class="tooltip">
+                <img src="/images/icons/help16.png" alt={configuration.configurationType.description} title={configuration.configurationType.description}/> <span class="info">
+                {configuration.configurationType.description}
+              </span>
+              </span>
+            </label>{ajaxText(configuration.value.toString, v => {
             //TODO check value
             configuration.value = v
           }, "id" -> configuration.configurationType.name)}
@@ -610,7 +615,58 @@ class TrialSnippet extends StatefulSnippet {
         })}
         </ul>
       </fieldset>
-     </div>
+    } else <div></div>}
+      {
+      if (randomizationMethodTmp.canBeUsedWithStratification) {
+        val criterionList = criterionsTmp
+        <div><h3>Stratification:</h3>
+          {val result = new ListBuffer[Node]()
+        for (i <- criterionList.indices) {
+          val criterion = criterionList(i)
+          result += generateStratumConfig("stratum-"+criterion.name, criterion)
+        }
+        NodeSeq fromSeq result}
+        </div>
+
+      }else <div></div>
+      }
+
+    </div>
+  }
+
+  private def generateStratumConfig(id: String,criterion: CriterionTmp): Elem = {
+    <div class="singleField" id={id}>
+      <fieldset>
+        <legend>
+          {criterion.typ}
+        </legend>
+        <ul>
+          <li>
+            <label>Name</label>{criterion.name}
+          </li>
+          <li>
+            <label>Description</label>{criterion.description}
+          </li>
+        </ul>
+        <div>{ajaxButton("add stratum", () => {
+          criterion.strata.append(new ConstraintTmp())
+          Replace(id, generateStratumConfig(id, criterion))
+        })}
+        </div>
+        {val result = new ListBuffer[Node]()
+        for (i <- criterion.strata.indices) {
+          val constraint = criterion.strata(i)
+          result += <div class="singleField">
+            <fieldset>
+              {//TODO stratum configuration
+              i
+              }
+             </fieldset>
+          </div>
+         }
+        NodeSeq fromSeq result}
+        </fieldset>
+        </div>
   }
 
   private def addSelectedCriterion(criterionType: String, criterionList: ListBuffer[CriterionTmp]) {
@@ -1231,49 +1287,49 @@ class TrialSnippet extends StatefulSnippet {
 
   }
 
-  private def generateEmptyRondomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
-    val plugin =  randomizationPluginManager.getPlugin(randomizationMethodName).get
-     val configurations = plugin.randomizationConfigurationOptions()._1
+  private def generateEmptyRandomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
+    val plugin = randomizationPluginManager.getPlugin(randomizationMethodName).get
+    val configurations = plugin.randomizationConfigurationOptions()._1
     val methodConfigsTmp = configurations.map(config => {
-      if(config.getClass == classOf[BooleanConfigurationType]){
-          new RandomizationMethodConfigEntryTmp(config.asInstanceOf[BooleanConfigurationType], true)
-      }else if(config.getClass == classOf[DoubleConfigurationType]){
+      if (config.getClass == classOf[BooleanConfigurationType]) {
+        new RandomizationMethodConfigEntryTmp(config.asInstanceOf[BooleanConfigurationType], true)
+      } else if (config.getClass == classOf[DoubleConfigurationType]) {
         new RandomizationMethodConfigEntryTmp(config.asInstanceOf[DoubleConfigurationType], 0.0)
-      }else if(config.getClass == classOf[IntegerConfigurationType]){
+      } else if (config.getClass == classOf[IntegerConfigurationType]) {
         new RandomizationMethodConfigEntryTmp(config.asInstanceOf[IntegerConfigurationType], 0)
-      }else if(config.getClass == classOf[OrdinalConfigurationType]){
+      } else if (config.getClass == classOf[OrdinalConfigurationType]) {
         new RandomizationMethodConfigEntryTmp(config.asInstanceOf[OrdinalConfigurationType], config.asInstanceOf[OrdinalConfigurationType].options.head)
       }
 
     })
-        new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+    new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
   }
 
 }
 
 case class TreatmentArmTmp(id: Int, version: Int, var name: String, var description: String, var plannedSize: Int) {}
 
-case class CriterionTmp(id: Int, version: Int, typ: String, var name: String, var description: String, values: Option[ListBuffer[String]], var inclusionConstraint: Option[ConstraintTmp] = None) {}
+case class CriterionTmp(id: Int, version: Int, typ: String, var name: String, var description: String, values: Option[ListBuffer[String]], var inclusionConstraint: Option[ConstraintTmp] = None, var strata: ListBuffer[ConstraintTmp] = new ListBuffer()) {}
 
 case class ConstraintTmp(id: Int = Int.MinValue, version: Int = 0, var minValue: Option[String] = None, var maxValue: Option[String] = None, ordinalValues: HashSet[(Boolean, String)] = new HashSet())
 
 case class SubjectDataTmp(criterion: Criterion[Any, Constraint[Any]], var value: Any) {}
 
-case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0, name: String, description : String, configurationEntries: List[RandomizationMethodConfigEntryTmp[Any]]){
+case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0, name: String, description: String, canBeUsedWithStratification: Boolean, configurationEntries: List[RandomizationMethodConfigEntryTmp[Any]]) {
 
   def getConfigurationProperties: List[ConfigurationProperty[Any]] = {
     configurationEntries.map(config => {
-      if(config.configurationType.getClass == classOf[BooleanConfigurationType]){
+      if (config.configurationType.getClass == classOf[BooleanConfigurationType]) {
         new ConfigurationProperty(config.configurationType, config.value.toString.toBoolean)
-      }else if(config.configurationType.getClass == classOf[DoubleConfigurationType]){
+      } else if (config.configurationType.getClass == classOf[DoubleConfigurationType]) {
         new ConfigurationProperty(config.configurationType, config.value.toString.toDouble)
-      }else if(config.configurationType.getClass == classOf[IntegerConfigurationType]){
+      } else if (config.configurationType.getClass == classOf[IntegerConfigurationType]) {
         new ConfigurationProperty(config.configurationType, config.value.toString.toInt)
-      }else if(config.configurationType.getClass == classOf[OrdinalConfigurationType]){
+      } else if (config.configurationType.getClass == classOf[OrdinalConfigurationType]) {
         new ConfigurationProperty(config.configurationType, config.value)
       }
     }).asInstanceOf[List[ConfigurationProperty[Any]]]
   }
 }
 
-case class RandomizationMethodConfigEntryTmp[T](configurationType: ConfigurationType[T], var value: T){}
+case class RandomizationMethodConfigEntryTmp[T](configurationType: ConfigurationType[T], var value: T) {}
