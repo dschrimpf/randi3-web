@@ -1233,7 +1233,7 @@ class TrialSnippet extends StatefulSnippet {
 
   private def generateEmptyRondomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
     val plugin =  randomizationPluginManager.getPlugin(randomizationMethodName).get
-     val configurations = plugin.randomizationConfigurations()
+     val configurations = plugin.randomizationConfigurationOptions()._1
     val methodConfigsTmp = configurations.map(config => {
       if(config.getClass == classOf[BooleanConfigurationType]){
           new RandomizationMethodConfigEntryTmp(config.asInstanceOf[BooleanConfigurationType], true)
@@ -1246,7 +1246,7 @@ class TrialSnippet extends StatefulSnippet {
       }
 
     })
-        new RandomizationMethodConfigTmp(name = randomizationMethodName, description = "description", configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+        new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
   }
 
 }
