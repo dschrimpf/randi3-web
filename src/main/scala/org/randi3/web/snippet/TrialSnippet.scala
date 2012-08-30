@@ -129,6 +129,8 @@ class TrialSnippet extends StatefulSnippet {
   }
   private var randomizationMethodTmp = generateEmptyRandomizationMethodConfig(randomizationMethods.head)
 
+  private var trialSiteStratificationStatus = StratifiedTrialSite.NO.toString
+
   private def createCriterionsList(criterions: ListBuffer[CriterionTmp]): List[Criterion[Any, Constraint[Any]]] = {
     val result = ListBuffer[Criterion[Any, Constraint[Any]]]()
 
@@ -203,7 +205,7 @@ class TrialSnippet extends StatefulSnippet {
 
   private def createStages(actStages: HashMap[String, ListBuffer[CriterionTmp]]): Map[String, List[Criterion[Any, Constraint[Any]]]] = {
     val result = new HashMap[String, List[Criterion[Any, Constraint[Any]]]]()
-    randomizationMethodTmp
+
     actStages.foreach(entry => result.put(entry._1, createCriterionsList(entry._2)))
 
     result.toMap
@@ -214,7 +216,7 @@ class TrialSnippet extends StatefulSnippet {
 
     def save() {
       //TODO validate
-      Trial(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, stratifyTrialSite = StratifiedTrialSite.NO, status = TrialStatus.IN_PREPARATION, treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, randomizationMethod = None, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp)).either match {
+      Trial(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, stratifyTrialSite = StratifiedTrialSite.withName(trialSiteStratificationStatus), status = TrialStatus.IN_PREPARATION, treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, randomizationMethod = None, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp)).either match {
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(trial) => {
           //TODO Random Config
@@ -244,7 +246,7 @@ class TrialSnippet extends StatefulSnippet {
 
     def save() {
       val trial = CurrentTrial.get.get
-      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, stratifyTrialSite = StratifiedTrialSite.NO, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp))
+      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp))
       trialService.update(actTrial)
       redirectTo("/trial/list")
     }
@@ -629,7 +631,9 @@ class TrialSnippet extends StatefulSnippet {
     } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
       val criterionList = criterionsTmp
       <div>
-        <h3>Stratification:</h3>{val result = new ListBuffer[Node]()
+        <h3>Stratification:</h3>
+        {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
+        {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
         result += generateStratumConfig("stratum-" + criterion.name, criterion)
