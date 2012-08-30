@@ -133,11 +133,11 @@ class TrialSnippet extends StatefulSnippet {
     val result = ListBuffer[Criterion[Any, Constraint[Any]]]()
 
     criterions.foreach(criterionTmp => (criterionTmp.typ match {
-      case "DateCriterion" => DateCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = Nil)
-      case "IntegerCriterion" => IntegerCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = Nil)
-      case "DoubleCriterion" => DoubleCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = Nil)
-      case "FreeTextCriterion" => FreeTextCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = Nil)
-      case "OrdinalCriterion" => OrdinalCriterion(name = criterionTmp.name, description = criterionTmp.description, values = criterionTmp.values.get.toSet, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = Nil)
+      case "DateCriterion" => DateCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "IntegerCriterion" => IntegerCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "DoubleCriterion" => DoubleCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "FreeTextCriterion" => FreeTextCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "OrdinalCriterion" => OrdinalCriterion(name = criterionTmp.name, description = criterionTmp.description, values = criterionTmp.values.get.toSet, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
     }).asInstanceOf[ValidationNEL[String, Criterion[Any, Constraint[Any]]]].either match {
       case Left(x) => S.error(x.toString()) //TODO error handling
       case Right(criterion) => result += criterion
@@ -149,31 +149,42 @@ class TrialSnippet extends StatefulSnippet {
 
   private def createInclusionConstraint[T](criterionTmp: CriterionTmp): Option[T] = {
     if (criterionTmp.inclusionConstraint.isDefined) {
-      val constraint = criterionTmp.inclusionConstraint.get
-      criterionTmp.typ match {
-        case "DateCriterion" => {
-          val min = if (constraint.minValue.isDefined) Some(new LocalDate(Utility.slashDate.parse(constraint.minValue.get).getTime)) else None
-          val max = if (constraint.maxValue.isDefined) Some(new LocalDate(Utility.slashDate.parse(constraint.maxValue.get).getTime)) else None
-          Some(DateConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
-        }
-        case "IntegerCriterion" => {
-          val min = if (constraint.minValue.isDefined) Some(constraint.minValue.get.toInt) else None
-          val max = if (constraint.maxValue.isDefined) Some(constraint.maxValue.get.toInt) else None
-          Some(IntegerConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
-        }
-        case "DoubleCriterion" => {
-          val min = if (constraint.minValue.isDefined) Some(constraint.minValue.get.toDouble) else None
-          val max = if (constraint.maxValue.isDefined) Some(constraint.maxValue.get.toDouble) else None
-          Some(DoubleConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
-        }
-        case "FreeTextCriterion" => None
-        case "OrdinalCriterion" => {
-          Some(OrdinalConstraint(constraint.id, constraint.version, constraint.ordinalValues.toList.filter(entry => entry._1).map(entry => Some(entry._2))).toOption.get.asInstanceOf[T])
-        }
-        case _ => None
-      }
+      createConstraint(criterionTmp, criterionTmp.inclusionConstraint.get)
     } else {
       None
+    }
+  }
+
+  private def createStrata[T <: Constraint[Any]](criterionTmp: CriterionTmp): List[T] = {
+   val list: List[T] =  criterionTmp.strata.toList.
+      map(constraintTmp => createConstraint(criterionTmp, constraintTmp).asInstanceOf[Option[T]]).
+      filter(elem => elem.isDefined).map(elem => elem.get)
+     list
+  }
+
+
+  private def createConstraint[T](criterionTmp: CriterionTmp, constraint: ConstraintTmp): Option[T] = {
+    criterionTmp.typ match {
+      case "DateCriterion" => {
+        val min = if (constraint.minValue.isDefined) Some(new LocalDate(Utility.slashDate.parse(constraint.minValue.get).getTime)) else None
+        val max = if (constraint.maxValue.isDefined) Some(new LocalDate(Utility.slashDate.parse(constraint.maxValue.get).getTime)) else None
+        Some(DateConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
+      }
+      case "IntegerCriterion" => {
+        val min = if (constraint.minValue.isDefined) Some(constraint.minValue.get.toInt) else None
+        val max = if (constraint.maxValue.isDefined) Some(constraint.maxValue.get.toInt) else None
+        Some(IntegerConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
+      }
+      case "DoubleCriterion" => {
+        val min = if (constraint.minValue.isDefined) Some(constraint.minValue.get.toDouble) else None
+        val max = if (constraint.maxValue.isDefined) Some(constraint.maxValue.get.toDouble) else None
+        Some(DoubleConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
+      }
+      case "FreeTextCriterion" => None
+      case "OrdinalCriterion" => {
+        Some(OrdinalConstraint(constraint.id, constraint.version, constraint.ordinalValues.toList.filter(entry => entry._1).map(entry => Some(entry._2))).toOption.get.asInstanceOf[T])
+      }
+      case _ => None
     }
   }
 
@@ -485,7 +496,7 @@ class TrialSnippet extends StatefulSnippet {
     }
 
     def participatedSitesTable: NodeSeq = {
-      <div id="participatedTrialSiteTable">                                      crit
+      <div id="participatedTrialSiteTable">
         <table width="90%">
           <tr>
             <th>Name</th>
@@ -615,26 +626,23 @@ class TrialSnippet extends StatefulSnippet {
         })}
         </ul>
       </fieldset>
-    } else <div></div>}
-      {
-      if (randomizationMethodTmp.canBeUsedWithStratification) {
-        val criterionList = criterionsTmp
-        <div><h3>Stratification:</h3>
-          {val result = new ListBuffer[Node]()
-        for (i <- criterionList.indices) {
-          val criterion = criterionList(i)
-          result += generateStratumConfig("stratum-"+criterion.name, criterion)
-        }
-        NodeSeq fromSeq result}
-        </div>
-
-      }else <div></div>
+    } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
+      val criterionList = criterionsTmp
+      <div>
+        <h3>Stratification:</h3>{val result = new ListBuffer[Node]()
+      for (i <- criterionList.indices) {
+        val criterion = criterionList(i)
+        result += generateStratumConfig("stratum-" + criterion.name, criterion)
       }
+      NodeSeq fromSeq result}
+      </div>
+
+    } else <div></div>}
 
     </div>
   }
 
-  private def generateStratumConfig(id: String,criterion: CriterionTmp): Elem = {
+  private def generateStratumConfig(id: String, criterion: CriterionTmp): Elem = {
     <div class="singleField" id={id}>
       <fieldset>
         <legend>
@@ -648,25 +656,83 @@ class TrialSnippet extends StatefulSnippet {
             <label>Description</label>{criterion.description}
           </li>
         </ul>
-        <div>{ajaxButton("add stratum", () => {
-          criterion.strata.append(new ConstraintTmp())
+        <div>
+          {ajaxButton("add stratum", () => {
+          val constraint = new ConstraintTmp()
+          if (criterion.typ == "OrdinalCriterion") {
+            constraint.ordinalValues.clear()
+            criterion.values.get.foreach(value => {
+              constraint.ordinalValues.add((false, value))
+            })
+          }
+          criterion.strata.append(constraint)
           Replace(id, generateStratumConfig(id, criterion))
         })}
+        </div>{val result = new ListBuffer[Node]()
+      for (i <- criterion.strata.indices) {
+        val constraint = criterion.strata(i)
+        result += <div class="singleField">
+          {//TODO stratum configuration
+          generateStratumElement(id + i, criterion, constraint)}
         </div>
-        {val result = new ListBuffer[Node]()
-        for (i <- criterion.strata.indices) {
-          val constraint = criterion.strata(i)
-          result += <div class="singleField">
-            <fieldset>
-              {//TODO stratum configuration
-              i
-              }
-             </fieldset>
-          </div>
-         }
-        NodeSeq fromSeq result}
-        </fieldset>
+      }
+      NodeSeq fromSeq result}
+      </fieldset>
+    </div>
+  }
+
+  private def generateStratumElement(id: String, criterion: CriterionTmp, constraint: ConstraintTmp): Elem = {
+    <fieldset id={id} class="inclusionConstraint">
+      <legend>Constraint</legend>{if (criterion.typ != "OrdinalCriterion") {
+      <ul>
+        <li>
+          {ajaxCheckbox(constraint.minValue.isDefined, v => {
+          if (!v) {
+            constraint.minValue = None
+          } else {
+            constraint.minValue = Some("")
+          }
+          Replace(id, generateStratumElement(id, criterion, constraint))
+        }, "style" -> "width: 20px;")}
+          lower boundary?
+          {if (constraint.minValue.isDefined) {
+          ajaxText(constraint.minValue.get, v => {
+            constraint.minValue = Some(v)
+          })
+        }}
+        </li>
+        <li>
+          {ajaxCheckbox(constraint.maxValue.isDefined, v => {
+          if (!v) {
+            constraint.maxValue = None
+          } else {
+            constraint.maxValue = Some("")
+          }
+          Replace(id, generateStratumElement(id, criterion, constraint))
+        }, "style" -> "width: 20px;")}
+          upper boundary?
+          {if (constraint.maxValue.isDefined) {
+          ajaxText(constraint.maxValue.get, v => {
+            constraint.maxValue = Some(v)
+          })
+        }}
+        </li>
+      </ul>
+    } else {
+      val ordinalValues = constraint.ordinalValues
+      ordinalValues.toList.sortWith((elem1, elem2) => elem1._2.compareTo(elem2._2) < 0).flatMap(value => {
+        <div>
+          {ajaxCheckbox(value._1, v => {
+          ordinalValues.remove(value)
+          ordinalValues.add((v, value._2))
+          Replace(id, generateStratumElement(id, criterion, constraint))
+        })}<span>
+          {value._2}
+        </span>
         </div>
+      })
+    }}
+    </fieldset>
   }
 
   private def addSelectedCriterion(criterionType: String, criterionList: ListBuffer[CriterionTmp]) {
