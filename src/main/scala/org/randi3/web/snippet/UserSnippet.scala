@@ -38,6 +38,7 @@ class UserSnippet extends StatefulSnippet {
   private var phoneNumber = ""
   private var isAdministrator = false
   private var canCreateTrial = false
+  private var isActive = true
 
   private var trialSites: List[(TrialSite, String)] = trialSiteService.getAll.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
 
@@ -89,6 +90,9 @@ class UserSnippet extends StatefulSnippet {
           {user.site.name}
         </td>
         <td>
+          {user.isActive}
+        </td>
+        <td>
           {if (currentUser.administrator) link("/user/show", () => CurrentSelectedUser.set(Some(user)), Text("Show"))}
         </td>
         <td>
@@ -132,7 +136,7 @@ class UserSnippet extends StatefulSnippet {
       setFields(user)
 
       def update() {
-        User(id = user.id, version = user.version, username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial).either match {
+        User(id = user.id, version = user.version, username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, isActive = isActive).either match {
           case Left(x) => S.error("userMsg", x.toString())
           case Right(actUser) => userService.update(actUser).either match {
             case Left(x) => S.error("userMsg", x)
@@ -320,6 +324,17 @@ class UserSnippet extends StatefulSnippet {
       })
     }
 
+    def isActiveField: Elem = {
+      val id = "isActive"
+      generateEntry(id, false, {
+        <div>
+          <span>Is user active?</span>{ajaxCheckbox(isActive, status => {
+          isActive = status
+        })}
+        </div>
+      })
+    }
+
     def rights: Elem = {
       <table id="rights" class="randi2Table">
         <thead>
@@ -393,6 +408,7 @@ class UserSnippet extends StatefulSnippet {
       "trialSiteInfo" -> trialSiteInfo,
       "administrator" -> administratorField,
       "canCreateTrials" -> canCreateTrialsField,
+      "isActive" -> isActiveField,
       "trialsSelect" -> trialsSelectField,
       "roleSelect" -> roleField,
       "addRight" -> ajaxButton("add", () => {
@@ -509,6 +525,11 @@ class UserSnippet extends StatefulSnippet {
         </span>
       }),
       "trialSiteInfo" -> trialSiteInfo,
+      "isActive" -> generateEntry("isActive", false, {
+        <span>
+          {user.isActive}
+        </span>
+      }),
       "administrator" -> generateEntry("administrator", false, {
         <span>
           {user.administrator}

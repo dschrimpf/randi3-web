@@ -47,6 +47,8 @@ object InstallationWizard extends Wizard {
           DatabaseSchema.createDatabaseMySql(jdbcURL)
 
         }
+
+
         configurationService.saveConfigurationEntry(DB_TYPE.toString, dbType)
         configurationService.saveConfigurationEntry(DB_ADDRESS.toString, dbAddress)
         configurationService.saveConfigurationEntry(DB_NAME.toString, dbName)
@@ -70,12 +72,12 @@ object InstallationWizard extends Wizard {
     val mailServer = field("Mail Server", configurationService.getConfigurationEntry(MAIL_SERVER.toString).toOption.getOrElse(""), valMinLen(1, "Entry neccesary"))
     val mailPort = field("Mail Port", configurationService.getConfigurationEntry(MAIL_PORT.toString).toOption.getOrElse("25"), valMinLen(1, "Entry neccesary"))
 
-    val mailSMPT_Auth = select("SMTP AUTH?", configurationService.getConfigurationEntry(MAIL_SMTP_AUTH.toString).toOption.getOrElse("true"), Seq("true", "false"))
+    val mailSMPT_Auth = select("SMTP AUTH?", configurationService.getConfigurationEntry(MAIL_SMTP_AUTH.toString).toOption.getOrElse("false"), Seq("true", "false"))
 
     val mailUsername = field("Mail server username", configurationService.getConfigurationEntry(MAIL_USERNAME.toString).toOption.getOrElse(""))
     val mailPassword = password("Mail server password", configurationService.getConfigurationEntry(MAIL_PASSWORD.toString).toOption.getOrElse(""))
 
-    val mailSSL = select("SSL", configurationService.getConfigurationEntry(MAIL_SSL.toString).toOption.getOrElse("true"), Seq("true", "false"))
+    val mailSSL = select("SSL", configurationService.getConfigurationEntry(MAIL_SSL.toString).toOption.getOrElse("false"), Seq("true", "false"))
 
     val mailFrom = field("Mail Sender", configurationService.getConfigurationEntry(MAIL_FROM.toString).toOption.getOrElse(""), valMinLen(1, "Entry neccesary"))
 
@@ -99,6 +101,27 @@ object InstallationWizard extends Wizard {
 
     override def nextScreen = {
       configurationService.saveConfigurationEntry(PLUGIN_PATH.toString, pluginPath)
+
+
+      val database = DependencyFactory.database
+      import org.scalaquery.session.Database.threadLocalSession
+      import DependencyFactory.driver.Implicit._
+
+      val  pluginManager = DependencyFactory.randomizationPluginManager
+
+      pluginManager.getPluginNames.foreach(pluginName => {
+        val plugin = pluginManager.getPlugin(pluginName).get
+        if (plugin.databaseTables().isDefined){
+          try {
+            database withSession {
+              plugin.databaseTables().get.create
+            }
+          }catch {
+            case e: Exception =>  println(e)
+          }
+        }
+
+      })
 
       super.nextScreen
     }
@@ -158,7 +181,7 @@ object InstallationWizard extends Wizard {
     val firstName = field("User first name", "", valMinLen(1, "Field entry neccesary"))
     val lastName = field("User last name", "", valMinLen(1, "Field entry neccesary"))
     val eMail = field("E-Mail Address", "", valMinLen(1, "Field entry neccesary"))
-    val locale = field("Locale", "", valMinLen(1, "Field entry neccesary"))
+    //val locale = field("Locale", "", valMinLen(1, "Field entry neccesary"))
     val phoneNumber = field("Phone Number", "", valMinLen(1, "Field entry neccesary"))
     val password1 = password("Password", "", valMinLen(1, "Field entry neccesary"))
     val password2 = password("Retype password", "", mustMatch _)

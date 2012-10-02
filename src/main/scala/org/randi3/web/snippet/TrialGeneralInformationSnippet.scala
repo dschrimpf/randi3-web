@@ -60,6 +60,40 @@ object TrialGeneralInformationSnippet {
       </table>
     }
 
+    def treatmentArms: Elem = {
+      <table class="randi2Table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Planned subject size</th>
+          </tr>
+        </thead>{if (trial.treatmentArms.isEmpty) {
+        <tfoot>
+          <tr>
+            <td colspan="3">no arms defined</td>
+          </tr>
+        </tfoot>
+      } else {
+        <tfoot></tfoot>
+      }}<tbody>
+        {trial.treatmentArms.flatMap(arm => {
+          <tr>
+            <td>
+              {arm.name}
+            </td>
+            <td>
+              {arm.description}
+            </td>
+            <td>
+              {arm.plannedSize}
+            </td>
+          </tr>
+        })}
+      </tbody>
+      </table>
+    }
+
     def properties: Elem = {
       getPropertiesTable(trial.criterions)
     }
@@ -86,6 +120,7 @@ object TrialGeneralInformationSnippet {
       "startDate" -> trial.startDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd")),
       "endDate" -> trial.endDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd")),
       "sites" -> trialSites,
+      "treatmentArms" -> treatmentArms,
       "properties" -> properties,
       "stages" -> stages,
       "algorithm" -> trial.randomizationMethod.toString

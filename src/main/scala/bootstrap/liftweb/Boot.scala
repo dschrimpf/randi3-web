@@ -29,7 +29,10 @@ class Boot {
 
     checkAndGenerateConfigDatabase()
 
-    checkAndGenerateRandomizationTables()
+
+    if(DependencyFactory.configurationService.isConfigurationComplete)
+     checkAndGenerateRandomizationTables()
+
 
     // where to search snippet
     LiftRules.addToPackages("org.randi3.web")
@@ -219,22 +222,21 @@ class Boot {
 
     val database = ConfigurationSchema.getDatabase._1
     val tableList = MTable.getTables.list()(database.createSession())
+
     if (tableList.isEmpty) {
       ConfigurationSchema.createDatabase
     }
   }
 
   private def checkAndGenerateRandomizationTables() {
-
     val database =   DependencyFactory.database
     import org.scalaquery.session.Database.threadLocalSession
     import DependencyFactory.driver.Implicit._
 
-    val tableList = MTable.getTables.list()( database.createSession()).map(entry => entry.name.name)
+    val  pluginManager = DependencyFactory.randomizationPluginManager
 
-    val plugins = DependencyFactory.randomizationPluginManager.randomizationMethodMap.map(entry => entry._2)
-
-    plugins.foreach(plugin => {
+    pluginManager.getPluginNames.foreach(pluginName => {
+      val plugin = pluginManager.getPlugin(pluginName).get
       if (plugin.databaseTables().isDefined){
         try {
         database withSession {

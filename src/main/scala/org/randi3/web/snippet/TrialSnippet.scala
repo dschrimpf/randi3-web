@@ -46,8 +46,9 @@ import xml.Text
 import scala.Left
 
 import scala.Right
+import collection.mutable
 
-class TrialSnippet extends StatefulSnippet {
+class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
   private val trialSiteService = DependencyFactory.trialSiteService
   private val userService = DependencyFactory.userService
@@ -135,11 +136,11 @@ class TrialSnippet extends StatefulSnippet {
     val result = ListBuffer[Criterion[Any, Constraint[Any]]]()
 
     criterions.foreach(criterionTmp => (criterionTmp.typ match {
-      case "DateCriterion" => DateCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
-      case "IntegerCriterion" => IntegerCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
-      case "DoubleCriterion" => DoubleCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
-      case "FreeTextCriterion" => FreeTextCriterion(name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
-      case "OrdinalCriterion" => OrdinalCriterion(name = criterionTmp.name, description = criterionTmp.description, values = criterionTmp.values.get.toSet, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "DateCriterion" => DateCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "IntegerCriterion" => IntegerCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "DoubleCriterion" => DoubleCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "FreeTextCriterion" => FreeTextCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
+      case "OrdinalCriterion" => OrdinalCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, values = criterionTmp.values.get.toSet, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
     }).asInstanceOf[ValidationNEL[String, Criterion[Any, Constraint[Any]]]].either match {
       case Left(x) => S.error(x.toString()) //TODO error handling
       case Right(criterion) => result += criterion
@@ -226,6 +227,7 @@ class TrialSnippet extends StatefulSnippet {
             case Left(x) => S.error("trialMsg", x)
             case Right(b) => {
               cleanVariables()
+              updateCurrentUser
               S.notice("Thanks trial \"" + name + "\" saved!")
               S.redirectTo("/trial/list")
             }
@@ -246,7 +248,8 @@ class TrialSnippet extends StatefulSnippet {
 
     def save() {
       val trial = CurrentTrial.get.get
-      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp))
+      val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
+      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),randomizationMethod = Some(randomMethod))
       trialService.update(actTrial)
       redirectTo("/trial/list")
     }
@@ -444,9 +447,10 @@ class TrialSnippet extends StatefulSnippet {
     def startDateField(failure: Boolean = false): Elem = {
       val id = "startDate"
       generateEntry(id, failure, {
-        ajaxText(Utility.slashDate.format(startDate.toDate).toString, v => {
+
+        text(Utility.slashDate.format(startDate.toDate).toString, v => {
           startDate = new LocalDate(Utility.slashDate.parse(v).getTime)
-          Trial.check(startDate = startDate).either match {
+         Trial.check(startDate = startDate).either match {
             case Left(x) => showErrorMessage(id, x)
             case Right(_) => clearErrorMessage(id)
           }
@@ -458,7 +462,7 @@ class TrialSnippet extends StatefulSnippet {
     def endDateField(failure: Boolean = false): Elem = {
       val id = "endDate"
       generateEntry(id, failure, {
-        ajaxText(Utility.slashDate.format(endDate.toDate).toString, v => {
+        text(Utility.slashDate.format(endDate.toDate).toString, v => {
           endDate = new LocalDate(Utility.slashDate.parse(v).getTime)
           Trial.check(endDate = endDate).either match {
             case Left(x) => showErrorMessage(id, x)
@@ -567,19 +571,19 @@ class TrialSnippet extends StatefulSnippet {
       }),
       "treatmentArms" -> generateTreatmentArms(xhtml),
       //TODO selectElem
-      "identificationCreationTypeSelect" -> ajaxSelect(TrialSubjectIdentificationCreationType.values.map(value => (value.toString, value.toString)).toSeq, Empty, identificationCreationTypeTmp = _),
+      "identificationCreationTypeSelect" -> ajaxSelect(TrialSubjectIdentificationCreationType.values.map(value => (value.toString, value.toString)).toSeq, Full(identificationCreationTypeTmp), identificationCreationTypeTmp = _),
       "criterionSelect" -> ajaxSelect(criterionTypes, Empty, criterionTypeTmp = _),
       "addSelectedCriterion" -> ajaxButton("add", () => {
         addSelectedCriterion(criterionTypeTmp, criterionsTmp)
         Replace("criterions", generateCriterions(xhtml))
       }),
       "criterions" -> generateCriterions(xhtml),
-      "stageName" -> ajaxText(stageName, stageName = _),
-      "addStage" -> ajaxButton("add", () => {
-        stages.put(stageName, new ListBuffer())
-        Replace("stagesTabs", generateStages(xhtml))
-      }),
-      "stages" -> generateStages(xhtml),
+//      "stageName" -> ajaxText(stageName, stageName = _),
+//      "addStage" -> ajaxButton("add", () => {
+//        stages.put(stageName, new ListBuffer())
+//        Replace("stagesTabs", generateStages(xhtml))
+//      }),
+//      "stages" -> generateStages(xhtml),
       "randomizationMethodSelect" -> randomizationMethodSelectField,
       "randomizationConfig" -> generateRandomizationConfigField,
       "submit" -> submit("save", code _)
@@ -785,39 +789,6 @@ class TrialSnippet extends StatefulSnippet {
     plannedSubjectSizeNewTreatmentArm = 0
   }
 
-  private def generateEntry(id: String, failure: Boolean, element: Elem): Elem = {
-    <li id={id + "Li"} class={if (failure) "errorHint" else ""}>
-      <label for={id}>
-        {id}
-      </label>{element}<lift:msg id={id + "Msg"} errorClass="err"/>
-    </li>
-  }
-
-  private def generateEntryWithInfo(id: String, failure: Boolean, info: String, element: Elem): Elem = {
-    <li id={id + "Li"} class={if (failure) "errorHint" else ""}>
-      <label for={id}>
-        <span>
-          {id}
-        </span>
-        <span class="tooltip">
-          <img src="/images/icons/help16.png" alt={info} title={info}/> <span class="info">
-          {info}
-        </span>
-        </span>
-      </label>{element}<lift:msg id={id + "Msg"} errorClass="err"/>
-    </li>
-  }
-
-
-  private def showErrorMessage(id: String, errors: NonEmptyList[String]) {
-    S.error(id + "Msg", "<-" + errors.list.reduce((acc, el) => acc + ", " + el))
-  }
-
-  private def clearErrorMessage(id: String) {
-    S.error(id + "Msg", "")
-  }
-
-
   private def setFields() {
     val trial = CurrentTrial.get.get
     name = trial.name
@@ -845,23 +816,76 @@ class TrialSnippet extends StatefulSnippet {
 
     trialStatusTmp = trial.status.toString
 
+    identificationCreationTypeTmp = trial.identificationCreationType.toString
+
     criterionsTmp.clear()
     trial.criterions.foreach {
       criterion =>
         if (criterion.isInstanceOf[OrdinalCriterion]) {
           val values = new ListBuffer[String]()
           criterion.asInstanceOf[OrdinalCriterion].values.foreach(s => values += s)
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "OrdinalCriterion", criterion.name, criterion.description, Some(values), None)
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "OrdinalCriterion", criterion.name, criterion.description, Some(values), getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         } else if (criterion.isInstanceOf[DateCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DateCriterion", criterion.name, criterion.description, None, None)
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DateCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         else if (criterion.isInstanceOf[IntegerCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "IntegerCriterion", criterion.name, criterion.description, None, None)
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "IntegerCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         else if (criterion.isInstanceOf[DoubleCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DoubleCriterion", criterion.name, criterion.description, None, None)
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DoubleCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         else if (criterion.isInstanceOf[FreeTextCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "FreeTextCriterion", criterion.name, criterion.description, None, None)
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "FreeTextCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
     }
 
+  }
+
+  private def getInclusionConstraintTmp(crit: Criterion[Any, Constraint[Any]]): Option[ConstraintTmp] = {
+    if(crit.inclusionConstraint.isDefined){
+     val constraint = crit.inclusionConstraint.get
+
+      if(constraint.isInstanceOf[OrdinalConstraint]){
+        val actConstraint = constraint.asInstanceOf[OrdinalConstraint]
+        val values = new mutable.HashSet[(Boolean, String)]()
+        actConstraint.expectedValues.foreach(element => values.put(true, element))
+        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, ordinalValues = values ))
+
+      }else  if(constraint.isInstanceOf[IntegerConstraint]){
+        val actConstraint = constraint.asInstanceOf[IntegerConstraint]
+        val firstValue = actConstraint.firstValue match {
+          case None => None
+          case Some(value) => Some(value.toString)
+        }
+        val secondValue = actConstraint.secondValue match {
+          case None => None
+          case Some(value) => Some(value.toString)
+        }
+        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+
+      }else  if(constraint.isInstanceOf[DoubleConstraint]){
+        val actConstraint = constraint.asInstanceOf[DoubleConstraint]
+        val firstValue = actConstraint.firstValue match {
+          case None => None
+          case Some(value) => Some(value.toString)
+        }
+        val secondValue = actConstraint.secondValue match {
+          case None => None
+          case Some(value) => Some(value.toString)
+        }
+        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+
+      }else if(constraint.isInstanceOf[DateConstraint]){
+        val actConstraint = constraint.asInstanceOf[DateConstraint]
+        val firstValue = actConstraint.firstValue match {
+          case None => None
+          case Some(value) => Some(value.toString)
+        }
+        val secondValue = actConstraint.secondValue match {
+          case None => None
+          case Some(value) => Some(value.toString)
+        }
+        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+
+      }else None
+
+    } else None
   }
 
   private def showParticipatedSites(in: NodeSeq): NodeSeq = {
