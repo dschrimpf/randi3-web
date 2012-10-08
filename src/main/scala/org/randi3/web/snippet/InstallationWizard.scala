@@ -12,8 +12,9 @@ import org.randi3.model.{TrialSite, User}
 
 import org.randi3.web.lib.DependencyFactory
 import net.liftweb.util.FieldError
+import org.randi3.utility.Logging
 
-object InstallationWizard extends Wizard {
+object InstallationWizard extends Wizard with Logging {
 
   val configurationService = new ConfigurationService
 
@@ -55,6 +56,7 @@ object InstallationWizard extends Wizard {
         configurationService.saveConfigurationEntry(DB_USER.toString, dbUser)
         configurationService.saveConfigurationEntry(DB_PASSWORD.toString, dbPassword)
 
+        logger.info("Installation: Database created!")
         return true
 
       } catch {
@@ -83,15 +85,20 @@ object InstallationWizard extends Wizard {
 
 
     override def nextScreen = {
-      configurationService.saveConfigurationEntry(MAIL_SERVER.toString, mailServer)
-      configurationService.saveConfigurationEntry(MAIL_PORT.toString, mailPort)
-      configurationService.saveConfigurationEntry(MAIL_SMTP_AUTH.toString, mailSMPT_Auth)
-      configurationService.saveConfigurationEntry(MAIL_USERNAME.toString, mailUsername)
-      configurationService.saveConfigurationEntry(MAIL_PASSWORD.toString, mailPassword)
-      configurationService.saveConfigurationEntry(MAIL_SSL.toString, mailSSL)
-      configurationService.saveConfigurationEntry(MAIL_FROM.toString, mailFrom)
+      if (!(mailServer.get.isEmpty || mailFrom.get.isEmpty)) {
+        configurationService.saveConfigurationEntry(MAIL_SERVER.toString, mailServer)
+        configurationService.saveConfigurationEntry(MAIL_PORT.toString, mailPort)
+        configurationService.saveConfigurationEntry(MAIL_SMTP_AUTH.toString, mailSMPT_Auth)
+        configurationService.saveConfigurationEntry(MAIL_USERNAME.toString, mailUsername)
+        configurationService.saveConfigurationEntry(MAIL_PASSWORD.toString, mailPassword)
+        configurationService.saveConfigurationEntry(MAIL_SSL.toString, mailSSL)
+        configurationService.saveConfigurationEntry(MAIL_FROM.toString, mailFrom)
+        logger.info("Installation: Mail-server configuration saved!")
+        super.nextScreen
+      }  else {
+        this
+      }
 
-      super.nextScreen
     }
   }
 
@@ -103,25 +110,28 @@ object InstallationWizard extends Wizard {
       configurationService.saveConfigurationEntry(PLUGIN_PATH.toString, pluginPath)
 
 
-      val database = DependencyFactory.database
-      import org.scalaquery.session.Database.threadLocalSession
-      import DependencyFactory.driver.Implicit._
+      if (!pluginPath.isEmpty) {
+        logger.info("Installation: Plugin-path (" + pluginPath + ") saved!")
+        val database = DependencyFactory.database
+        import org.scalaquery.session.Database.threadLocalSession
+        import DependencyFactory.driver.Implicit._
 
-      val  pluginManager = DependencyFactory.randomizationPluginManager
+        val pluginManager = DependencyFactory.randomizationPluginManager
 
-      pluginManager.getPluginNames.foreach(pluginName => {
-        val plugin = pluginManager.getPlugin(pluginName).get
-        if (plugin.databaseTables().isDefined){
-          try {
-            database withSession {
-              plugin.databaseTables().get.create
+        pluginManager.getPluginNames.foreach(pluginName => {
+          val plugin = pluginManager.getPlugin(pluginName).get
+          if (plugin.databaseTables().isDefined) {
+            try {
+              database withSession {
+                plugin.databaseTables().get.create
+              }
+            } catch {
+              case e: Exception => println(e)
             }
-          }catch {
-            case e: Exception =>  println(e)
           }
-        }
 
-      })
+        })
+      }
 
       super.nextScreen
     }
@@ -209,6 +219,7 @@ object InstallationWizard extends Wizard {
 
   def finish() {
     configurationService.saveConfigurationEntry(ConfigurationValues.INITIAL_OBJECTS_CREATED.toString, "true")
-    S.notice("Finish!")
+    logger.info("Installation completed!")
+    S.notice("Installation completed!!")
   }
 }

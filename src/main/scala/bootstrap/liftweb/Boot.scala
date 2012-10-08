@@ -18,12 +18,13 @@ import org.randi3.web.lib.DependencyFactory
 import org.scalaquery.meta.MTable
 import org.randi3.web.snippet.DownloadRandomizationData
 import org.randi3.schema.DatabaseSchema
+import org.randi3.utility.Logging
 
 /**
  * A class that's instantiated early and run.  It allows the application
  * to modify lift's environment
  */
-class Boot {
+class Boot extends Logging {
 
   def boot {
 
@@ -224,6 +225,7 @@ class Boot {
     val tableList = MTable.getTables.list()(database.createSession())
 
     if (tableList.isEmpty) {
+      logger.info("Start of installation ...")
       ConfigurationSchema.createDatabase
     }
   }
