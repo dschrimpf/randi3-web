@@ -159,10 +159,10 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   }
 
   private def createStrata[T <: Constraint[Any]](criterionTmp: CriterionTmp): List[T] = {
-   val list: List[T] =  criterionTmp.strata.toList.
+    val list: List[T] = criterionTmp.strata.toList.
       map(constraintTmp => createConstraint(criterionTmp, constraintTmp).asInstanceOf[Option[T]]).
       filter(elem => elem.isDefined).map(elem => elem.get)
-     list
+    list
   }
 
 
@@ -249,7 +249,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     def save() {
       val trial = CurrentTrial.get.get
       val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
-      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),randomizationMethod = Some(randomMethod))
+      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp), randomizationMethod = Some(randomMethod))
       trialService.update(actTrial)
       redirectTo("/trial/list")
     }
@@ -450,7 +450,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
         text(Utility.slashDate.format(startDate.toDate).toString, v => {
           startDate = new LocalDate(Utility.slashDate.parse(v).getTime)
-         Trial.check(startDate = startDate).either match {
+          Trial.check(startDate = startDate).either match {
             case Left(x) => showErrorMessage(id, x)
             case Right(_) => clearErrorMessage(id)
           }
@@ -578,12 +578,12 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         Replace("criterions", generateCriterions(xhtml))
       }),
       "criterions" -> generateCriterions(xhtml),
-//      "stageName" -> ajaxText(stageName, stageName = _),
-//      "addStage" -> ajaxButton("add", () => {
-//        stages.put(stageName, new ListBuffer())
-//        Replace("stagesTabs", generateStages(xhtml))
-//      }),
-//      "stages" -> generateStages(xhtml),
+      //      "stageName" -> ajaxText(stageName, stageName = _),
+      //      "addStage" -> ajaxButton("add", () => {
+      //        stages.put(stageName, new ListBuffer())
+      //        Replace("stagesTabs", generateStages(xhtml))
+      //      }),
+      //      "stages" -> generateStages(xhtml),
       "randomizationMethodSelect" -> randomizationMethodSelectField,
       "randomizationConfig" -> generateRandomizationConfigField,
       "submit" -> submit("save", code _)
@@ -635,9 +635,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
       val criterionList = criterionsTmp
       <div>
-        <h3>Stratification:</h3>
-        {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
-        {val result = new ListBuffer[Node]()
+        <h3>Stratification:</h3>{ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}{val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
         result += generateStratumConfig("stratum-" + criterion.name, criterion)
@@ -838,16 +836,16 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   }
 
   private def getInclusionConstraintTmp(crit: Criterion[Any, Constraint[Any]]): Option[ConstraintTmp] = {
-    if(crit.inclusionConstraint.isDefined){
-     val constraint = crit.inclusionConstraint.get
+    if (crit.inclusionConstraint.isDefined) {
+      val constraint = crit.inclusionConstraint.get
 
-      if(constraint.isInstanceOf[OrdinalConstraint]){
+      if (constraint.isInstanceOf[OrdinalConstraint]) {
         val actConstraint = constraint.asInstanceOf[OrdinalConstraint]
         val values = new mutable.HashSet[(Boolean, String)]()
         actConstraint.expectedValues.foreach(element => values.put(true, element))
-        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, ordinalValues = values ))
+        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, ordinalValues = values))
 
-      }else  if(constraint.isInstanceOf[IntegerConstraint]){
+      } else if (constraint.isInstanceOf[IntegerConstraint]) {
         val actConstraint = constraint.asInstanceOf[IntegerConstraint]
         val firstValue = actConstraint.firstValue match {
           case None => None
@@ -859,7 +857,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         }
         Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
 
-      }else  if(constraint.isInstanceOf[DoubleConstraint]){
+      } else if (constraint.isInstanceOf[DoubleConstraint]) {
         val actConstraint = constraint.asInstanceOf[DoubleConstraint]
         val firstValue = actConstraint.firstValue match {
           case None => None
@@ -871,7 +869,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         }
         Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
 
-      }else if(constraint.isInstanceOf[DateConstraint]){
+      } else if (constraint.isInstanceOf[DateConstraint]) {
         val actConstraint = constraint.asInstanceOf[DateConstraint]
         val firstValue = actConstraint.firstValue match {
           case None => None
@@ -883,7 +881,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         }
         Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
 
-      }else None
+      } else None
 
     } else None
   }
@@ -1321,7 +1319,14 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       "data" -> {
         NodeSeq fromSeq subjectDataNodeSeq
       },
-      "cancel" -> <a href="/trialSubject/list">Cancel</a>,
+      "cancel" -> <a href={val user = CurrentUser.get.get
+      val rightList = user.rights.filter(right => right.trial.id == trial.id)
+      val roles = rightList.map(right => right.role)
+      if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
+        "/trial/randomizationData"
+      } else {
+        "/trial/randomizationDataInvestigator"
+      }}>Cancel</a>,
       "submit" -> button("Randomize", randomizeSubject _))
   }
 
@@ -1383,6 +1388,8 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
   private def generateEmptyRandomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
     val plugin = randomizationPluginManager.getPlugin(randomizationMethodName).get
+    println(plugin)
+    println(plugin.randomizationConfigurationOptions())
     val configurations = plugin.randomizationConfigurationOptions()._1
     val methodConfigsTmp = configurations.map(config => {
       if (config.getClass == classOf[BooleanConfigurationType]) {

@@ -6,7 +6,7 @@ import xml.{Elem, NodeSeq}
 import org.randi3.model.criterion.constraint.Constraint
 import net.liftweb.util.Helpers._
 import org.joda.time.format.DateTimeFormat
-import org.randi3.model.{Role, SubjectProperty, Trial}
+import org.randi3.model._
 import org.randi3.model.criterion.{DateCriterion, Criterion}
 import org.joda.time.{DateTime, LocalDate}
 import net.liftweb.common.{Box, Full}
@@ -21,6 +21,9 @@ import java.util.{ArrayList, Date}
 import collection.mutable.{ListBuffer, HashMap}
 import collection.mutable
 import rest.RestHelper
+import net.liftweb.http.StreamingResponse
+import net.liftweb.common.Full
+import scala.Some
 
 
 class TrialRandomizationDataSnippet {
@@ -362,18 +365,21 @@ object DownloadRandomizationData extends RestHelper {
 
       result.append("\n")
 
-      trial.treatmentArms.foreach(arm => {
-        arm.subjects.foreach(subject => {
-          result.append(subject.createdAt.toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm")) + "; ")
-          result.append(subject.identifier + "; ")
-          result.append(arm.name + "; ")
-          result.append(subject.trialSite.name + "; ")
-          result.append(subject.investigatorUserName + "; ")
-          result.append(propertiesEntryCSV(subject.properties, criterions))
+      val subjectList = new ListBuffer[(TreatmentArm, TrialSubject)]()
+      trial.treatmentArms.foreach(arm =>
+        arm.subjects.foreach(subject => subjectList.append((arm, subject)))
+      )
+      subjectList.toList.sortWith((subject1, subject2) => subject1._2.createdAt.isBefore(subject2._2.createdAt)).foreach(element => {
+          result.append(element._2.createdAt.toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm")) + "; ")
+          result.append(element._2.identifier + "; ")
+          result.append(element._1.name + "; ")
+          result.append(element._2.trialSite.name + "; ")
+          result.append(element._2.investigatorUserName + "; ")
+          result.append(propertiesEntryCSV(element._2.properties, criterions))
           result.append("\n")
 
         })
-      })
+
     }
     val data = result.toString().getBytes
 
