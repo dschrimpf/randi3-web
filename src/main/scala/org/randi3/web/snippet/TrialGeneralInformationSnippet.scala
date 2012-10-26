@@ -21,10 +21,12 @@ import org.joda.time.format.DateTimeFormat
 import org.randi3.web.lib.DependencyFactory
 import org.randi3.model.criterion.Criterion
 import org.randi3.model.criterion.constraint.Constraint
+import org.randi3.model.StratifiedTrialSite
 
 
 object TrialGeneralInformationSnippet {
 
+  private val randomizationPluginManager = DependencyFactory.randomizationPluginManager
 
   def show(in: NodeSeq): NodeSeq = {
     val trial = CurrentTrial.get.getOrElse {
@@ -112,6 +114,63 @@ object TrialGeneralInformationSnippet {
       </div>
     }
 
+    def algorithm: Elem = {
+      <div>
+        {
+        if(trial.randomizationMethod.isEmpty){
+          <span>No algorithm defined</span>
+          }else {
+         val method = trial.randomizationMethod.get
+         val plugin = randomizationPluginManager.getPluginForMethod(method).get
+         val configuration = plugin.getRandomizationConfigurations(method.id)
+          <div>
+          <div>
+            <h4>{plugin.i18nName}</h4>
+            {plugin.description}
+          </div>
+            <br />
+            <h5>Configuration:</h5>
+            {configuration.flatMap(conf =>{
+            val info = conf.configurationType.description
+            <div>
+              {conf.configurationType.name}
+              <span class="tooltip">
+                <img src="/images/icons/help16.png" alt={info} title={info}/>
+                <span class="info">
+                {info}
+                </span>
+              </span>
+              = {conf.value}
+            </div>
+          }
+            )}
+            <br />
+            <h5>Stratification:</h5>
+            {
+            <div>
+              Trial site stratification = {trial.stratifyTrialSite.toString}
+            <br />
+            <h6>Strata</h6>
+            {trial.criterions.flatMap(criterion =>
+            {if(!criterion.strata.isEmpty)
+            <div>
+              <h6>{criterion.name}:</h6>
+              {criterion.strata.flatMap(constraint =>
+               <div>{constraint.configurations.toString}</div>
+               )}
+            </div>
+              else <span></span>
+            }
+            )}
+            </div>
+
+            }
+          </div>
+         }
+        }
+      </div>
+    }
+
     bind("trial", in,
       "abbreviation" -> trial.abbreviation,
       "status" -> trial.status.toString,
@@ -123,7 +182,7 @@ object TrialGeneralInformationSnippet {
       "treatmentArms" -> treatmentArms,
       "properties" -> properties,
       "stages" -> stages,
-      "algorithm" -> trial.randomizationMethod.toString
+      "algorithm" -> algorithm
     )
   }
 
