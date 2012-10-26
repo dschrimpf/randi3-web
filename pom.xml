@@ -264,6 +264,11 @@
                     </classpathContainers>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.googlecode.t7mp</groupId>
+                <artifactId>maven-t7-plugin</artifactId>
+                <version>0.9.6</version>
+            </plugin>
         </plugins>
     </build>
     <reporting>

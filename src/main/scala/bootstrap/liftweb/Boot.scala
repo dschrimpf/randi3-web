@@ -17,8 +17,9 @@ import org.randi3.configuration.{ConfigurationSchema, ConfigurationService, Conf
 import org.randi3.web.lib.DependencyFactory
 import org.scalaquery.meta.MTable
 import org.randi3.web.snippet.DownloadRandomizationData
-import org.randi3.schema.DatabaseSchema
+
 import org.randi3.utility.Logging
+
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -27,6 +28,9 @@ import org.randi3.utility.Logging
 class Boot extends Logging {
 
   def boot {
+
+
+    initializeJDBCDriver
 
     checkAndGenerateConfigDatabase()
 
@@ -217,6 +221,12 @@ class Boot extends Logging {
     } else {
       rightList.map(right => right.role).contains(Role.principleInvestigator) || rightList.map(right => right.role).contains(Role.trialAdministrator)
     }
+  }
+
+  private def initializeJDBCDriver(){
+    java.lang.Class.forName("org.h2.Driver")
+    java.lang.Class.forName("com.mysql.jdbc.Driver")
+    java.lang.Class.forName("org.postgresql.Driver")
   }
 
   private def checkAndGenerateConfigDatabase() {
