@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.randi3</groupId>
     <artifactId>randi3-web</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.9</version>
     <packaging>war</packaging>
     <name>randi3-web Project</name>
     <inceptionYear>2010</inceptionYear>
@@ -123,7 +123,7 @@
         <dependency>
             <groupId>org.randi3</groupId>
             <artifactId>randi3-core</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.9</version>
         </dependency>
         <dependency>
             <groupId>org.scalaquery</groupId>
