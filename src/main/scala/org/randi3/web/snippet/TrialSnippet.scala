@@ -249,7 +249,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     def save() {
       val trial = CurrentTrial.get.get
       val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
-      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp), randomizationMethod = Some(randomMethod))
+      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp), stratifyTrialSite = StratifiedTrialSite.withName(trialSiteStratificationStatus), randomizationMethod = Some(randomMethod))
       trialService.update(actTrial)
       redirectTo("/trial/list")
     }
@@ -635,7 +635,9 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
       val criterionList = criterionsTmp
       <div>
-        <h3>Stratification:</h3>{ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}{val result = new ListBuffer[Node]()
+        <h3>Stratification:</h3>
+        Trial site stratification: {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
+        {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
         result += generateStratumConfig("stratum-" + criterion.name, criterion)
@@ -672,6 +674,10 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
             })
           }
           criterion.strata.append(constraint)
+          Replace(id, generateStratumConfig(id, criterion))
+        })}
+          {ajaxButton("remove stratum", () => {
+          criterion.strata.remove(criterion.strata.size-1)
           Replace(id, generateStratumConfig(id, criterion))
         })}
         </div>{val result = new ListBuffer[Node]()
@@ -753,7 +759,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       case x => criterionList += new CriterionTmp(Int.MinValue, 0, x, "", "", None, None)
     }
   }
-
+                                                                                                                           19
 
   private def setPrincipleInvestigator(id: String) {
     principleInvestigator = userService.get(id.toInt).either match {
@@ -816,72 +822,95 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
     identificationCreationTypeTmp = trial.identificationCreationType.toString
 
+    trialSiteStratificationStatus = trial.stratifyTrialSite.toString
+
     criterionsTmp.clear()
     trial.criterions.foreach {
       criterion =>
         if (criterion.isInstanceOf[OrdinalCriterion]) {
           val values = new ListBuffer[String]()
           criterion.asInstanceOf[OrdinalCriterion].values.foreach(s => values += s)
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "OrdinalCriterion", criterion.name, criterion.description, Some(values), getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "OrdinalCriterion", criterion.name, criterion.description, Some(values), getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]), getStrataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         } else if (criterion.isInstanceOf[DateCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DateCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DateCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]), getStrataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         else if (criterion.isInstanceOf[IntegerCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "IntegerCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "IntegerCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]), getStrataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         else if (criterion.isInstanceOf[DoubleCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DoubleCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "DoubleCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]), getStrataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
         else if (criterion.isInstanceOf[FreeTextCriterion])
-          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "FreeTextCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
+          criterionsTmp += new CriterionTmp(criterion.id, criterion.version, "FreeTextCriterion", criterion.name, criterion.description, None, getInclusionConstraintTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]), getStrataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]]))
     }
+
+    randomizationMethodTmp = generateRandomizationMethodConfig(trial.randomizationMethod)
 
   }
 
   private def getInclusionConstraintTmp(crit: Criterion[Any, Constraint[Any]]): Option[ConstraintTmp] = {
     if (crit.inclusionConstraint.isDefined) {
-      val constraint = crit.inclusionConstraint.get
 
-      if (constraint.isInstanceOf[OrdinalConstraint]) {
-        val actConstraint = constraint.asInstanceOf[OrdinalConstraint]
-        val values = new mutable.HashSet[(Boolean, String)]()
-        actConstraint.expectedValues.foreach(element => values.put(true, element))
-        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, ordinalValues = values))
+      getConstraintTmp(crit.inclusionConstraint.get, crit)
 
-      } else if (constraint.isInstanceOf[IntegerConstraint]) {
-        val actConstraint = constraint.asInstanceOf[IntegerConstraint]
-        val firstValue = actConstraint.firstValue match {
-          case None => None
-          case Some(value) => Some(value.toString)
-        }
-        val secondValue = actConstraint.secondValue match {
-          case None => None
-          case Some(value) => Some(value.toString)
-        }
-        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+    } else None
+  }
 
-      } else if (constraint.isInstanceOf[DoubleConstraint]) {
-        val actConstraint = constraint.asInstanceOf[DoubleConstraint]
-        val firstValue = actConstraint.firstValue match {
-          case None => None
-          case Some(value) => Some(value.toString)
-        }
-        val secondValue = actConstraint.secondValue match {
-          case None => None
-          case Some(value) => Some(value.toString)
-        }
-        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+  private def getStrataTmp(crit: Criterion[Any, Constraint[Any]]): ListBuffer[ConstraintTmp] = {
+    val result = new ListBuffer[ConstraintTmp]()
+    crit.strata.foreach(constraint => {
+      val constrTmp = getConstraintTmp(constraint, crit)
+      if (constrTmp.isDefined) result.append(constrTmp.get)
+    })
+    result
+  }
 
-      } else if (constraint.isInstanceOf[DateConstraint]) {
-        val actConstraint = constraint.asInstanceOf[DateConstraint]
-        val firstValue = actConstraint.firstValue match {
-          case None => None
-          case Some(value) => Some(value.toString)
-        }
-        val secondValue = actConstraint.secondValue match {
-          case None => None
-          case Some(value) => Some(value.toString)
-        }
-        Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+  private def getConstraintTmp(constraint: Constraint[Any], crit: Criterion[Any, Constraint[Any]]): Option[ConstraintTmp] = {
+    if (constraint.isInstanceOf[OrdinalConstraint]) {
+      val actConstraint = constraint.asInstanceOf[OrdinalConstraint]
+      val values = new mutable.HashSet[(Boolean, String)]()
+      actConstraint.expectedValues.foreach(element => {
+       values.add(true, element)
+      })
+      val actCriterion = crit.asInstanceOf[OrdinalCriterion]
+      actCriterion.values.foreach(value => {
+        if(!values.map(elem =>elem._2).contains(value))
+          values.add(false, value)
+      })
+      Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, ordinalValues = values))
 
-      } else None
+    } else if (constraint.isInstanceOf[IntegerConstraint]) {
+      val actConstraint = constraint.asInstanceOf[IntegerConstraint]
+      val firstValue = actConstraint.firstValue match {
+        case None => None
+        case Some(value) => Some(value.toString)
+      }
+      val secondValue = actConstraint.secondValue match {
+        case None => None
+        case Some(value) => Some(value.toString)
+      }
+      Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+
+    } else if (constraint.isInstanceOf[DoubleConstraint]) {
+      val actConstraint = constraint.asInstanceOf[DoubleConstraint]
+      val firstValue = actConstraint.firstValue match {
+        case None => None
+        case Some(value) => Some(value.toString)
+      }
+      val secondValue = actConstraint.secondValue match {
+        case None => None
+        case Some(value) => Some(value.toString)
+      }
+      Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
+
+    } else if (constraint.isInstanceOf[DateConstraint]) {
+      val actConstraint = constraint.asInstanceOf[DateConstraint]
+      val firstValue = actConstraint.firstValue match {
+        case None => None
+        case Some(value) => Some(value.toString)
+      }
+      val secondValue = actConstraint.secondValue match {
+        case None => None
+        case Some(value) => Some(value.toString)
+      }
+      Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
 
     } else None
   }
@@ -1388,8 +1417,6 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
   private def generateEmptyRandomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
     val plugin = randomizationPluginManager.getPlugin(randomizationMethodName).get
-    println(plugin)
-    println(plugin.randomizationConfigurationOptions())
     val configurations = plugin.randomizationConfigurationOptions()._1
     val methodConfigsTmp = configurations.map(config => {
       if (config.getClass == classOf[BooleanConfigurationType]) {
@@ -1404,6 +1431,30 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
     })
     new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+  }
+
+  private def generateRandomizationMethodConfig(randomizationMethod: Option[RandomizationMethod]): RandomizationMethodConfigTmp = {
+    if (randomizationMethod.isEmpty) generateEmptyRandomizationMethodConfig(randomizationMethods.head)
+    else {
+      val method = randomizationMethod.get
+
+      val plugin = randomizationPluginManager.getPluginForMethod(method).get
+      val configurations = plugin.getRandomizationConfigurations(method.id)
+      val methodConfigsTmp = configurations.map(configProp => {
+        val config = configProp.configurationType
+        if (config.getClass == classOf[BooleanConfigurationType]) {
+          new RandomizationMethodConfigEntryTmp(config.asInstanceOf[BooleanConfigurationType], configProp.value)
+        } else if (config.getClass == classOf[DoubleConfigurationType]) {
+          new RandomizationMethodConfigEntryTmp(config.asInstanceOf[DoubleConfigurationType], configProp.value)
+        } else if (config.getClass == classOf[IntegerConfigurationType]) {
+          new RandomizationMethodConfigEntryTmp(config.asInstanceOf[IntegerConfigurationType], configProp.value)
+        } else if (config.getClass == classOf[OrdinalConfigurationType]) {
+          new RandomizationMethodConfigEntryTmp(config.asInstanceOf[OrdinalConfigurationType], configProp.value)
+        }
+
+      })
+      new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+    }
   }
 
 }
