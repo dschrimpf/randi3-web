@@ -1278,7 +1278,9 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
             {
               ajaxText(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
                 subjectData.value = y
-                if (!subjectData.criterion.isValueCorrect(y))
+                if (subjectData.value == null || y.isEmpty)
+                  S.error("randomizeMsg", subjectData.criterion.name + ": Element is empty")
+                else if (!subjectData.criterion.isValueCorrect(y))
                   S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
               })
             }
