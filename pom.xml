@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.randi3</groupId>
     <artifactId>randi3-web</artifactId>
-    <version>0.9</version>
+    <version>0.9.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>randi3-web Project</name>
     <inceptionYear>2010</inceptionYear>
@@ -48,6 +48,11 @@
             <artifactId>lift-mapper_2.9.1</artifactId>
             <version>2.4-M5</version>
         </dependency>-->
+        <dependency>
+            <groupId>org.randi3</groupId>
+            <artifactId>randi3-core</artifactId>
+            <version>0.9.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>net.liftweb</groupId>
             <artifactId>lift-wizard_2.9.1</artifactId>
@@ -113,6 +118,7 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
+
         <!-- for LiftConsole -->
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -120,16 +126,11 @@
             <version>${scala.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.randi3</groupId>
-            <artifactId>randi3-core</artifactId>
-            <version>0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.scalaquery</groupId>
-            <artifactId>scalaquery_2.9.0-1</artifactId>
-            <version>0.9.5</version>
-        </dependency>
+<!--        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>slick_2.10.0-M7</artifactId>
+            <version>0.11.1</version>
+        </dependency>-->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>

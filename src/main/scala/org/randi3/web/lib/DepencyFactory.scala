@@ -13,6 +13,7 @@ import org.randi3.model.User
 import org.randi3.web.util.CurrentUser
 import org.randi3.utility._
 import org.randi3.configuration.ConfigurationService
+import org.randi3.schema.DatabaseSchema
 
 
 /**
@@ -36,6 +37,8 @@ object DependencyFactory extends RandomizationPluginManagerComponent with DaoCom
 
   lazy val database = Database.forURL(ConfigurationService.generateJDBCURL(dbType, dbAddress, dbUser, dbPassword, dbName))
   lazy val driver = org.scalaquery.ql.extended.MySQLDriver
+
+  lazy val schema = new DatabaseSchema(driver)
 
   lazy val randomizationPluginManager = new RandomizationPluginManager
 
