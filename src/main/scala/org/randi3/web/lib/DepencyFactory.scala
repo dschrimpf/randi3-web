@@ -12,14 +12,14 @@ import org.randi3.randomization._
 import org.randi3.model.User
 import org.randi3.web.util.CurrentUser
 import org.randi3.utility._
-import org.randi3.configuration.ConfigurationService
+import org.randi3.configuration.{ConfigurationService, ConfigurationServiceComponent}
 import org.randi3.schema.DatabaseSchema
 
 
 /**
  *
  */
-object DependencyFactory extends RandomizationPluginManagerComponent with DaoComponent with AuditDaoComponent with CriterionDaoComponent with TreatmentArmDaoComponent with TrialSubjectDaoComponent with TrialSiteDaoComponent with TrialRightDaoComponent with TrialDaoComponent with UserDaoComponent with SecurityComponent with I18NComponent with RandomizationMethodDaoComponent with TrialSiteServiceComponent with UtilityDBComponent with UtilityMailComponent with MailSenderComponent with TrialServiceComponent with UserServiceComponent with AuditServiceComponent {
+object DependencyFactory extends RandomizationPluginManagerComponent with DaoComponent with AuditDaoComponent with CriterionDaoComponent with TreatmentArmDaoComponent with TrialSubjectDaoComponent with TrialSiteDaoComponent with TrialRightDaoComponent with TrialDaoComponent with UserDaoComponent with SecurityComponent with I18NComponent with RandomizationMethodDaoComponent with TrialSiteServiceComponent with UtilityDBComponent with UtilityMailComponent with MailSenderComponent with TrialServiceComponent with UserServiceComponent with AuditServiceComponent with ConfigurationServiceComponent {
 
   import org.randi3.configuration.ConfigurationValues._
 

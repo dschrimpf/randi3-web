@@ -13,7 +13,7 @@ import org.randi3.model.{TrialStatus, Role}
 import net.liftweb.sitemap.Loc._
 import net.liftweb.sitemap._
 import net.liftweb.widgets.flot._
-import org.randi3.configuration.{ConfigurationSchema, ConfigurationService, ConfigurationValues}
+import org.randi3.configuration.ConfigurationSchema
 import org.randi3.web.lib.DependencyFactory
 import org.scalaquery.meta.MTable
 import org.randi3.web.snippet.DownloadRandomizationData

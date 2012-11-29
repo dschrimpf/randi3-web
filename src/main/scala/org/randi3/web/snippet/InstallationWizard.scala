@@ -3,10 +3,9 @@ package org.randi3.web.snippet
 
 import net.liftweb.http._
 import net.liftweb.wizard._
-import org.scalaquery.session.Database
-import org.randi3.configuration.{ConfigurationValues, ConfigurationService}
+import org.randi3.configuration.ConfigurationValues
+import org.randi3.configuration.ConfigurationService
 
-import org.scalaquery.meta.MTable
 import org.randi3.schema.DatabaseSchema
 import org.randi3.model.{TrialSite, User}
 
@@ -14,11 +13,34 @@ import org.randi3.web.lib.DependencyFactory
 import net.liftweb.util.FieldError
 import org.randi3.utility.Logging
 
+import org.scalaquery.session.Database
+import org.scalaquery.meta.MTable
+
 object InstallationWizard extends Wizard with Logging {
 
-  val configurationService = new ConfigurationService
 
   import ConfigurationValues._
+
+  val configurationService =  DependencyFactory.configurationService
+
+
+  val serverUrlScreen = new Screen {
+    override val screenName = "Server URL"
+    val serverURL = field("Server url", configurationService.getConfigurationEntry(SERVER_URL.toString).toOption.getOrElse(""), valMinLen(1, "URL is neccesary"))
+
+    override def nextScreen = {
+
+      if (!serverURL.get.isEmpty) {
+        configurationService.saveConfigurationEntry(SERVER_URL.toString, serverURL)
+        logger.info("Installation: Server url saved!")
+        super.nextScreen
+      }  else {
+        this
+      }
+
+      super.nextScreen
+    }
+  }
 
   // define the first screen
   val databaseScreen = new Screen {
