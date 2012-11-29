@@ -1217,8 +1217,18 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     val subjectDataNodeSeq = new ListBuffer[Node]()
 
     for (subjectData <- subjectDataList) {
-      subjectDataNodeSeq +=
-        generateEntryWithInfo(subjectData.criterion.name, false, subjectData.criterion.description,
+      subjectDataNodeSeq +=  <fieldset> {
+      // generateEntryWithInfo(subjectData.criterion.name, false, subjectData.criterion.description,
+        <legend>
+            <span>
+              {subjectData.criterion.name}
+            </span>
+            <span class="tooltip">
+              <img src="/images/icons/help16.png" alt={subjectData.criterion.description} title={subjectData.criterion.description}/> <span class="info">
+              {subjectData.criterion.description}
+            </span>
+            </span>
+        </legend>
           <div>
             {if (subjectData.criterion.getClass == classOf[DateCriterion]) {
             {
@@ -1230,11 +1240,10 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
                     if (!subjectData.criterion.isValueCorrect(value))
                       S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
                   } catch {
-                    case nfe: NumberFormatException => S.error("randomizeMsg", "not a number")
-                    case _ => S.error("randomizeMsg", "unknown failure")
+                    case _ => S.error("randomizeMsg", subjectData.criterion.name + ": unknown failure")
                   }
                 } else {
-                  S.error("randomizeMsg", "value not set")
+                  S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
                 }
               })
             }
@@ -1252,7 +1261,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
                     case _ => S.error("randomizeMsg", "unknown failure")
                   }
                 } else {
-                  S.error("randomizeMsg", "value not set")
+                  S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
                 }
               })
             }
@@ -1270,7 +1279,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
                     case _ => S.error("randomizeMsg", "unknown failure")
                   }
                 } else {
-                  S.error("randomizeMsg", "value not set")
+                  S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
                 }
               })
             }
@@ -1298,8 +1307,9 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
             <span>?</span>
           }}
           </div>
-        )
-
+        //)
+        }
+      </fieldset>
     }
 
     def randomizeSubject() {
