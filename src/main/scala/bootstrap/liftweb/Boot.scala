@@ -90,6 +90,7 @@ class Boot extends Logging {
       trialMenu >> If(() => CurrentUser.isDefined, ""),
       trialSubjectMenu,
       Menu("Install") / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu("Support") / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),
       // Menu with special Link
       Menu(Loc("Static", Link(List("static"), true, "/static/index"),
         "About")))

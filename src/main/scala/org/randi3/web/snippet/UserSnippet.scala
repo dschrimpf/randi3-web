@@ -66,7 +66,7 @@ class UserSnippet extends StatefulSnippet {
     val currentUser = CurrentUser.get.get
     userService.getAll.either match {
       case Left(x) => <tr>
-        <td colspan="8">
+        <td colspan="9">
           {x}
         </td>
       </tr>
