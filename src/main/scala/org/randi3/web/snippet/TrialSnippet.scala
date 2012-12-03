@@ -183,7 +183,9 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         val max = if (constraint.maxValue.isDefined) Some(constraint.maxValue.get.toDouble) else None
         Some(DoubleConstraint(constraint.id, constraint.version, List(min, max)).toOption.get.asInstanceOf[T])
       }
-      case "FreeTextCriterion" => None
+      case "FreeTextCriterion" => {
+        Some(FreeTextConstraintNotEmpty(constraint.id, constraint.version).toOption.get.asInstanceOf[T])
+      }
       case "OrdinalCriterion" => {
         Some(OrdinalConstraint(constraint.id, constraint.version, constraint.ordinalValues.toList.filter(entry => entry._1).map(entry => Some(entry._2))).toOption.get.asInstanceOf[T])
       }
@@ -651,6 +653,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   }
 
   private def generateStratumConfig(id: String, criterion: CriterionTmp): Elem = {
+   if(criterion.typ != "FreeTextCriterion"){
     <div class="singleField" id={id}>
       <fieldset>
         <legend>
@@ -691,6 +694,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       NodeSeq fromSeq result}
       </fieldset>
     </div>
+   }else <div></div>
   }
 
   private def generateStratumElement(id: String, criterion: CriterionTmp, constraint: ConstraintTmp): Elem = {
@@ -912,6 +916,9 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       }
       Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = firstValue, maxValue = secondValue))
 
+    } else if (constraint.isInstanceOf[FreeTextConstraintNotEmpty]) {
+      val actConstraint = constraint.asInstanceOf[FreeTextConstraintNotEmpty]
+      Some(new ConstraintTmp(id = actConstraint.id, version = actConstraint.version, minValue = None, maxValue = None))
     } else None
   }
 
@@ -1005,7 +1012,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
             <li>
               <label for={id + "Description" + +i}>Description</label>{ajaxTextarea(criterion.description, criterion.description = _, "id" -> (id + "Description" + +i))}
             </li>{createValues(criterion, xhtml, id, criterionList)}
-          </ul>{if (criterion.typ != "FreeTextCriterion") generateInclusionConstraint(xhtml, "inclusionConstraintFieldset" + i, criterion)}
+          </ul>{generateInclusionConstraint(xhtml, "inclusionConstraintFieldset" + i, criterion)}
 
         </fieldset>
       </div>
@@ -1036,42 +1043,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         Replace(id, generateInclusionConstraint(xhtml, id, criterion))
       }, "style" -> "width: 20px;")}
       </legend>{if (criterion.inclusionConstraint.isDefined) {
-      if (criterion.typ != "OrdinalCriterion") {
-        <ul>
-          <li>
-            {ajaxCheckbox(criterion.inclusionConstraint.get.minValue.isDefined, v => {
-            if (!v) {
-              criterion.inclusionConstraint.get.minValue = None
-            } else {
-              criterion.inclusionConstraint.get.minValue = Some("")
-            }
-            Replace(id, generateInclusionConstraint(xhtml, id, criterion))
-          }, "style" -> "width: 20px;")}
-            lower boundary?
-            {if (criterion.inclusionConstraint.get.minValue.isDefined) {
-            ajaxText(criterion.inclusionConstraint.get.minValue.get, v => {
-              criterion.inclusionConstraint.get.minValue = Some(v)
-            })
-          }}
-          </li>
-          <li>
-            {ajaxCheckbox(criterion.inclusionConstraint.get.maxValue.isDefined, v => {
-            if (!v) {
-              criterion.inclusionConstraint.get.maxValue = None
-            } else {
-              criterion.inclusionConstraint.get.maxValue = Some("")
-            }
-            Replace(id, generateInclusionConstraint(xhtml, id, criterion))
-          }, "style" -> "width: 20px;")}
-            upper boundary?
-            {if (criterion.inclusionConstraint.get.maxValue.isDefined) {
-            ajaxText(criterion.inclusionConstraint.get.maxValue.get, v => {
-              criterion.inclusionConstraint.get.maxValue = Some(v)
-            })
-          }}
-          </li>
-        </ul>
-      } else {
+       if(criterion.typ == "OrdinalCriterion") {
         val ordinalValues = criterion.inclusionConstraint.get.ordinalValues
         ordinalValues.toList.sortWith((elem1, elem2) => elem1._2.compareTo(elem2._2) < 0).flatMap(value => {
           <div>
@@ -1084,7 +1056,48 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           </span>
           </div>
         })
-      }
+      } else if(criterion.typ == "FreeTextCriterion") {
+         <ul>
+           <li>
+             <div>Element have to be set!</div>
+           </li>
+         </ul>
+      } else {
+         <ul>
+           <li>
+             {ajaxCheckbox(criterion.inclusionConstraint.get.minValue.isDefined, v => {
+             if (!v) {
+               criterion.inclusionConstraint.get.minValue = None
+             } else {
+               criterion.inclusionConstraint.get.minValue = Some("")
+             }
+             Replace(id, generateInclusionConstraint(xhtml, id, criterion))
+           }, "style" -> "width: 20px;")}
+             lower boundary?
+             {if (criterion.inclusionConstraint.get.minValue.isDefined) {
+             ajaxText(criterion.inclusionConstraint.get.minValue.get, v => {
+               criterion.inclusionConstraint.get.minValue = Some(v)
+             })
+           }}
+           </li>
+           <li>
+             {ajaxCheckbox(criterion.inclusionConstraint.get.maxValue.isDefined, v => {
+             if (!v) {
+               criterion.inclusionConstraint.get.maxValue = None
+             } else {
+               criterion.inclusionConstraint.get.maxValue = Some("")
+             }
+             Replace(id, generateInclusionConstraint(xhtml, id, criterion))
+           }, "style" -> "width: 20px;")}
+             upper boundary?
+             {if (criterion.inclusionConstraint.get.maxValue.isDefined) {
+             ajaxText(criterion.inclusionConstraint.get.maxValue.get, v => {
+               criterion.inclusionConstraint.get.maxValue = Some(v)
+             })
+           }}
+           </li>
+         </ul>
+       }
     } else {
       <span>No inclusion constraint</span>
     }}
@@ -1211,7 +1224,12 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     }
 
     if (subjectDataList.isEmpty) {
-      trial.criterions.foreach(criterion => subjectDataList += new SubjectDataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]], null))
+      trial.criterions.foreach(criterion => subjectDataList +=  {
+        if(criterion.getClass == classOf[FreeTextCriterion])
+          new SubjectDataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]], "")
+        else
+        new SubjectDataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]], null)
+      })
     }
 
     val subjectDataNodeSeq = new ListBuffer[Node]()
@@ -1287,8 +1305,8 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
             {
               ajaxText(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
                 subjectData.value = y
-                if (subjectData.value == null || y.isEmpty)
-                  S.error("randomizeMsg", subjectData.criterion.name + ": Element is empty")
+                if (subjectData.value == null)
+                  S.error("randomizeMsg", subjectData.criterion.name + ": Element not set")
                 else if (!subjectData.criterion.isValueCorrect(y))
                   S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
               })
