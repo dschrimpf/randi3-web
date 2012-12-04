@@ -6,7 +6,7 @@ import net.liftweb.wizard._
 import org.randi3.configuration.ConfigurationValues
 import org.randi3.configuration.ConfigurationService
 
-import org.randi3.schema.DatabaseSchema
+import org.randi3.schema.{LiquibaseUtil, DatabaseSchema}
 import org.randi3.model.{TrialSite, User}
 
 import org.randi3.web.lib.DependencyFactory
@@ -14,7 +14,6 @@ import net.liftweb.util.FieldError
 import org.randi3.utility.Logging
 
 import org.scalaquery.session.Database
-import org.scalaquery.meta.MTable
 
 object InstallationWizard extends Wizard with Logging {
 
@@ -64,13 +63,11 @@ object InstallationWizard extends Wizard with Logging {
       }
       val jdbcURL = ConfigurationService.generateJDBCURL(dbType, dbAddress, dbUser, dbPassword, dbName)
       val database = Database.forURL(jdbcURL)
+      val liquibaseUtil = new LiquibaseUtil()
+
       try {
-        val tableList = MTable.getTables.list()(database.createSession())
-        if (tableList.isEmpty) {
-          DatabaseSchema.createDatabaseMySql(jdbcURL)
 
-        }
-
+        liquibaseUtil.updateDatabase(database)
 
         configurationService.saveConfigurationEntry(DB_TYPE.toString, dbType)
         configurationService.saveConfigurationEntry(DB_ADDRESS.toString, dbAddress)

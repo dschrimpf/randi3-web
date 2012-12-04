@@ -13,7 +13,7 @@ import org.randi3.model.User
 import org.randi3.web.util.CurrentUser
 import org.randi3.utility._
 import org.randi3.configuration.{ConfigurationService, ConfigurationServiceComponent}
-import org.randi3.schema.DatabaseSchema
+import org.randi3.schema.{LiquibaseUtil, DatabaseSchema}
 
 
 /**
@@ -39,6 +39,8 @@ object DependencyFactory extends RandomizationPluginManagerComponent with DaoCom
   lazy val driver = org.scalaquery.ql.extended.MySQLDriver
 
   lazy val schema = new DatabaseSchema(driver)
+
+  val liquibaseUtil = new LiquibaseUtil()
 
   lazy val randomizationPluginManager = new RandomizationPluginManager
 

@@ -30,20 +30,22 @@ class Boot extends Logging {
   def boot {
 
 
-    initializeJDBCDriver
+    initializeJDBCDriver()
 
     checkAndGenerateConfigDatabase()
 
 
-    if(DependencyFactory.configurationService.isConfigurationComplete)
-     checkAndGenerateRandomizationTables()
+    if(DependencyFactory.configurationService.isConfigurationComplete) {
+        DependencyFactory.liquibaseUtil.updateDatabase(DependencyFactory.database)
+      // checkAndGenerateRandomizationTables()
+    }
 
 
     // where to search snippet
     LiftRules.addToPackages("org.randi3.web")
     //    Schemifier.schemify(true, Schemifier.infoF _, User, TrialSiteLift)
 
-    Flot.init
+    Flot.init()
 
     lazy val noGAE = Unless(() => Props.inGAE, "Disabled for GAE")
 
