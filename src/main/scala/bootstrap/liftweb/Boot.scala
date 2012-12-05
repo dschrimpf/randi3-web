@@ -20,6 +20,8 @@ import org.randi3.web.snippet.DownloadRandomizationData
 
 import org.randi3.utility.Logging
 
+import org.randi3.schema.LiquibaseUtil
+import java.sql.SQLSyntaxErrorException
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -36,8 +38,8 @@ class Boot extends Logging {
 
 
     if(DependencyFactory.configurationService.isConfigurationComplete) {
-        DependencyFactory.liquibaseUtil.updateDatabase(DependencyFactory.database)
-      // checkAndGenerateRandomizationTables()
+      LiquibaseUtil.updateDatabase(DependencyFactory.database)
+      checkAndGenerateRandomizationTables()
     }
 
 
@@ -227,7 +229,7 @@ class Boot extends Logging {
   }
 
   private def initializeJDBCDriver(){
-    java.lang.Class.forName("org.h2.Driver")
+    java.lang.Class.forName("org.hsqldb.jdbc.JDBCDriver")
     java.lang.Class.forName("com.mysql.jdbc.Driver")
     java.lang.Class.forName("org.postgresql.Driver")
   }
@@ -239,28 +241,21 @@ class Boot extends Logging {
 
     if (tableList.isEmpty) {
       logger.info("Start of installation ...")
+      try {
       ConfigurationSchema.createDatabase
+      }catch {
+        case e: SQLSyntaxErrorException => //HsqlDB   MTable.getTables doesn't work
+      }
     }
   }
 
   private def checkAndGenerateRandomizationTables() {
-    val database =   DependencyFactory.database
-    import org.scalaquery.session.Database.threadLocalSession
-    import DependencyFactory.driver.Implicit._
 
     val  pluginManager = DependencyFactory.randomizationPluginManager
 
     pluginManager.getPluginNames.foreach(pluginName => {
       val plugin = pluginManager.getPlugin(pluginName).get
-      if (plugin.databaseTables().isDefined){
-        try {
-        database withSession {
-          plugin.databaseTables().get.create
-        }
-        }catch {
-          case e: Exception =>
-        }
-      }
+      plugin.updateDatabase()
 
     })
 

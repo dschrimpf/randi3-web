@@ -13,7 +13,7 @@ import org.randi3.model.User
 import org.randi3.web.util.CurrentUser
 import org.randi3.utility._
 import org.randi3.configuration.{ConfigurationService, ConfigurationServiceComponent}
-import org.randi3.schema.{LiquibaseUtil, DatabaseSchema}
+import org.randi3.schema.DatabaseSchema
 
 
 /**
@@ -40,21 +40,19 @@ object DependencyFactory extends RandomizationPluginManagerComponent with DaoCom
 
   lazy val schema = new DatabaseSchema(driver)
 
-  val liquibaseUtil = new LiquibaseUtil()
-
   lazy val randomizationPluginManager = new RandomizationPluginManager
 
-  lazy val ddl: DDL = {
-    var ddlTmp: DDL = null
-    randomizationPluginManager.getPluginNames.foreach(name => if (!randomizationPluginManager.getPlugin(name).get.databaseTables().isEmpty) ddlTmp =
-      if (ddlTmp != null) {
-        ddlTmp ++ randomizationPluginManager.getPlugin(name).get.databaseTables().get
-      } else {
-        randomizationPluginManager.getPlugin(name).get.databaseTables().get
-      })
-
-    ddlTmp
-  }
+//  lazy val ddl: DDL = {
+//    var ddlTmp: DDL = null
+//    randomizationPluginManager.getPluginNames.foreach(name => if (!randomizationPluginManager.getPlugin(name).get.databaseTables().isEmpty) ddlTmp =
+//      if (ddlTmp != null) {
+//        ddlTmp ++ randomizationPluginManager.getPlugin(name).get.databaseTables().get
+//      } else {
+//        randomizationPluginManager.getPlugin(name).get.databaseTables().get
+//      })
+//
+//    ddlTmp
+//  }
 
  // createTable(ddl, driver, database)
 

@@ -8,12 +8,12 @@ import org.randi3.configuration.ConfigurationService
 
 import org.randi3.schema.{LiquibaseUtil, DatabaseSchema}
 import org.randi3.model.{TrialSite, User}
-
 import org.randi3.web.lib.DependencyFactory
 import net.liftweb.util.FieldError
 import org.randi3.utility.Logging
 
 import org.scalaquery.session.Database
+import org.scalaquery.meta.MTable
 
 object InstallationWizard extends Wizard with Logging {
 
@@ -22,6 +22,7 @@ object InstallationWizard extends Wizard with Logging {
 
   val configurationService =  DependencyFactory.configurationService
 
+  var skipUserTrialSiteInformation = false
 
   val serverUrlScreen = new Screen {
     override val screenName = "Server URL"
@@ -63,11 +64,15 @@ object InstallationWizard extends Wizard with Logging {
       }
       val jdbcURL = ConfigurationService.generateJDBCURL(dbType, dbAddress, dbUser, dbPassword, dbName)
       val database = Database.forURL(jdbcURL)
-      val liquibaseUtil = new LiquibaseUtil()
 
       try {
+        val tableList = MTable.getTables.list()(database.createSession())
 
-        liquibaseUtil.updateDatabase(database)
+        if (tableList.size != 0) {
+          skipUserTrialSiteInformation  = true
+        }
+
+        LiquibaseUtil.updateDatabase(database)
 
         configurationService.saveConfigurationEntry(DB_TYPE.toString, dbType)
         configurationService.saveConfigurationEntry(DB_ADDRESS.toString, dbAddress)
@@ -131,32 +136,22 @@ object InstallationWizard extends Wizard with Logging {
 
       if (!pluginPath.isEmpty) {
         logger.info("Installation: Plugin-path (" + pluginPath + ") saved!")
-        val database = DependencyFactory.database
-        import org.scalaquery.session.Database.threadLocalSession
-        import DependencyFactory.driver.Implicit._
 
         val pluginManager = DependencyFactory.randomizationPluginManager
 
         pluginManager.getPluginNames.foreach(pluginName => {
           val plugin = pluginManager.getPlugin(pluginName).get
-          if (plugin.databaseTables().isDefined) {
-            try {
-              database withSession {
-                plugin.databaseTables().get.create
-              }
-            } catch {
-              case e: Exception => println(e)
-            }
-          }
+          plugin.updateDatabase()
 
         })
       }
 
-      super.nextScreen
+       super.nextScreen
     }
   }
 
   val trialSiteScreen = new Screen {
+
 
     var firstView = true
 
@@ -178,6 +173,13 @@ object InstallationWizard extends Wizard with Logging {
       if (s != password1.get) "Passwords do not match" else Nil
 
     override def nextScreen = {
+       if (skipUserTrialSiteInformation){
+        configurationService.saveConfigurationEntry(ConfigurationValues.INITIAL_OBJECTS_CREATED.toString, "true")
+        logger.info("Installation completed, without user and trial site information!")
+        S.notice("Installation completed!!")
+        S.redirectTo("login")
+      }
+
       if (firstView) {
         firstView = false
         this
