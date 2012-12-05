@@ -138,15 +138,21 @@ object InstallationWizard extends Wizard with Logging {
         logger.info("Installation: Plugin-path (" + pluginPath + ") saved!")
 
         val pluginManager = DependencyFactory.randomizationPluginManager
+        pluginManager.init()
+
+        if (pluginManager.getPluginNames.isEmpty){
+          S.error("Error: No plugins available in path (" + pluginPath +")"); this
+        } else {
 
         pluginManager.getPluginNames.foreach(pluginName => {
           val plugin = pluginManager.getPlugin(pluginName).get
           plugin.updateDatabase()
 
         })
-      }
+          super.nextScreen
+        }
+      } else this
 
-       super.nextScreen
     }
   }
 
