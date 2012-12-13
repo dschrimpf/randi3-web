@@ -271,3 +271,9 @@ textarea
         position: absolute;
         left: -10000px;
 }
+
+.scrollFrame {
+    width:600px;
+    max-height:600px;
+    overflow:auto;
+}
