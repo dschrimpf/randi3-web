@@ -190,7 +190,7 @@ object InstallationWizard extends Wizard with Logging {
         firstView = false
         this
       } else {
-        TrialSite(name = name, country = country, street = street, postCode = postCode, city = city, password = password1).either match {
+        TrialSite(name = name, country = country, street = street, postCode = postCode, city = city, password = password1, isActive = true).either match {
           case Left(failureFields) => S.error("Error: " + failureFields); this
           case Right(trialSite) => {
             trialSiteDao.create(trialSite).either match {

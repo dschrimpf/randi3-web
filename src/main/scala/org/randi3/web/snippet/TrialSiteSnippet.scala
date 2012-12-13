@@ -23,12 +23,11 @@ import scalaz.NonEmptyList
 import scala.Right
 import scalaz._
 import Scalaz._
-import org.randi3.web.util.CurrentUser
+import org.randi3.web.util.{CurrentSelectedTrialSite, CurrentUser}
 
 class TrialSiteSnippet extends StatefulSnippet {
 
 
-  private var selectedTrialSite: Option[TrialSite] = None
   private var name = ""
   private var country = ""
   private var postCode = ""
@@ -36,6 +35,7 @@ class TrialSiteSnippet extends StatefulSnippet {
   private var street = ""
   private var password = ""
   private var passwordCheck = ""
+  private var active = true
 
 
   def dispatch = {
@@ -43,6 +43,8 @@ class TrialSiteSnippet extends StatefulSnippet {
     case "trialSites" => trialSites _
     case "create" => create _
     case "edit" => edit _
+    case "activate" => activate _
+    case "deactivate" => deactivate _
   }
 
   private val trialSiteService = DependencyFactory.trialSiteService
@@ -77,8 +79,11 @@ class TrialSiteSnippet extends StatefulSnippet {
           {trialSite.country}
         </td>
         <td>
+          {trialSite.isActive}
+        </td>
+        <td>
           {if (currentUser.administrator) {
-          link("/trialSite/edit", () => selectedTrialSite = Some(trialSite), Text("Edit"))
+          link("/trialSite/edit", () => CurrentSelectedTrialSite.set(Some(trialSite)), Text("Edit"))
         }}
         </td>
       </tr>)
@@ -89,8 +94,8 @@ class TrialSiteSnippet extends StatefulSnippet {
    * Confirm deleting a user
    */
   private def confirmDelete(xhtml: Group): NodeSeq = {
-    if (selectedTrialSite.isDefined) {
-      val trialSite = selectedTrialSite.get
+    if (CurrentSelectedTrialSite.isDefined) {
+      val trialSite = CurrentSelectedTrialSite.get.get
       def deleteTrialSite() {
         notice("Trial site " + (trialSite.name) + " deleted")
         trialSiteService.delete(trialSite)
@@ -116,7 +121,7 @@ class TrialSiteSnippet extends StatefulSnippet {
   private def create(xhtml: NodeSeq): NodeSeq = {
 
     def save() {
-      TrialSite(name = name, street = street, postCode = postCode, city = city, country = country, password = password).either match {
+      TrialSite(name = name, street = street, postCode = postCode, city = city, country = country, password = password, isActive = active).either match {
         case Left(x) => S.error("trialSiterMsg", x.toString) //TODO set field failure
         case Right(site) => trialSiteService.create(site).either match {
           case Left(x) => S.error("trialSiteMsg", x)
@@ -134,11 +139,12 @@ class TrialSiteSnippet extends StatefulSnippet {
 
 
   private def edit(xhtml: NodeSeq): NodeSeq = {
-    if (selectedTrialSite.isDefined) {
-      setFields(selectedTrialSite.get)
+    if (CurrentSelectedTrialSite.isDefined) {
+      val selectedTrialSite = CurrentSelectedTrialSite.get.get
+      setFields(selectedTrialSite)
 
       def update() {
-        TrialSite(id = selectedTrialSite.get.id, version = selectedTrialSite.get.version, name = name, street = street, postCode = postCode, city = city, country = country, password = password).either match {
+        TrialSite(id = selectedTrialSite.id, version = selectedTrialSite.version, name = name, street = street, postCode = postCode, city = city, country = country, password = password, isActive = selectedTrialSite.isActive).either match {
           case Left(x) => S.error("trialSiterMsg", x.toString) //TODO set field failure
           case Right(site) => trialSiteService.update(site).either match {
             case Left(x) => S.error("trialSiteMsg", x)
@@ -152,6 +158,49 @@ class TrialSiteSnippet extends StatefulSnippet {
       }
 
       generateForm(xhtml, update)
+    } else S.redirectTo("/trialSite/list")
+
+  }
+
+
+  private def activate(xhtml: NodeSeq): NodeSeq = {
+    if (CurrentSelectedTrialSite.isDefined) {
+
+      def activate() {
+        trialSiteService.activate(CurrentSelectedTrialSite.get.get).either match {
+          case Left(x) => S.error(x)
+          case Right(b) => {
+            clearFields()
+            S.notice("Thanks \"" + name + "\" saved!")
+            S.redirectTo("/trialSite/list")
+          }
+        }
+      }
+
+      bind("trialSite", xhtml,
+        "submit" -> submit("activate " + CurrentSelectedTrialSite.get.get.name, activate _)
+      )
+    } else S.redirectTo("/trialSite/list")
+
+  }
+
+  private def deactivate(xhtml: NodeSeq): NodeSeq = {
+    if (CurrentSelectedTrialSite.isDefined) {
+
+      def deactivate() {
+        trialSiteService.deactivate(CurrentSelectedTrialSite.get.get).either match {
+          case Left(x) => S.error(x)
+          case Right(b) => {
+            clearFields()
+            S.notice("Thanks \"" + name + "\" saved!")
+            S.redirectTo("/trialSite/list")
+          }
+        }
+      }
+
+      bind("trialSite", xhtml,
+        "submit" -> submit("deactivate " + CurrentSelectedTrialSite.get.get.name, deactivate _)
+      )
     } else S.redirectTo("/trialSite/list")
 
   }
@@ -298,6 +347,7 @@ class TrialSiteSnippet extends StatefulSnippet {
     city = ""
     street = ""
     password = ""
+    active = true
   }
 
   private def setFields(trialSite: TrialSite) {
@@ -307,32 +357,9 @@ class TrialSiteSnippet extends StatefulSnippet {
     city = trialSite.city
     street = trialSite.street
     password = trialSite.password
+    active = trialSite.isActive
   }
 
 }
-
-//
-//object TrialSiteForm extends LiftScreen {
-//
-//  private val trialSiteService = DependencyFactory.trialSiteService
-//  val name = field("Name", "")
-//  val country = field("Country", "")
-//  val postCode = field("PostCode", "")
-//  val city = field("City", "")
-//  val street = field("Street", "")
-//  val password = field("Password", "")
-//  val from = S.referer openOr "/"
-//
-//  def finish() {
-//    TrialSite(name = name, country = country, postCode = postCode, city = city, street = street, password = password).either match {
-//      case Left(x) => S.notice(x.toString())
-//      case Right(site) =>  trialSiteService.create(site).either match {
-//        case Left(x) => S.error(x)
-//        case Right(b) => S.notice("saved " + b)
-//      }
-//    }
-//  }
-//
-//}
 
 

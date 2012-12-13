@@ -8,7 +8,7 @@ import net.liftweb.http._
 
 import net.liftweb.util._
 
-import org.randi3.web.util.{CurrentSelectedUser, CurrentTrial, CurrentUser}
+import org.randi3.web.util.{CurrentSelectedTrialSite, CurrentSelectedUser, CurrentTrial, CurrentUser}
 import org.randi3.model.{TrialStatus, Role}
 import net.liftweb.sitemap.Loc._
 import net.liftweb.sitemap._
@@ -53,8 +53,10 @@ class Boot extends Logging {
 
     val trialSiteMenu = Menu("Trial site") / "trialSiteInfo" submenus(
       Menu(Loc("trialSiteAdd", List("trialSite", "add"), "add", If(() => isAdministrator, ""))),
+      Menu(Loc("trialSiteEdit", List("trialSite", "edit"), "edit", If(() => isAdministrator, ""))),
+      Menu(Loc("trialSiteActive", List("trialSite", "activate"), "Activate", If(() => isAdministrator && CurrentSelectedTrialSite.isDefined && !CurrentSelectedTrialSite.get.get.isActive, ""))),
+      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), "Dectivate", If(() => isAdministrator && CurrentSelectedTrialSite.isDefined && CurrentSelectedTrialSite.get.get.isActive, ""))),
       Menu(Loc("trialSiteList", List("trialSite", "list"), "list")),
-      Menu(Loc("trialSiteEdit", List("trialSite", "edit"), "edit", Hidden, If(() => isAdministrator, ""))),
       Menu(Loc("trialSiteDelete", List("trialSite", "delete"), "delete", Hidden, If(() => isAdministrator, ""))))
 
     val userMenu = Menu("User") / "userInfo" >> If(() => CurrentUser.isDefined, "") submenus(

@@ -601,6 +601,7 @@ class UserSnippet extends StatefulSnippet {
     actualTrialSite = user.site
     isAdministrator = user.administrator
     canCreateTrial = user.canCreateTrial
+    isActive = user.isActive
     trialSites = trialSiteService.getAll.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
     actualRights.clear()
     user.rights.foreach(right => actualRights.add(right))

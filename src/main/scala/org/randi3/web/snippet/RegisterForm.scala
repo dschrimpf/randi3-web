@@ -34,7 +34,7 @@ class RegisterForm extends StatefulSnippet{
   private var actualTrialSite: TrialSite = null
   private var trialSitePassword = ""
 
-  private var trialSites = trialSiteService.getAll.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
+  private var trialSites = trialSiteService.getAllActive.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
 
   /**
    * Add a user
