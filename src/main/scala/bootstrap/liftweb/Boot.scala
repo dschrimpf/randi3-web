@@ -173,7 +173,9 @@ class Boot extends Logging {
     val user = CurrentUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
-    if (rightList.isEmpty) {
+    if(trial.status == TrialStatus.FINISHED){
+      false
+    } else if (rightList.isEmpty) {
       false
     } else {
       val roles = rightList.map(right => right.role)
