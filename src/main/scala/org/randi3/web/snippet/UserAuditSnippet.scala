@@ -8,14 +8,14 @@ import org.randi3.web.lib.DependencyFactory
 import net.liftweb.http.S._
 
 
-import org.randi3.web.util.{CurrentSelectedUser, CurrentTrial}
+import org.randi3.web.util.{CurrentUser, CurrentTrial}
 import org.joda.time.format.DateTimeFormat
 
 class UserAuditSnippet {
 
 
   def render: NodeSeq = {
-    val user = CurrentSelectedUser.get.getOrElse {
+    val user = CurrentUser.get.getOrElse {
       redirectTo("/user/list")
     }
 

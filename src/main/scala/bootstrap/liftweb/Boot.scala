@@ -8,7 +8,7 @@ import net.liftweb.http._
 
 import net.liftweb.util._
 
-import org.randi3.web.util.{CurrentSelectedTrialSite, CurrentSelectedUser, CurrentTrial, CurrentUser}
+import org.randi3.web.util.{CurrentTrialSite, CurrentLoggedInUser, CurrentTrial, CurrentUser}
 import org.randi3.model.{TrialStatus, Role}
 import net.liftweb.sitemap.Loc._
 import net.liftweb.sitemap._
@@ -54,12 +54,12 @@ class Boot extends Logging {
     val trialSiteMenu = Menu("Trial site") / "trialSiteInfo" submenus(
       Menu(Loc("trialSiteAdd", List("trialSite", "add"), "add", If(() => isAdministrator, ""))),
       Menu(Loc("trialSiteEdit", List("trialSite", "edit"), "edit", If(() => isAdministrator, ""))),
-      Menu(Loc("trialSiteActive", List("trialSite", "activate"), "Activate", If(() => isAdministrator && CurrentSelectedTrialSite.isDefined && !CurrentSelectedTrialSite.get.get.isActive, ""))),
-      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), "Dectivate", If(() => isAdministrator && CurrentSelectedTrialSite.isDefined && CurrentSelectedTrialSite.get.get.isActive, ""))),
+      Menu(Loc("trialSiteActive", List("trialSite", "activate"), "Activate", If(() => isAdministrator && CurrentTrialSite.isDefined && !CurrentTrialSite.get.get.isActive, ""))),
+      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), "Dectivate", If(() => isAdministrator && CurrentTrialSite.isDefined && CurrentTrialSite.get.get.isActive, ""))),
       Menu(Loc("trialSiteList", List("trialSite", "list"), "list")),
       Menu(Loc("trialSiteDelete", List("trialSite", "delete"), "delete", Hidden, If(() => isAdministrator, ""))))
 
-    val userMenu = Menu("User") / "userInfo" >> If(() => CurrentUser.isDefined, "") submenus(
+    val userMenu = Menu("User") / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
       Menu(Loc("userAdd", List("user", "add"), "add", If(() => isAdministrator, ""))),
       Menu(Loc("userList", List("user", "list"), "list")),
       Menu(Loc("userEdit", List("user", "edit"), "edit", If(() => isAdministrator || isOwnUser, ""))),
@@ -85,16 +85,18 @@ class Boot extends Logging {
       )
 
     val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), "Randomize", If(() => canRandomize, "")))
+    val trialSubjectRandomizationResultMenu = Menu(Loc("trialSubjectRandomizationResult", List("trialSubject", "randomizationResult"), "Randomization result", Hidden ,If(() => canRandomize, "")))
 
     // Build SiteMap
     def sitemap() = SiteMap(
       Menu("Home") / "index", // Simple menu form
-      Menu("Login") / "login" >> If(() => CurrentUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
-      Menu("Register") / "register" >> If(() => CurrentUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
-      trialSiteMenu >> If(() => CurrentUser.isDefined, ""),
-      userMenu >> If(() => CurrentUser.isDefined, ""),
-      trialMenu >> If(() => CurrentUser.isDefined, ""),
+      Menu("Login") / "login" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu("Register") / "register" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
+      trialSiteMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
+      userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
+      trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialSubjectMenu,
+      trialSubjectRandomizationResultMenu,
       Menu("Install") / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
       Menu("Support") / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),
       // Menu with special Link
@@ -139,27 +141,27 @@ class Boot extends Logging {
 
 
   private def isAdministrator: Boolean = {
-    CurrentUser.getOrElse(return false).administrator
+    CurrentLoggedInUser.getOrElse(return false).administrator
   }
 
   private def isOwnUser: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
-    val selectedUser = CurrentSelectedUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
+    val selectedUser = CurrentUser.getOrElse(return false)
     user.id == selectedUser.id && user.username == selectedUser.username
   }
 
 
   private def canCreateTrial: Boolean = {
-    CurrentUser.getOrElse(return false).canCreateTrial
+    CurrentLoggedInUser.getOrElse(return false).canCreateTrial
   }
 
   private def isTrialSelected: Boolean = {
-    if (CurrentUser.isEmpty) (return false)
+    if (CurrentLoggedInUser.isEmpty) (return false)
     CurrentTrial.isDefined
   }
 
   private def canViewTrialInformation: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
     if (rightList.isEmpty) {
@@ -172,7 +174,7 @@ class Boot extends Logging {
 
 
   private def canViewTrialEdit: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
     if(trial.status == TrialStatus.FINISHED){
@@ -186,7 +188,7 @@ class Boot extends Logging {
   }
 
   private def isInvestigator: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
     if (rightList.isEmpty) {
@@ -197,7 +199,7 @@ class Boot extends Logging {
   }
 
   private def canRandomize: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     if (trial.status != TrialStatus.ACTIVE) return false
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
@@ -209,7 +211,7 @@ class Boot extends Logging {
   }
 
   private def canChangeTrial: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     if (trial.status != TrialStatus.IN_PREPARATION) return false
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
@@ -221,7 +223,7 @@ class Boot extends Logging {
   }
 
   private def canChangeTrialStatus: Boolean = {
-    val user = CurrentUser.getOrElse(return false)
+    val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     if (trial.status != TrialStatus.ACTIVE && trial.status != TrialStatus.PAUSED) return false
     val rightList = user.rights.filter(right => right.trial.id == trial.id)

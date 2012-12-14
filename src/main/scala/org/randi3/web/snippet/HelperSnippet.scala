@@ -1,6 +1,6 @@
 package org.randi3.web.snippet
 
-import org.randi3.web.util.CurrentUser
+import org.randi3.web.util.CurrentLoggedInUser
 import net.liftweb.http.S
 import org.randi3.web.lib.DependencyFactory
 import xml.Elem
@@ -19,10 +19,10 @@ trait HelperSnippet {
   private val userService = DependencyFactory.userService
 
   protected def updateCurrentUser = {
-    userService.get(CurrentUser.get.get.id).either match {
+    userService.get(CurrentLoggedInUser.get.get.id).either match {
       case Left(x) => S.error(x)
       case Right(user) => {
-        CurrentUser(user)
+        CurrentLoggedInUser(user)
       }
     }
   }

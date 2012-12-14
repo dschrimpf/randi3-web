@@ -5,7 +5,7 @@ import net.liftweb.util.Helpers._
 import net.liftweb.http.SHtml._
 import net.liftweb.http.js.JsCmds._
 import org.randi3.web.lib.DependencyFactory
-import org.randi3.web.util.CurrentUser
+import org.randi3.web.util.CurrentLoggedInUser
 import net.liftweb.http.js.JsCmd
 import net.liftweb.common.{Full, Empty}
 import net.liftweb.http.js.jquery.JqJsCmds.DisplayMessage

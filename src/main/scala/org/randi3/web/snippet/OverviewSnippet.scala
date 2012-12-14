@@ -5,7 +5,7 @@ import xml.{Text, NodeSeq}
 import net.liftweb.http.{SHtml, S}
 import S._
 import SHtml._
-import org.randi3.web.util.{CurrentTrial, CurrentUser}
+import org.randi3.web.util.{CurrentTrial, CurrentLoggedInUser}
 import org.randi3.model.{TrialStatus, Role}
 
 
@@ -14,7 +14,7 @@ class OverviewSnippet {
   val userService = DependencyFactory.userService
   val trialService = DependencyFactory.trialService
 
-  val user = CurrentUser.get.get
+  val user = CurrentLoggedInUser.get.get
 
   def overview(xhtml: NodeSeq): NodeSeq = {
     <div>

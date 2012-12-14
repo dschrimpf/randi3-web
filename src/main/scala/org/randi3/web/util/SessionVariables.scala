@@ -5,8 +5,8 @@ import org.randi3.model.{TrialSite, User, Trial}
 
 object CurrentTrial extends SessionVar[Option[Trial]](None)
 
+object CurrentLoggedInUser extends SessionVar[Option[User]](None)
+
 object CurrentUser extends SessionVar[Option[User]](None)
 
-object CurrentSelectedUser extends SessionVar[Option[User]](None)
-
-object CurrentSelectedTrialSite extends SessionVar[Option[TrialSite]](None)
+object CurrentTrialSite extends SessionVar[Option[TrialSite]](None)

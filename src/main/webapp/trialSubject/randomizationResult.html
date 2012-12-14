@@ -1,0 +1,23 @@
+<lift:surround with="default" at="content">
+    <script>
+        $(function() {
+        $( "#dialog-modal" ).dialog({
+        open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+        height: 150,
+        width: 300,
+        modal: true
+        });
+        });
+    </script>
+
+
+        <div id="dialog-modal" title="Patient randomized">
+            <form class="lift:TrialSnippet.randomizationResult?form=post">
+            <div>Identifier: <trialSubject:identifier/></div>
+            <div>Treatment arm: <trialSubject:treatmentArm/></div>
+                <br />
+            <div align="center"><trialSubject:ok/></div>
+            </form>
+        </div>
+
+</lift:surround>

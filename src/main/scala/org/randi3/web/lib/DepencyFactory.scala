@@ -10,7 +10,7 @@ import org.randi3.service._
 
 import org.randi3.randomization._
 import org.randi3.model.User
-import org.randi3.web.util.CurrentUser
+import org.randi3.web.util.CurrentLoggedInUser
 import org.randi3.utility._
 import org.randi3.configuration.{ConfigurationService, ConfigurationServiceComponent}
 import org.randi3.schema.DatabaseSchema
@@ -61,7 +61,7 @@ object DependencyFactory extends RandomizationPluginManagerComponent with DaoCom
   lazy val randomizationMethodDao = new RandomizationMethodDao
   lazy val trialDao = new TrialDao
   lazy val securityUtility = new SecurityUtility {
-    def currentUser: Option[User] = CurrentUser.get
+    def currentUser: Option[User] = CurrentLoggedInUser.get
   }
   lazy val treatmentArmDao = new TreatmentArmDao
   lazy val trialSubjectDao = new TrialSubjectDao

@@ -19,9 +19,9 @@ import net.liftweb.http.S._
 import net.liftweb.http._
 import js.JE
 
-import js.JsCmds.Replace
+import js.jquery.JqJsCmds.ModalDialog
+import js.JsCmds.{Confirm, Alert, Replace, SetHtml}
 
-import js.JsCmds.SetHtml
 import net.liftweb.util.Helpers._
 import net.liftweb._
 
@@ -36,7 +36,7 @@ import org.randi3.model._
 
 import scalaz.{Empty => _, Node => _, _}
 import Scalaz._
-import org.randi3.web.util.{CurrentUser, Utility, CurrentTrial}
+import org.randi3.web.util.{CurrentLoggedInUser, Utility, CurrentTrial}
 import org.joda.time.LocalDate
 import collection.mutable.{HashMap, ListBuffer, HashSet}
 import org.joda.time.format.DateTimeFormat
@@ -67,6 +67,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     case "editStatus" => editStatus _
     case "editUsers" => editUsers _
     case "randomize" => randomize _
+    case "randomizationResult" => showRandomizationResult _
     case "trialSubjects" => trialSubjects _
     case "showTrialSubject" => showTrialSubject _
     case "confirmDelete" => confirmDelete _
@@ -99,7 +100,6 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   private val participatingSites = new HashSet[TrialSite]()
 
   private val armsTmp = getEmptyArmsTmpList
-
 
   private def getEmptyArmsTmpList: ListBuffer[TreatmentArmTmp] = {
     val result = new ListBuffer[TreatmentArmTmp]()
@@ -1338,30 +1338,18 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
       if (trial.criterions.isEmpty || subjectDataList.toList.map(subjectData => subjectData.criterion.isValueCorrect(subjectData.value)).reduce((acc, elem) => acc && elem)) {
         if (trial.identificationCreationType != TrialSubjectIdentificationCreationType.EXTERNAL) subjectIdentifier = "system"
-        TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentUser.get.get.username, trialSite = CurrentUser.get.get.site, properties = properties).either match {
+        TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentLoggedInUser.get.get.username, trialSite = CurrentLoggedInUser.get.get.site, properties = properties).either match {
           case Left(x) => S.error("randomizeMsg", x.toString())
           case Right(subject) => {
             trialService.randomize(trial, subject).either match {
               case Left(x) => S.error("randomizeMsg", x)
               case Right(result) => {
-                S.notice("Thanks patient (" + result._2 + ") randomized to treatment arm: " + result._1.name + "!")
+                RandomizationResult.set(Some((result._1, result._2, subject)))
                 CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get))
                 subjectDataList.clear()
                 subjectIdentifier = ""
-
-
-
-                val user = CurrentUser.get.get
-                val rightList = user.rights.filter(right => right.trial.id == trial.id)
-                val roles = rightList.map(right => right.role)
-
-                if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
-                  S.redirectTo("/trial/randomizationData")
-                } else {
-                  S.redirectTo("/trial/randomizationDataInvestigator")
-                }
-
-
+                S.notice("Thanks patient (" + result._2 + ") randomized to treatment arm: " + result._1.name + "!")
+                S.redirectTo("/trialSubject/randomizationResult")
               }
             }
           }
@@ -1378,7 +1366,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       "data" -> {
         NodeSeq fromSeq subjectDataNodeSeq
       },
-      "cancel" -> <a href={val user = CurrentUser.get.get
+      "cancel" -> <a href={val user = CurrentLoggedInUser.get.get
       val rightList = user.rights.filter(right => right.trial.id == trial.id)
       val roles = rightList.map(right => right.role)
       if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
@@ -1387,6 +1375,30 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         "/trial/randomizationDataInvestigator"
       }}>Cancel</a>,
       "submit" -> button("Randomize", randomizeSubject _))
+  }
+
+
+  private def showRandomizationResult(in: NodeSeq): NodeSeq = {
+   if (RandomizationResult.isDefined && RandomizationResult.get.isDefined) {
+
+      val result = RandomizationResult.get.get
+      bind("trialSubject", in,
+        "treatmentArm" -> <span style="font-weight:bold"> {result._1.name}</span>,
+        "identifier" -> <span style="font-weight:bold">{result._2}</span> ,
+        "ok" -> button("Ok", () => {
+          RandomizationResult.set(None)
+          val user = CurrentLoggedInUser.get.get
+          val trial = CurrentTrial.get.get
+          val rightList = user.rights.filter(right => right.trial.id == trial.id)
+          val roles = rightList.map(right => right.role)
+          if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
+                S.redirectTo("/trial/randomizationData")
+           } else {
+                S.redirectTo("/trial/randomizationDataInvestigator")
+           }
+        })
+     )
+    } else S.redirectTo("/trial/list")
   }
 
   private def trialSubjects(in: NodeSeq): NodeSeq = {
@@ -1515,3 +1527,5 @@ case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0
 }
 
 case class RandomizationMethodConfigEntryTmp[T](configurationType: ConfigurationType[T], var value: T) {}
+
+object RandomizationResult extends SessionVar[Option[(TreatmentArm, String, TrialSubject)]](None)

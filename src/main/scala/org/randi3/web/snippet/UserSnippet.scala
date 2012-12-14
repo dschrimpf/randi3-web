@@ -19,7 +19,7 @@ import net.liftweb.util.Helpers._
 import net.liftweb.util._
 import net.liftweb._
 import scalaz.NonEmptyList
-import org.randi3.web.util.{CurrentUser, CurrentSelectedUser}
+import org.randi3.web.util.{CurrentLoggedInUser, CurrentUser}
 import org.randi3.model._
 import collection.mutable.{HashSet, ListBuffer}
 
@@ -63,7 +63,7 @@ class UserSnippet extends StatefulSnippet {
    * Get the XHTML containing a list of users
    */
   private def users(xhtml: NodeSeq): NodeSeq = {
-    val currentUser = CurrentUser.get.get
+    val currentUser = CurrentLoggedInUser.get.get
     userService.getAll.either match {
       case Left(x) => <tr>
         <td colspan="9">
@@ -93,10 +93,10 @@ class UserSnippet extends StatefulSnippet {
           {user.isActive}
         </td>
         <td>
-          {if (currentUser.administrator) link("/user/show", () => CurrentSelectedUser.set(Some(user)), Text("Show"))}
+          {if (currentUser.administrator) link("/user/show", () => CurrentUser.set(Some(user)), Text("Show"))}
         </td>
         <td>
-          {if (currentUser.administrator) link("/user/edit", () => CurrentSelectedUser.set(Some(user)), Text("Edit"))}
+          {if (currentUser.administrator) link("/user/edit", () => CurrentUser.set(Some(user)), Text("Edit"))}
         </td>
       </tr>)
     }
@@ -130,8 +130,8 @@ class UserSnippet extends StatefulSnippet {
    * Edit a user
    */
   private def edit(xhtml: NodeSeq): NodeSeq = {
-    if (CurrentSelectedUser.get.isDefined) {
-      val user = CurrentSelectedUser.get.get
+    if (CurrentUser.get.isDefined) {
+      val user = CurrentUser.get.get
 
       setFields(user)
 
@@ -423,7 +423,7 @@ class UserSnippet extends StatefulSnippet {
 
 
   private def show(xhtml: NodeSeq): NodeSeq = {
-    val user = CurrentSelectedUser.get.get
+    val user = CurrentUser.get.get
 
     def trialSiteInfo: Elem = {
 
@@ -546,8 +546,8 @@ class UserSnippet extends StatefulSnippet {
 
 
   private def generatePossibleTrials() {
-    if (CurrentUser.get.isDefined) {
-      val rights = CurrentUser.get.get.rights.toList
+    if (CurrentLoggedInUser.get.isDefined) {
+      val rights = CurrentLoggedInUser.get.get.rights.toList
 
       trials = rights.filter(right => (right.role == Role.principleInvestigator || right.role == Role.trialAdministrator)).map(right => (right.trial, right.trial.name)).toSet.toList
 
@@ -577,7 +577,7 @@ class UserSnippet extends StatefulSnippet {
 
 
   private def clearFields() {
-    CurrentSelectedUser.set(None)
+    CurrentUser.set(None)
     username = ""
     password = ""
     passwordCheck = ""

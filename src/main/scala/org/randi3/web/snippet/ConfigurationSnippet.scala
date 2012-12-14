@@ -1,7 +1,7 @@
 package org.randi3.web.snippet
 
 import xml.NodeSeq
-import org.randi3.web.util.CurrentUser
+import org.randi3.web.util.CurrentLoggedInUser
 import net.liftweb.http.S._
 import org.randi3.web.lib.DependencyFactory
 

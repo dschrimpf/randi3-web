@@ -1,6 +1,6 @@
 package org.randi3.web.snippet
 
-import org.randi3.web.util.{CurrentUser, CurrentTrial}
+import org.randi3.web.util.{CurrentLoggedInUser, CurrentTrial}
 import net.liftweb.http.S._
 import xml.{Elem, NodeSeq}
 import org.randi3.model.criterion.constraint.Constraint
@@ -334,7 +334,7 @@ class TrialRandomizationDataSnippet {
 object DownloadRandomizationData extends RestHelper {
 
   def randomizationDataFile(): LiftResponse = {
-    val user = CurrentUser.get.getOrElse(redirectTo("/trial/list"))
+    val user = CurrentLoggedInUser.get.getOrElse(redirectTo("/trial/list"))
     val trial = CurrentTrial.get.getOrElse {
       redirectTo("/trial/list")
     }

@@ -23,7 +23,7 @@ import scalaz.NonEmptyList
 import scala.Right
 import scalaz._
 import Scalaz._
-import org.randi3.web.util.{CurrentSelectedTrialSite, CurrentUser}
+import org.randi3.web.util.{CurrentTrialSite, CurrentLoggedInUser}
 
 class TrialSiteSnippet extends StatefulSnippet {
 
@@ -53,7 +53,7 @@ class TrialSiteSnippet extends StatefulSnippet {
    * Get the XHTML containing a list of users
    */
   private def trialSites(xhtml: NodeSeq): NodeSeq = {
-    val currentUser = CurrentUser.getOrElse(
+    val currentUser = CurrentLoggedInUser.getOrElse(
       redirectTo("/index")
     )
     trialSiteService.getAll.either match {
@@ -83,7 +83,7 @@ class TrialSiteSnippet extends StatefulSnippet {
         </td>
         <td>
           {if (currentUser.administrator) {
-          link("/trialSite/edit", () => CurrentSelectedTrialSite.set(Some(trialSite)), Text("Edit"))
+          link("/trialSite/edit", () => CurrentTrialSite.set(Some(trialSite)), Text("Edit"))
         }}
         </td>
       </tr>)
@@ -94,8 +94,8 @@ class TrialSiteSnippet extends StatefulSnippet {
    * Confirm deleting a user
    */
   private def confirmDelete(xhtml: Group): NodeSeq = {
-    if (CurrentSelectedTrialSite.isDefined) {
-      val trialSite = CurrentSelectedTrialSite.get.get
+    if (CurrentTrialSite.isDefined) {
+      val trialSite = CurrentTrialSite.get.get
       def deleteTrialSite() {
         notice("Trial site " + (trialSite.name) + " deleted")
         trialSiteService.delete(trialSite)
@@ -139,8 +139,8 @@ class TrialSiteSnippet extends StatefulSnippet {
 
 
   private def edit(xhtml: NodeSeq): NodeSeq = {
-    if (CurrentSelectedTrialSite.isDefined) {
-      val selectedTrialSite = CurrentSelectedTrialSite.get.get
+    if (CurrentTrialSite.isDefined) {
+      val selectedTrialSite = CurrentTrialSite.get.get
       setFields(selectedTrialSite)
 
       def update() {
@@ -164,10 +164,10 @@ class TrialSiteSnippet extends StatefulSnippet {
 
 
   private def activate(xhtml: NodeSeq): NodeSeq = {
-    if (CurrentSelectedTrialSite.isDefined) {
+    if (CurrentTrialSite.isDefined) {
 
       def activate() {
-        trialSiteService.activate(CurrentSelectedTrialSite.get.get).either match {
+        trialSiteService.activate(CurrentTrialSite.get.get).either match {
           case Left(x) => S.error(x)
           case Right(b) => {
             clearFields()
@@ -178,17 +178,17 @@ class TrialSiteSnippet extends StatefulSnippet {
       }
 
       bind("trialSite", xhtml,
-        "submit" -> submit("activate " + CurrentSelectedTrialSite.get.get.name, activate _)
+        "submit" -> submit("activate " + CurrentTrialSite.get.get.name, activate _)
       )
     } else S.redirectTo("/trialSite/list")
 
   }
 
   private def deactivate(xhtml: NodeSeq): NodeSeq = {
-    if (CurrentSelectedTrialSite.isDefined) {
+    if (CurrentTrialSite.isDefined) {
 
       def deactivate() {
-        trialSiteService.deactivate(CurrentSelectedTrialSite.get.get).either match {
+        trialSiteService.deactivate(CurrentTrialSite.get.get).either match {
           case Left(x) => S.error(x)
           case Right(b) => {
             clearFields()
@@ -199,7 +199,7 @@ class TrialSiteSnippet extends StatefulSnippet {
       }
 
       bind("trialSite", xhtml,
-        "submit" -> submit("deactivate " + CurrentSelectedTrialSite.get.get.name, deactivate _)
+        "submit" -> submit("deactivate " + CurrentTrialSite.get.get.name, deactivate _)
       )
     } else S.redirectTo("/trialSite/list")
 

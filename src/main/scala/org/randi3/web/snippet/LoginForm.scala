@@ -15,7 +15,7 @@ import scala.xml.Group
 import scala.xml.NodeSeq
 import scala.xml.Text
 import org.randi3.web.lib.DependencyFactory
-import org.randi3.web.util.CurrentUser
+import org.randi3.web.util.CurrentLoggedInUser
 
 
 class LoginForm {
@@ -29,7 +29,7 @@ class LoginForm {
       userService.login(username, password).either match {
         case Left(x) => S.error(x)
         case Right(user) => {
-          CurrentUser(Some(user))
+          CurrentLoggedInUser(Some(user))
           redirectTo("/index")
         }
       }
