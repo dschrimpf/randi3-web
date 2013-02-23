@@ -39,8 +39,11 @@ class Boot extends Logging {
 
     if(DependencyFactory.configurationService.isConfigurationComplete) {
       LiquibaseUtil.updateDatabase(DependencyFactory.database)
-      checkAndGenerateRandomizationTables()
-    }
+        //TODO use properties from sub project
+       LiquibaseUtil.updateDatabase(DependencyFactory.database, "db/db.changelog-master-edc.xml")
+       checkAndGenerateRandomizationTables()
+     }
+
 
 
     // where to search snippet
@@ -87,6 +90,12 @@ class Boot extends Logging {
     val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), "Randomize", If(() => canRandomize, "")))
     val trialSubjectRandomizationResultMenu = Menu(Loc("trialSubjectRandomizationResult", List("trialSubject", "randomizationResult"), "Randomization result", Hidden ,If(() => canRandomize, "")))
 
+   val edcMenu = Menu("EDC") / "edcInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
+      Menu(Loc("edcTrialAdd", List("edcTrial", "listRemote"), "list remote EDC trials", If(() => isAdministrator, ""))),
+      Menu(Loc("edcTrialEdit", List("edcTrial", "addOrEdit"), "edit EDC trial",  If(() => isAdministrator, ""))),
+      Menu(Loc("edcTrialView", List("edcTrial", "viewRemoteDetails"), "view EDC trial",  If(() => isAdministrator, ""))),
+      Menu(Loc("edcTrialList", List("edcTrial", "list"), "list EDC trials", If(() => isAdministrator || isOwnUser, ""))))
+
     // Build SiteMap
     def sitemap() = SiteMap(
       Menu("Home") / "index", // Simple menu form
@@ -96,6 +105,7 @@ class Boot extends Logging {
       userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialSubjectMenu,
+      edcMenu,
       trialSubjectRandomizationResultMenu,
       Menu("Install") / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
       Menu("Support") / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),

@@ -1,0 +1,64 @@
+<lift:surround with="default" at="content">
+
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#edcTrialTabs').tabs();
+        });
+    </script>
+
+
+    <h1>Import edit remote EDC trial</h1><hr />
+
+    <form class="lift:EdcEditSnippet.add?form=post">
+        <lift:msg id="edcTrialMsg" errorClass="err"/>
+
+
+        <div id="edcTrialTabs">
+            <ul>
+                <li><a href="#edcTrialTab-1">General information</a></li>
+                <li><a href="#edcTrialTab-2">Select treatment</a></li>
+                <li><a href="#edcTrialTab-3">Select items</a></li>
+                <li><a href="#edcTrialTab-4">Randomization method</a></li>
+            </ul>
+
+            <fieldset>
+
+                <div id="edcTrialTab-1">
+                    <ul>
+                        <edcTrial:identifier/>
+                        <edcTrial:name/>
+                        <edcTrial:description/>
+                    </ul>
+                </div>
+
+                <div id="edcTrialTab-2">
+                    <ul>
+                        <edcTrial:treatmentItem/>
+                        <edcTrial:treatmentArms/>
+                    </ul>
+                </div>
+
+                <div id="edcTrialTab-3">
+                    <ul>
+                        <div class="scrollFrame">
+                            <edcTrial:items/>
+                        </div>
+                    </ul>
+                </div>
+
+                <div id="edcTrialTab-4">
+                    <ul>
+                        <span>Please Select:</span>
+                        <edcTrial:randomizationMethodSelect/>
+                        <edcTrial:randomizationConfig/>
+                    </ul>
+                </div>
+
+                <edcTrial:save/>
+
+            </fieldset>
+        </div>
+    </form>
+
+</lift:surround>

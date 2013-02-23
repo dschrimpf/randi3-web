@@ -1,0 +1,46 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#edcTrialTabs').tabs();
+        });
+    </script>
+
+
+	<h1>View remote EDC trial</h1><hr />
+
+    <form class="lift:EdcViewSnippet.view?form=post">
+        <lift:msg id="edcTrialMsg" errorClass="err"/>
+
+
+        <div id="edcTrialTabs">
+            <ul>
+                <li><a href="#edcTrialTab-1">General information</a></li>
+                <li><a href="#edcTrialTab-2">Defined items</a></li>
+            </ul>
+
+            <fieldset>
+
+                <div id="edcTrialTab-1">
+                    <ul>
+                        <edcTrial:identifier/>
+                        <edcTrial:name/>
+                        <edcTrial:description/>
+                    </ul>
+                </div>
+
+                <div id="edcTrialTab-2">
+                    <ul>
+                        <div class="scrollFrame">
+                        <edcTrial:items/>
+                        </div>
+                    </ul>
+                </div>
+
+                <edcTrial:importTrial/>
+
+            </fieldset>
+         </div>
+    </form>
+
+</lift:surround>

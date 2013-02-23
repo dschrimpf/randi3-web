@@ -14,12 +14,15 @@ import org.randi3.web.util.CurrentLoggedInUser
 import org.randi3.utility._
 import org.randi3.configuration.{ConfigurationService, ConfigurationServiceComponent}
 import org.randi3.schema.DatabaseSchema
+import org.randi3.edc.service.OpenClinicaServiceComponent
+import org.randi3.edc.dao.OpenClinicaDaoComponent
+import org.randi3.edc.schema.OpenClinicaDatabaseSchema
 
 
 /**
  *
  */
-object DependencyFactory extends RandomizationPluginManagerComponent with DaoComponent with AuditDaoComponent with CriterionDaoComponent with TreatmentArmDaoComponent with TrialSubjectDaoComponent with TrialSiteDaoComponent with TrialRightDaoComponent with TrialDaoComponent with UserDaoComponent with SecurityComponent with I18NComponent with RandomizationMethodDaoComponent with TrialSiteServiceComponent with UtilityDBComponent with UtilityMailComponent with MailSenderComponent with TrialServiceComponent with UserServiceComponent with AuditServiceComponent with ConfigurationServiceComponent {
+object DependencyFactory extends RandomizationPluginManagerComponent with DaoComponent with AuditDaoComponent with CriterionDaoComponent with TreatmentArmDaoComponent with TrialSubjectDaoComponent with TrialSiteDaoComponent with TrialRightDaoComponent with TrialDaoComponent with UserDaoComponent with SecurityComponent with I18NComponent with RandomizationMethodDaoComponent with TrialSiteServiceComponent with UtilityDBComponent with UtilityMailComponent with MailSenderComponent with TrialServiceComponent with UserServiceComponent with AuditServiceComponent with ConfigurationServiceComponent with OpenClinicaDaoComponent with OpenClinicaServiceComponent {
 
   import org.randi3.configuration.ConfigurationValues._
 
@@ -93,6 +96,10 @@ object DependencyFactory extends RandomizationPluginManagerComponent with DaoCom
   lazy val auditService = new AuditService
 
 
+  lazy val openClinicaSchema = new OpenClinicaDatabaseSchema(driver)
+  lazy val openClinicaDao = new OpenClinicaDao
+
+  lazy val openClinicaService = new OpenClinicaService()
 }
 
 }

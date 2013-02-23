@@ -1,0 +1,37 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#edcTrialTabs').tabs();
+        });
+    </script>
+
+
+	<h1>List remote EDC trials</h1><hr />
+
+    <form class="lift:EdcListSnippet.listRemoteTrials?form=post">
+        <lift:msg id="edcTrialMsg" errorClass="err"/>
+
+
+        <div id="edcTrialTabs">
+            <ul>
+                <li><a href="#edcTrialTab-1">Available trials</a></li>
+            </ul>
+
+            <fieldset>
+
+                <div id="edcTrialTab-1">
+                    <ul>
+                        <edcTrial:location/>
+                        <edcTrial:username/>
+                        <edcTrial:passwordHash/>
+                        <edcTrial:refreshList/>
+                        <edcTrial:edcTrials/>
+                    </ul>
+                </div>
+
+             </fieldset>
+         </div>
+    </form>
+
+</lift:surround>
