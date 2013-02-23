@@ -94,7 +94,8 @@
                     <jvmArgs>
                         <jvmArg>-Xmx1024m</jvmArg>
                         <jvmArg>-DpackageLinkDefs=file://${project.build.directory}/packageLinkDefs.properties</jvmArg>
-                    fixed update of randomization method (in preparation phase)</jvmArgs>
+                        fixed update of randomization method (in preparation phase)
+                    </jvmArgs>
                 </configuration>
                 <executions>
                     <execution>
@@ -138,12 +139,12 @@
                 <version>6.1.25</version>
                 <configuration>
                     <contextPath>/</contextPath>
-                   <scanIntervalSeconds>5</scanIntervalSeconds>
+                    <scanIntervalSeconds>5</scanIntervalSeconds>
                     <connectors>
-                                                <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-                                                   <port>8081</port>
-                                              </connector>
-                                            </connectors>
+                        <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                            <port>8080</port>
+                        </connector>
+                    </connectors>
                 </configuration>
             </plugin>
             <plugin>
