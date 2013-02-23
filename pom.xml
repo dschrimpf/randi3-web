@@ -24,17 +24,22 @@
         <dependency>
             <groupId>org.randi3</groupId>
             <artifactId>randi3-core</artifactId>
-            <version>0.9.1</version>
+            <version>0.9.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.randi3</groupId>
+            <artifactId>randi3-edc</artifactId>
+            <version>0.9.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.liftweb</groupId>
             <artifactId>lift-wizard_2.9.1</artifactId>
-            <version>2.4-M5</version>
+            <version>2.5-M4</version>
         </dependency>
         <dependency>
             <groupId>net.liftweb</groupId>
             <artifactId>lift-widgets_2.9.1</artifactId>
-            <version>2.4</version>
+            <version>2.4-M5</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -134,6 +139,11 @@
                 <configuration>
                     <contextPath>/</contextPath>
                    <scanIntervalSeconds>5</scanIntervalSeconds>
+                    <connectors>
+                                                <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                                                   <port>8081</port>
+                                              </connector>
+                                            </connectors>
                 </configuration>
             </plugin>
             <plugin>
