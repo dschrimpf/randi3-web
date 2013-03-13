@@ -40,7 +40,7 @@ class Boot extends Logging {
     if(DependencyFactory.configurationService.isConfigurationComplete) {
       LiquibaseUtil.updateDatabase(DependencyFactory.database)
         //TODO use properties from sub project
-       LiquibaseUtil.updateDatabase(DependencyFactory.database, "db/db.changelog-master-edc.xml")
+    //   LiquibaseUtil.updateDatabase(DependencyFactory.database, "db/db.changelog-master-edc.xml")
        checkAndGenerateRandomizationTables()
      }
 
@@ -105,7 +105,7 @@ class Boot extends Logging {
       userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialSubjectMenu,
-      edcMenu,
+    //  edcMenu,
       trialSubjectRandomizationResultMenu,
       Menu("Install") / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
       Menu("Support") / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),
