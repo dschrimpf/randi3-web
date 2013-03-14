@@ -490,6 +490,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         case Left(x) => S.error(x); return null //TODO error handling
         case Right(list) => if (actualTrialSite != null) list.filter(user => user.site.id == actualTrialSite.id) else Nil
       }
+      println("list " + principleInvestigators)
       //TODO Service db
       val id = "principalInvestigator"
       generateEntry(id, false, {
@@ -763,12 +764,13 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       case x => criterionList += new CriterionTmp(Int.MinValue, 0, x, "", "", None, None)
     }
   }
-                                                                                                                           19
+
 
   private def setPrincipleInvestigator(id: String) {
+    println("id " + id)
     principleInvestigator = userService.get(id.toInt).either match {
-      case Left(failure) => S.error("trialMsg", failure); null
-      case Right(user) => user.get
+      case Left(failure) => S.error("trialMsg", failure); println("failure " +failure); null
+      case Right(user) =>println(user); user.get
     }
 
   }

@@ -9,7 +9,7 @@
     <h1>Show user </h1>
     <hr/>
 
-    <form class="lift:UserSnippet.show?form=post">
+    <form class="lift:UserShowSnippet.show?form=post">
 
         <lift:msg id="userMsg" errorClass="err"/>
         <div id="userTabs" style="margin-bottom: 5px;">
@@ -17,7 +17,8 @@
                 <li><a href="#userTab-1">Personal and Contact Information </a></li>
                 <li><a href="#userTab-2">Center</a></li>
                 <li><a href="#userTab-3">Rights</a></li>
-                <li><a href="#userTab-4">Audit</a></li>
+                <li><a href="#userTab-4">Account</a></li>
+                <li><a href="#userTab-5">Audit</a></li>
             </ul>
 
 
@@ -58,11 +59,19 @@
             </div>
 
             <div id="userTab-4">
+                <user:isActive/>
+                <user:numberOfFailedLogins/>
+                <user:lockedUntil/>
+            </div>
+
+            <div id="userTab-5">
                 <div class="scrollFrame">
                     <lift:UserAuditSnippet.render/>
                 </div>
             </div>
 
         </div>
+
+        <h3 style="text-align:center;"><a href="/user/edit">Edit this user</a></h3>
     </form>
 </lift:surround>

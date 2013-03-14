@@ -37,6 +37,6 @@ class LoginForm {
     bind("login", xhtml,
       "username" -> SHtml.text(username, username = _),
       "password" -> SHtml.password(password, password = _),
-      "submit" -> SHtml.submit("Login", authentificate _))
+      "submit" -> SHtml.submit(S.?("login"), authentificate _))
   }
 }

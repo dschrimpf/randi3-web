@@ -32,6 +32,8 @@ class Boot extends Logging {
   def boot {
 
 
+
+
     initializeJDBCDriver()
 
     checkAndGenerateConfigDatabase()
@@ -45,6 +47,8 @@ class Boot extends Logging {
      }
 
 
+
+    LiftRules.resourceNames =  "i18n/messages" :: LiftRules.resourceNames
 
     // where to search snippet
     LiftRules.addToPackages("org.randi3.web")
@@ -63,10 +67,10 @@ class Boot extends Logging {
       Menu(Loc("trialSiteDelete", List("trialSite", "delete"), "delete", Hidden, If(() => isAdministrator, ""))))
 
     val userMenu = Menu("User") / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
-      Menu(Loc("userAdd", List("user", "add"), "add", If(() => isAdministrator, ""))),
       Menu(Loc("userList", List("user", "list"), "list")),
-      Menu(Loc("userEdit", List("user", "edit"), "edit", If(() => isAdministrator || isOwnUser, ""))),
-      Menu(Loc("userShow", List("user", "show"), "show", If(() => isAdministrator || isOwnUser, ""))),
+      Menu(Loc("userAdd", List("user", "add"), "add", If(() => isAdministrator, ""))),
+      Menu(Loc("userShow", List("user", "show"), "show", If(() => isAdministrator || isOwnUser, ""), Hidden)),
+      Menu(Loc("userEdit", List("user", "edit"), "edit", If(() => isAdministrator || isOwnUser, ""), Hidden)),
       Menu(Loc("userDelete", List("user", "delete"), "delete", Hidden)))
 
     val trialMenu = Menu("Trial") / "trialInfo" submenus(
@@ -99,19 +103,19 @@ class Boot extends Logging {
     // Build SiteMap
     def sitemap() = SiteMap(
       Menu("Home") / "index", // Simple menu form
-      Menu("Login") / "login" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
-      Menu("Register") / "register" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.login")) / "login" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.register")) / "register" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
       trialSiteMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialSubjectMenu,
     //  edcMenu,
       trialSubjectRandomizationResultMenu,
-      Menu("Install") / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
-      Menu("Support") / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.install")) / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.support")) / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),
       // Menu with special Link
       Menu(Loc("Static", Link(List("static"), true, "/static/index"),
-        "About")))
+        S.?("menu.about"))))
 
     LiftRules.setSiteMapFunc(() => sitemap())
 

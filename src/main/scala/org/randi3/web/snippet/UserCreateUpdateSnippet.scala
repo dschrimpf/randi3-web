@@ -23,7 +23,7 @@ import org.randi3.web.util.{CurrentLoggedInUser, CurrentUser}
 import org.randi3.model._
 import collection.mutable.{HashSet, ListBuffer}
 
-class UserSnippet extends StatefulSnippet {
+class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
   private val userService = DependencyFactory.userService
@@ -51,55 +51,8 @@ class UserSnippet extends StatefulSnippet {
   private val actualRights = new HashSet[TrialRight]()
 
   def dispatch = {
-    case "info" => redirectTo("/user/list")
-    case "users" => users _
     case "create" => create _
     case "edit" => edit _
-    case "show" => show _
-  }
-
-
-  /**
-   * Get the XHTML containing a list of users
-   */
-  private def users(xhtml: NodeSeq): NodeSeq = {
-    val currentUser = CurrentLoggedInUser.get.get
-    userService.getAll.either match {
-      case Left(x) => <tr>
-        <td colspan="9">
-          {x}
-        </td>
-      </tr>
-      case Right(users) => users.flatMap(user => <tr>
-        <td>
-          {user.username}
-        </td>
-        <td>
-          {user.firstName}
-        </td>
-        <td>
-          {user.lastName}
-        </td>
-        <td>
-          {user.email}
-        </td>
-        <td>
-          {user.phoneNumber}
-        </td>
-        <td>
-          {user.site.name}
-        </td>
-        <td>
-          {user.isActive}
-        </td>
-        <td>
-          {if (currentUser.administrator) link("/user/show", () => CurrentUser.set(Some(user)), Text("Show"))}
-        </td>
-        <td>
-          {if (currentUser.administrator) link("/user/edit", () => CurrentUser.set(Some(user)), Text("Edit"))}
-        </td>
-      </tr>)
-    }
   }
 
 
@@ -422,128 +375,6 @@ class UserSnippet extends StatefulSnippet {
   }
 
 
-  private def show(xhtml: NodeSeq): NodeSeq = {
-    val user = CurrentUser.get.get
-
-    def trialSiteInfo: Elem = {
-
-      <div id="trialSiteInfo">
-        <div>
-          <span class="elementLeft">Name:</span>
-          <span class="elementRight">
-            {user.site.name}
-          </span>
-        </div>
-        <div>
-          <span class="elementLeft">Country:</span>
-          <span class="elementRight">
-            {user.site.country}
-          </span>
-        </div>
-        <div>
-          <span class="elementLeft">City:</span>
-          <span class="elementRight">
-            {user.site.city}
-          </span>
-        </div>
-        <div>
-          <span class="elementLeft">PostCode:</span>
-          <span class="elementRight">
-            {user.site.postCode}
-          </span>
-        </div>
-        <div>
-          <span class="elementLeft">Street:</span>
-          <span class="elementRight">
-            {user.site.street}
-          </span>
-        </div>
-      </div>
-    }
-
-    def rights: Elem = {
-      <table id="rights" class="randi2Table">
-        <thead>
-          <tr>
-            <th>Trial</th>
-            <th>Role</th>
-          </tr>
-        </thead>{if (!user.rights.isEmpty) {
-        <tfoot></tfoot>
-      } else {
-        <tfoot>
-          <tr>
-            <td></td>
-            No rights defined</tr>
-        </tfoot>
-      }}<tbody>
-        {user.rights.toList.sortWith((a, b) => a.trial.name.compareToIgnoreCase(b.trial.name) < 0).flatMap(right => {
-          <tr>
-            <td>
-              {right.trial.name}
-            </td>
-            <td>
-              {right.role.toString}
-            </td>
-          </tr>
-        }
-        )}
-      </tbody>
-      </table>
-
-    }
-
-    bind("user", xhtml,
-      "username" -> generateEntry("username", false, {
-        <span>
-          {user.username}
-        </span>
-      }),
-      "firstName" -> generateEntry("firstName", false, {
-        <span>
-          {user.firstName}
-        </span>
-      }),
-      "lastName" -> generateEntry("lastName", false, {
-        <span>
-          {user.lastName}
-        </span>
-      }),
-      "email" -> generateEntry("email", false, {
-        <span>
-          {user.email}
-        </span>
-      }),
-      "phoneNumber" -> generateEntry("phoneNumber", false, {
-        <span>
-          {user.phoneNumber}
-        </span>
-      }),
-      "trialSite" -> generateEntry("username7", false, {
-        <span>
-          {user.username}
-        </span>
-      }),
-      "trialSiteInfo" -> trialSiteInfo,
-      "isActive" -> generateEntry("isActive", false, {
-        <span>
-          {user.isActive}
-        </span>
-      }),
-      "administrator" -> generateEntry("administrator", false, {
-        <span>
-          {user.administrator}
-        </span>
-      }),
-      "canCreateTrials" -> generateEntry("canCreateTrials", false, {
-        <span>
-          {user.canCreateTrial}
-        </span>
-      }),
-      "rights" -> rights
-    )
-  }
-
 
   private def generatePossibleTrials() {
     if (CurrentLoggedInUser.get.isDefined) {
@@ -559,21 +390,7 @@ class UserSnippet extends StatefulSnippet {
   }
 
 
-  private def generateEntry(id: String, failure: Boolean, element: Elem): Elem = {
-    <li id={id + "Li"} class={if (failure) "errorHint" else ""}>
-      <label for={id}>
-        {id}
-      </label>{element}<lift:msg id={id + "Msg"} errorClass="err"/>
-    </li>
-  }
 
-  private def showErrorMessage(id: String, errors: NonEmptyList[String]) {
-    S.error(id + "Msg", "<-" + errors.list.reduce((acc, el) => acc + ", " + el))
-  }
-
-  private def clearErrorMessage(id: String) {
-    S.error(id + "Msg", "")
-  }
 
 
   private def clearFields() {

@@ -1,15 +1,20 @@
 <lift:surround with="default" at="content">
     <script type="text/javascript">
-        $(function(){
-        // Tabs
-        $('#userTabs').tabs();
+              $(function() {
+
+         $('#userTabs').tabs();
+
+        $(".nexttab1").click(function() {$("#userTabs").tabs("option", "active", 1);});
+
+        $(".nexttab2").click(function() {$("#userTabs").tabs("option", "active", 2);});
+
         });
     </script>
 
     <h1>Create a new User</h1>
     <hr/>
 
-    <form class="lift:UserSnippet.create?form=post">
+    <form class="lift:UserCreateUpdateSnippet.create?form=post">
 
         <lift:msg id="userMsg" errorClass="err"/>
         <div id="userTabs" style="margin-bottom: 5px;">
@@ -44,6 +49,7 @@
                         <user:phoneNumber/>
                     </ul>
                 </fieldset>
+                <h4 style="text-align:right;"><a class="nexttab1" href="#">Next</a></h4>
             </div>
             <div id="userTab-2">
 
@@ -51,6 +57,7 @@
                     <user:trialSite/>
                 </ul>
                 <user:trialSiteInfo/>
+                <h4 style="text-align:right;"><a class="nexttab2" href="#">Next</a></h4>
             </div>
             <div id="userTab-3">
                 <ul>
@@ -63,9 +70,12 @@
                     <br />
                     <user:rights/>
                 </ul>
+                <br/>
+                <br/>
+                <div style="text-align:center;"><user:submit/></div>
             </div>
 
         </div>
-        <user:submit/>
+
     </form>
 </lift:surround>

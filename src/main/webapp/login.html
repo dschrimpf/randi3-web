@@ -8,15 +8,15 @@
             });
         </script>
 
-        <h1>Login</h1>
+        <h1><lift:loc locid="login">Login</lift:loc></h1>
         <hr/>
         <div id="loginTabs" style="width: 50%; margin-left:auto; margin-right:auto;">
             <div id="loginTab">
                 <form class="lift:LoginForm.login?form=post" style="font-weight: bold;">
-                    Username: <br/>
+                    <lift:loc locid="username">Username</lift:loc>: <br/>
                     <login:username/>
                     <br/>
-                    Password: <br/>
+                    <lift:loc locid="password">Password</lift:loc>: <br/>
                     <login:password/>
                     <br/>
                     <login:submit/>
