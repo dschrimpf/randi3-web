@@ -4,6 +4,7 @@ import xml.{Elem, NodeSeq}
 import org.randi3.web.util.CurrentUser
 import net.liftweb.util.Helpers._
 import net.liftweb.http.S._
+import net.liftweb.http.S
 
 
 class UserShowSnippet extends GeneralFormSnippet{
@@ -16,33 +17,33 @@ class UserShowSnippet extends GeneralFormSnippet{
 
       <div id="trialSiteInfo">
         <div>
-          <span class="elementLeft">Name:</span>
+          <span class="elementLeft">{S.?("name")}:</span>
           <span class="elementRight">
             {user.site.name}
           </span>
         </div>
         <div>
-          <span class="elementLeft">Country:</span>
+          <span class="elementLeft">{S.?("street")}:</span>
           <span class="elementRight">
-            {user.site.country}
+            {user.site.street}
           </span>
         </div>
         <div>
-          <span class="elementLeft">City:</span>
-          <span class="elementRight">
-            {user.site.city}
-          </span>
-        </div>
-        <div>
-          <span class="elementLeft">PostCode:</span>
+          <span class="elementLeft">{S.?("postCode")}:</span>
           <span class="elementRight">
             {user.site.postCode}
           </span>
         </div>
         <div>
-          <span class="elementLeft">Street:</span>
+          <span class="elementLeft">{S.?("city")}:</span>
           <span class="elementRight">
-            {user.site.street}
+            {user.site.city}
+          </span>
+        </div>
+        <div>
+          <span class="elementLeft">{S.?("country")}:</span>
+          <span class="elementRight">
+            {user.site.country}
           </span>
         </div>
       </div>
@@ -52,8 +53,8 @@ class UserShowSnippet extends GeneralFormSnippet{
       <table id="rights" class="randi2Table">
         <thead>
           <tr>
-            <th>Trial</th>
-            <th>Role</th>
+            <th>{S.?("trial")}</th>
+            <th>{S.?("role")}</th>
           </tr>
         </thead>{if (!user.rights.isEmpty) {
         <tfoot></tfoot>
@@ -113,7 +114,7 @@ class UserShowSnippet extends GeneralFormSnippet{
         </span>
       }),
       "trialSiteInfo" -> trialSiteInfo,
-      "administrator" -> generateEntry("administrator", false, {
+      "administrator" -> generateEntry("user.isUserAdministrator", false, {
         <span>
           {user.administrator}
         </span>

@@ -11,31 +11,35 @@
         });
     </script>
 
-    <h1>Create a new User</h1>
-    <hr/>
 
     <form class="lift:UserCreateUpdateSnippet.create?form=post">
+
+    <h1><lift:loc locid="user.create">Create a new user</lift:loc></h1>
+    <hr/>
+
+
 
         <lift:msg id="userMsg" errorClass="err"/>
         <div id="userTabs" style="margin-bottom: 5px;">
             <ul>
-                <li><a href="#userTab-1">Personal and Contact Information </a></li>
-                <li><a href="#userTab-2">Center</a></li>
-                <li><a href="#userTab-3">Rights</a></li>
+                <li><a href="#userTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
+                <li><a href="#userTab-2"><lift:loc locid="trialSite">Trial site</lift:loc></a></li>
+                <li><a href="#userTab-3"><lift:loc locid="user.rights">Rights</lift:loc></a></li>
             </ul>
 
 
             <div id="userTab-1">
                 <fieldset>
-                    <legend>Account information</legend>
+                    <legend><lift:loc locid="accountInformation">Account information</lift:loc></legend>
                     <ul>
                         <user:username/>
                         <user:password/>
                         <user:passwordCheck/>
                     </ul>
                 </fieldset>
+
                 <fieldset>
-                    <legend>Personal information</legend>
+                    <legend><lift:loc locid="personalInformation">Personal information</lift:loc></legend>
                     <ul>
                         <user:firstName/>
                         <user:lastName/>
@@ -43,13 +47,13 @@
                     </ul>
                 </fieldset>
                 <fieldset>
-                    <legend>Contact information</legend>
+                    <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
                     <ul>
                         <user:email/>
                         <user:phoneNumber/>
                     </ul>
                 </fieldset>
-                <h4 style="text-align:right;"><a class="nexttab1" href="#">Next</a></h4>
+                <h4 style="text-align:right;"><a class="nexttab1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
             </div>
             <div id="userTab-2">
 
@@ -57,7 +61,7 @@
                     <user:trialSite/>
                 </ul>
                 <user:trialSiteInfo/>
-                <h4 style="text-align:right;"><a class="nexttab2" href="#">Next</a></h4>
+                <h4 style="text-align:right;"><a class="nexttab2" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
             </div>
             <div id="userTab-3">
                 <ul>

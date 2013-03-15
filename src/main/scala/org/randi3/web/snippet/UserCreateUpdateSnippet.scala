@@ -227,27 +227,27 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       if (actualTrialSite != null) {
         <div id="trialSiteInfo">
           <div>
-            <span class="elementLeft">Country:</span>
+            <span class="elementLeft">{S.?("street")}:</span>
             <span class="elementRight">
-              {actualTrialSite.country}
+              {actualTrialSite.street}
             </span>
           </div>
           <div>
-            <span class="elementLeft">City:</span>
-            <span class="elementRight">
-              {actualTrialSite.city}
-            </span>
-          </div>
-          <div>
-            <span class="elementLeft">PostCode:</span>
+            <span class="elementLeft">{S.?("postCode")}:</span>
             <span class="elementRight">
               {actualTrialSite.postCode}
             </span>
           </div>
           <div>
-            <span class="elementLeft">Street:</span>
+            <span class="elementLeft">{S.?("city")}:</span>
             <span class="elementRight">
-              {actualTrialSite.street}
+              {actualTrialSite.city}
+            </span>
+          </div>
+          <div>
+            <span class="elementLeft">{S.?("country")}:</span>
+            <span class="elementRight">
+              {actualTrialSite.country}
             </span>
           </div>
         </div>
@@ -259,7 +259,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       val id = "administrator"
       generateEntry(id, false, {
         <div>
-          <span>Is the user an administrator?</span>{ajaxCheckbox(isAdministrator, status => {
+          <span>{S.?("user.isUserAdministrator")}</span>{ajaxCheckbox(isAdministrator, status => {
           isAdministrator = status
         })}
         </div>
@@ -270,7 +270,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       val id = "canCreateTrials"
       generateEntry(id, false, {
         <div>
-          <span>Can the user create Trials?</span>{ajaxCheckbox(canCreateTrial, status => {
+          <span>{S.?("user.canUserCreateTrials")}</span>{ajaxCheckbox(canCreateTrial, status => {
           canCreateTrial = status
         })}
         </div>
@@ -281,7 +281,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       val id = "isActive"
       generateEntry(id, false, {
         <div>
-          <span>Is user active?</span>{ajaxCheckbox(isActive, status => {
+          <span>{S.?("user.isActive")}</span>{ajaxCheckbox(isActive, status => {
           isActive = status
         })}
         </div>
@@ -292,8 +292,8 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       <table id="rights" class="randi2Table">
         <thead>
           <tr>
-            <th>Trial</th>
-            <th>Role</th>
+            <th>{S.?("trial")}</th>
+            <th>{S.?("role")}</th>
             <th></th>
           </tr>
         </thead>{if (!actualRights.isEmpty) {
@@ -302,7 +302,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
         <tfoot>
           <tr>
             <td colspan="2"></td>
-            No rights defined</tr>
+            {S.?("user.noRights")}</tr>
         </tfoot>
       }}<tbody>
         {actualRights.flatMap(right => {
@@ -314,7 +314,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
               {right.role.toString}
             </td>
             <td>
-              {ajaxButton("remove", () => {
+              {ajaxButton(S.?("remove"), () => {
               actualRights.remove(right)
               Replace("rights", rights)
             })}
@@ -335,7 +335,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
           Replace("roles", roleField)
         }, "id" -> "possibleTrials")
       } else {
-        <span id="possibleTrials">Not the right to add rights</span>
+        <span id="possibleTrials">{S.?("user.cantAddRights")}</span>
       }
     }
 
@@ -350,6 +350,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
     }
 
     bind("user", xhtml,
+      "info" -> <span>{username}</span>,
       "username" -> usernameField(),
       "password" -> passwordField(),
       "passwordCheck" -> passwordCheckField(),
@@ -364,12 +365,34 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       "isActive" -> isActiveField,
       "trialsSelect" -> trialsSelectField,
       "roleSelect" -> roleField,
-      "addRight" -> ajaxButton("add", () => {
+      "addRight" -> ajaxButton(S.?("add"), () => {
         actualRights.add(TrialRight(selectedRole, selectedTrial).toOption.get)
         Replace("rights", rights)
       }),
       "rights" -> rights,
-      "submit" -> submit("save", code _)
+      "numberOfFailedLogins" -> generateEntry("numberOfFailedLogins", false, {
+        <span>
+          {CurrentUser.get.get.numberOfFailedLogins}
+        </span>
+      }),
+      "lockedUntil" -> generateEntry("lockedUntil", false, {
+        <span>
+          {if(CurrentUser.get.get.lockedUntil.isDefined) CurrentUser.get.get.lockedUntil.get else <span>---</span>}
+        </span>
+      }),
+      "resetLock" -> button(S.?("resetLock"), () => {
+        val actUser = CurrentUser.get.get
+        val dbUser = userService.get(actUser.id).toOption.get.get
+        val changedUser = dbUser.copy(numberOfFailedLogins = 0, lockedUntil=None)
+        val updatedUser = userService.update(changedUser).either match {
+          case Left(failure) => S.error(failure)
+          case Right(user) => CurrentUser.set(Some(user))
+        }
+
+       S.redirectTo("/user/edit")
+      }
+      ),
+      "submit" -> submit(S.?("save"), code _)
     )
 
   }

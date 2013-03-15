@@ -4,6 +4,7 @@ import xml.{Text, NodeSeq}
 import org.randi3.web.util.{CurrentUser, CurrentLoggedInUser}
 import org.randi3.web.lib.DependencyFactory
 import net.liftweb.http.SHtml._
+import net.liftweb.http.S
 
 
 class UserListSnippet {
@@ -42,10 +43,10 @@ class UserListSnippet {
             {user.isActive}
           </td>
           <td>
-            {if (currentUser.administrator) link("/user/show", () => CurrentUser.set(Some(user)), Text("Show"))}
+            {if (currentUser.administrator) link("/user/show", () => CurrentUser.set(Some(user)), Text(S.?("show")))}
           </td>
           <td>
-            {if (currentUser.administrator) link("/user/edit", () => CurrentUser.set(Some(user)), Text("Edit"))}
+            {if (currentUser.administrator) link("/user/edit", () => CurrentUser.set(Some(user)), Text(S.?("edit")))}
           </td>
         </tr>)
       }

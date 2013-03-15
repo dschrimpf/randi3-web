@@ -6,23 +6,24 @@
         });
     </script>
 
-    <h1>Edit user </h1>
-    <hr/>
 
     <form class="lift:UserCreateUpdateSnippet.edit?form=post">
+
+        <h1><lift:loc locid="user.edit">Edit user</lift:loc> (<user:info/>)</h1><hr />
+        <hr/>
 
         <lift:msg id="userMsg" errorClass="err"/>
         <div id="userTabs" style="margin-bottom: 5px;">
             <ul>
-                <li><a href="#userTab-1">Personal and Contact Information </a></li>
-                <li><a href="#userTab-2">Center</a></li>
-                <li><a href="#userTab-3">Rights</a></li>
+                <li><a href="#account"><lift:loc locid="account">Account</lift:loc> </a></li>
+                <li><a href="#userTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
+                <li><a href="#userTab-2"><lift:loc locid="trialSite">Trial site</lift:loc></a></li>
+                <li><a href="#userTab-3"><lift:loc locid="rights">Rights</lift:loc></a></li>
             </ul>
 
-
-            <div id="userTab-1">
+            <div id="account">
                 <fieldset>
-                    <legend>Account information</legend>
+                    <legend><lift:loc locid="credentials">Credentials</lift:loc></legend>
                     <ul>
                         <user:username/>
                         <user:password/>
@@ -30,7 +31,21 @@
                     </ul>
                 </fieldset>
                 <fieldset>
-                    <legend>Personal information</legend>
+                    <legend><lift:loc locid="accountStatus">Account status</lift:loc></legend>
+                    <ul>
+                        <user:isActive/>
+                        <user:numberOfFailedLogins/>
+                        <user:lockedUntil/>
+                        <user:resetLock/>
+                    </ul>
+                </fieldset>
+            </div>
+
+
+
+            <div id="userTab-1">
+                <fieldset>
+                    <legend><lift:loc locid="personalInformation">Personal information</lift:loc></legend>
                     <ul>
                         <user:firstName/>
                         <user:lastName/>
@@ -38,7 +53,7 @@
                     </ul>
                 </fieldset>
                 <fieldset>
-                    <legend>Contact information</legend>
+                    <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
                     <ul>
                         <user:email/>
                         <user:phoneNumber/>
@@ -54,7 +69,6 @@
             </div>
             <div id="userTab-3">
                 <ul>
-                    <user:isActive/>
                     <user:administrator/>
                     <user:canCreateTrials/>
                     <hr />

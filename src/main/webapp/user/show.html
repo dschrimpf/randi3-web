@@ -7,7 +7,7 @@
     </script>
 
     <form class="lift:UserShowSnippet.show?form=post">
-    <h1>Show user (<user:info/>)</h1>
+    <h1><lift:loc locid="user.show">Show user</lift:loc>  (<user:info/>)</h1>
     <hr/>
 
 
@@ -15,24 +15,24 @@
         <lift:msg id="userMsg" errorClass="err"/>
         <div id="userTabs" style="margin-bottom: 5px;">
             <ul>
-                <li><a href="#account">Account</a></li>
-                <li><a href="#userTab-1">Personal and Contact Information </a></li>
-                <li><a href="#userTab-2">Center</a></li>
-                <li><a href="#userTab-3">Rights</a></li>
-                <li><a href="#userTab-5">Audit</a></li>
+                <li><a href="#account"><lift:loc locid="account">Account</lift:loc> </a></li>
+                <li><a href="#userTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
+                <li><a href="#userTab-2"><lift:loc locid="trialSite">Trial site</lift:loc></a></li>
+                <li><a href="#userTab-3"><lift:loc locid="rights">Rights</lift:loc></a></li>
+                <li><a href="#userTab-5"><lift:loc locid="audit">Audit</lift:loc></a></li>
             </ul>
 
 
 
             <div id="account">
                 <fieldset>
-                <legend>Credentials</legend>
+                <legend><lift:loc locid="credentials">Credentials</lift:loc></legend>
                 <ul>
                     <user:username/>
                 </ul>
                 </fieldset>
                 <fieldset>
-                <legend>Account status</legend>
+                <legend><lift:loc locid="accountStatus">Account status</lift:loc></legend>
                 <ul>
                     <user:isActive/>
                     <user:numberOfFailedLogins/>
@@ -43,7 +43,7 @@
 
             <div id="userTab-1">
                 <fieldset>
-                    <legend>Personal information</legend>
+                    <legend><lift:loc locid="personalInformation">Personal information</lift:loc></legend>
                     <ul>
                         <user:firstName/>
                         <user:lastName/>
@@ -51,7 +51,7 @@
                     </ul>
                 </fieldset>
                 <fieldset>
-                    <legend>Contact information</legend>
+                    <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
                     <ul>
                         <user:email/>
                         <user:phoneNumber/>
@@ -79,6 +79,6 @@
 
         </div>
 
-        <h3 style="text-align:center;"><a href="/user/edit">Edit this user</a></h3>
+        <h3 style="text-align:center;"><a href="/user/edit"><lift:loc locid="user.editThis">Edit this user</lift:loc></a></h3>
     </form>
 </lift:surround>
