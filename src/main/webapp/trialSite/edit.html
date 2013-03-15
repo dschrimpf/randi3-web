@@ -6,17 +6,17 @@
         });
     </script>
 
-
-    <h1>Edit a trial site</h1><hr />
-
     <form class="lift:TrialSiteSnippet.edit?form=post">
+    <h1><lift:loc locid="trialSite.edit">Edit trial site</lift:loc> (<trialSite:info/>)</h1><hr />
+
+
         <lift:msg id="trialSiteMsg" errorClass="err"/>
 
 
         <div id="trialSiteTabs">
             <ul>
-                <li><a href="#trialSiteTab-1">General data</a></li>
-                <li><a href="#trialSiteTab-2">Password</a></li>
+                <li><a href="#trialSiteTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
+                <li><a href="#trialSiteTab-2"><lift:loc locid="password">Password</lift:loc></a></li>
             </ul>
 
             <fieldset>

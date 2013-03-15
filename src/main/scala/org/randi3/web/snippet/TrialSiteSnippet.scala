@@ -18,7 +18,7 @@ import scala.Right
 import scalaz._
 import org.randi3.web.util.CurrentTrialSite
 
-class TrialSiteSnippet extends StatefulSnippet {
+class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
   private var name = ""
@@ -262,6 +262,7 @@ class TrialSiteSnippet extends StatefulSnippet {
     }
 
     bind("trialSite", xhtml,
+    "info" -> <span>{name}</span>,
       "name" -> nameField(),
       "street" -> streetField(),
       "postCode" -> postCodeField(),
@@ -269,27 +270,10 @@ class TrialSiteSnippet extends StatefulSnippet {
       "country" -> countryField(),
       "password" -> passwordField(),
       "passwordCheck" -> passwordCheckField(),
-      "submit" -> submit("save", code _)
+      "submit" -> submit(S.?("save"), code _)
     )
   }
 
-
-  private def generateEntry(id: String, failure: Boolean, element: Elem): Elem = {
-    <li id={id + "Li"} class={if (failure) "errorHint" else ""}>
-      <label for={id}>
-        {id}
-      </label>{element}<lift:msg id={id + "Msg"} errorClass="err"/>
-    </li>
-  }
-
-
-  private def showErrorMessage(id: String, errors: NonEmptyList[String]) {
-    S.error(id + "Msg", "<-" + errors.list.reduce((acc, el) => acc + ", " + el))
-  }
-
-  private def clearErrorMessage(id: String) {
-    S.error(id + "Msg", "")
-  }
 
 
   private def clearFields() {

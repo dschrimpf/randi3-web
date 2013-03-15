@@ -11,7 +11,7 @@ trait GeneralFormSnippet {
   protected def generateEntry(id: String, failure: Boolean, element: Elem): Elem = {
     <li id={id + "Li"} class={if (failure) "errorHint" else ""}>
       <label for={id}>
-        {id}
+        {S.?(id)}
       </label>{element}<lift:msg id={id + "Msg"} errorClass="err"/>
     </li>
   }

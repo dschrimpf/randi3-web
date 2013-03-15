@@ -7,16 +7,19 @@
     </script>
 
 
-	<h1>Create a trial site</h1><hr />
 
     <form class="lift:TrialSiteSnippet.create?form=post">
+
+        <h1><lift:loc locid="trialSite.add">Create a new trial site</lift:loc></h1><hr />
+
+
         <lift:msg id="trialSiteMsg" errorClass="err"/>
 
 
         <div id="trialSiteTabs">
             <ul>
-                <li><a href="#trialSiteTab-1">General data</a></li>
-                <li><a href="#trialSiteTab-2">Password</a></li>
+                <li><a href="#trialSiteTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
+                <li><a href="#trialSiteTab-2"><lift:loc locid="password">Password</lift:loc></a></li>
             </ul>
 
             <fieldset>
