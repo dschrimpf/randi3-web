@@ -14,6 +14,7 @@ import com.sun.jmx.mbeanserver.MXBeanProxy.GetHandler
 import scalaz.NonEmptyList
 import xml._
 import net.liftweb.http.{LiftScreen, StatefulSnippet, S, SHtml}
+import java.util.Locale
 
 
 class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
@@ -33,6 +34,11 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
   private var phoneNumber = ""
   private var actualTrialSite: TrialSite = null
   private var trialSitePassword = ""
+  private val locales = Locale.getAvailableLocales.toList
+    .sortBy(locale =>  if(!locale.getCountry.isEmpty) {locale.getDisplayLanguage +" ("+ locale.getDisplayCountry +")"} else {locale.getDisplayLanguage})
+    .map(locale => (locale, if(!locale.getCountry.isEmpty) {locale.getDisplayLanguage +" ("+ locale.getDisplayCountry +")"} else {locale.getDisplayLanguage})).toSeq
+
+  private var locale: Locale = Locale.ENGLISH
 
   private var trialSites = trialSiteService.getAllActive.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
 
@@ -157,7 +163,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
     }
 
     def register() {
-      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set()).either match {
+      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set(), locale = locale).either match {
         case Left(x) => S.error("registerMsg",x.toString)   //TODO set field failure
         case Right(user) =>userService.register(user, trialSitePassword).either match {
           case Left(x) => S.error("registerMsg",x)
@@ -180,6 +186,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       "phoneNumber" -> phoneNumberField(),
       "trialSite" -> trialSiteField,
       "trialSitePassword" -> trialSitPasswordeField,
+      "locale" -> selectObj(locales, Full(locale), (loc:Locale) => locale = loc),
       "submit" -> submit("register", register _)
     )
 
@@ -195,6 +202,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       phoneNumber = ""
       actualTrialSite = null
       trialSitePassword = ""
+     locale = Locale.ENGLISH
    }
 }
 

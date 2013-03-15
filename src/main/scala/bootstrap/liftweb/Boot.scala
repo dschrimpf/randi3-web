@@ -78,7 +78,7 @@ class Boot extends Logging {
     val trialMenu = Menu(S.?("menu.trial")) / "trialInfo" submenus(
       Menu(Loc("trialList", List("trial", "list"), S.?("menu.list"))),
       Menu(Loc("trialAdd", List("trial", "add"), S.?("menu.add"), If(() => canCreateTrial, ""))),
-      Menu("show") / "trialShow" >> If(() => isTrialSelected, "") submenus(
+      Menu(S.?("trial.show")) / "trialShow" >> If(() => isTrialSelected, "") submenus(
         Menu(Loc("trialShowGeneral", List("trial", "generalInformation"), S.?("menu.generalInformation"), If(() => isTrialSelected, ""))),
         Menu(Loc("trialShowRadomizationData", List("trial", "randomizationData"), S.?("menu.randomizationData"), If(() => canViewTrialInformation, ""))),
         Menu(Loc("trialShowRadomizationDataInvestigator", List("trial", "randomizationDataInvestigator"),  S.?("menu.ownRandomizationData"), If(() => (isInvestigator && !canViewTrialInformation), ""))),

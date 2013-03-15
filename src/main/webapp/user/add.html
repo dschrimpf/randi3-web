@@ -5,8 +5,8 @@
          $('#userTabs').tabs();
 
         $(".next1").click(function() {$("#userTabs").tabs("option", "active", 1);});
-
         $(".next2").click(function() {$("#userTabs").tabs("option", "active", 2);});
+        $(".next3").click(function() {$("#userTabs").tabs("option", "active", 2);});
 
         });
     </script>
@@ -22,13 +22,13 @@
         <lift:msg id="userMsg" errorClass="err"/>
         <div id="userTabs" style="margin-bottom: 5px;">
             <ul>
+                <li><a href="#account"><lift:loc locid="account">Account</lift:loc> </a></li>
                 <li><a href="#userTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
                 <li><a href="#userTab-2"><lift:loc locid="trialSite">Trial site</lift:loc></a></li>
                 <li><a href="#userTab-3"><lift:loc locid="user.rights">Rights</lift:loc></a></li>
             </ul>
 
-
-            <div id="userTab-1">
+            <div id="account">
                 <fieldset>
                     <legend><lift:loc locid="accountInformation">Account information</lift:loc></legend>
                     <ul>
@@ -37,6 +37,12 @@
                         <user:passwordCheck/>
                     </ul>
                 </fieldset>
+                <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
+            </div>
+
+
+            <div id="userTab-1">
+
 
                 <fieldset>
                     <legend><lift:loc locid="personalInformation">Personal information</lift:loc></legend>
@@ -46,6 +52,14 @@
 
                     </ul>
                 </fieldset>
+
+                <fieldset>
+                    <legend><lift:loc locid="language">Language</lift:loc></legend>
+                    <ul>
+                        <user:locale/>
+                    </ul>
+                </fieldset>
+
                 <fieldset>
                     <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
                     <ul>
@@ -53,7 +67,7 @@
                         <user:phoneNumber/>
                     </ul>
                 </fieldset>
-                <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
+                <h4 style="text-align:right;"><a class="next2" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
             </div>
             <div id="userTab-2">
 
@@ -61,7 +75,7 @@
                     <user:trialSite/>
                 </ul>
                 <user:trialSiteInfo/>
-                <h4 style="text-align:right;"><a class="next2" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
+                <h4 style="text-align:right;"><a class="next3" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
             </div>
             <div id="userTab-3">
                 <ul>

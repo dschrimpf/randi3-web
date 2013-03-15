@@ -50,6 +50,12 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
   private var selectedRole = Role.investigator
   private val actualRights = new HashSet[TrialRight]()
 
+  private val locales = Locale.getAvailableLocales.toList
+    .sortBy(locale =>  if(!locale.getCountry.isEmpty) {locale.getDisplayLanguage +" ("+ locale.getDisplayCountry +")"} else {locale.getDisplayLanguage})
+    .map(locale => (locale, if(!locale.getCountry.isEmpty) {locale.getDisplayLanguage +" ("+ locale.getDisplayCountry +")"} else {locale.getDisplayLanguage})).toSeq
+
+  private var locale: Locale = Locale.ENGLISH
+
   def dispatch = {
     case "create" => create _
     case "edit" => edit _
@@ -63,7 +69,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     def save() {
       //TODO validate
-      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial).either match {
+      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, locale = locale).either match {
         case Left(x) => S.error(x.toString())
         case Right(user) => userService.create(user).either match {
           case Left(x) => S.error("userMsg", x)
@@ -89,7 +95,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       setFields(user)
 
       def update() {
-        User(id = user.id, version = user.version, username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, isActive = isActive).either match {
+        User(id = user.id, version = user.version, username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, isActive = isActive, locale = locale).either match {
           case Left(x) => S.error("userMsg", x.toString())
           case Right(actUser) => userService.update(actUser).either match {
             case Left(x) => S.error("userMsg", x)
@@ -392,6 +398,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
        S.redirectTo("/user/edit")
       }
       ),
+    "locale" -> selectObj(locales, Full(locale), (loc:Locale) => locale = loc),
       "submit" -> submit(S.?("save"), code _)
     )
 
@@ -428,6 +435,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
     trialSites = trialSiteService.getAll.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
     actualTrialSite = trialSites.head._1
     actualRights.clear()
+    locale = Locale.ENGLISH
   }
 
   private def setFields(user: User) {
@@ -445,6 +453,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
     trialSites = trialSiteService.getAll.toOption.get.map(trialSite => (trialSite, trialSite.name)) //TODO error handling
     actualRights.clear()
     user.rights.foreach(right => actualRights.add(right))
+    locale = user.locale
   }
 
 

@@ -108,6 +108,16 @@ class UserShowSnippet extends GeneralFormSnippet{
           {user.phoneNumber}
         </span>
       }),
+      "locale" -> <span>{
+        if (user.locale.getDisplayCountry.isEmpty)
+        {
+          user.locale.getDisplayLanguage
+        }
+        else
+        {
+          user.locale.getDisplayLanguage+ " ("+ user.locale.getDisplayCountry +")"
+        }
+        }</span>,
       "trialSite" -> generateEntry("username7", false, {
         <span>
           {user.username}
