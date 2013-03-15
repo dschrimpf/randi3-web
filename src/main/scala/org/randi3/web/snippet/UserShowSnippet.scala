@@ -81,6 +81,7 @@ class UserShowSnippet extends GeneralFormSnippet{
     }
 
     bind("user", xhtml,
+      "info" -> <span>{user.username}</span> ,
       "username" -> generateEntry("username", false, {
         <span>
           {user.username}

@@ -29,11 +29,11 @@ class OverviewSnippet {
   def createObjectOptions: NodeSeq = {
     if (user.administrator || user.canCreateTrial) {
       <fieldset>
-        <legend>Create Objects</legend>
+        <legend>{S.?("overview.createObjects")}</legend>
         <table class="randi2Table">
           <thead>
             <tr>
-              <th>Object</th>
+              <th>{S.?("overview.object")}</th>
             </tr>
           </thead>
           <tfoot>
@@ -42,18 +42,18 @@ class OverviewSnippet {
           <tbody>{if (user.administrator) {
           <tr>
             <td>
-              {link("/user/add", () => {}, Text("Add new User"))}
+              {link("/user/add", () => {}, Text(S.?("overview.addNewUser")))}
             </td>
           </tr>
             <tr>
               <td>
-                {link("/trialSite/add", () => {}, Text("Add new trial site"))}
+                {link("/trialSite/add", () => {}, Text(S.?("overview.addNewTrialSite")))}
               </td>
             </tr>
         }}{if (user.canCreateTrial) {
           <tr>
             <td>
-              {link("/trial/add", () => {}, Text("Add new Trial"))}
+              {link("/trial/add", () => {}, Text(S.?("overview.addNewTrial")))}
             </td>
           </tr>
         }}
@@ -69,12 +69,12 @@ class OverviewSnippet {
     val trialsWithRandomizeRight = trials.filter(trial => trial.status == TrialStatus.ACTIVE && user.rights.filter(right => right.trial.id == trial.id).map(right => right.role).contains(Role.investigator))
     if (!trialsWithRandomizeRight.isEmpty) {
     <fieldset>
-      <legend>Randomize Patient</legend>
+      <legend>{S.?("overview.randomizePatient")}</legend>
       <table class="randi2Table">
         <thead>
           <tr>
-            <th>Trial abbreviation</th>
-            <th>Trial name</th>
+            <th>{S.?("trial.abbreviation")}</th>
+            <th>{S.?("trial.name")}</th>
             <th></th>
           </tr>
         </thead>
@@ -84,7 +84,7 @@ class OverviewSnippet {
           <tr>
             <td>{trial.abbreviation}</td>
             <td>{trial.name}</td>
-            <td>{link("/trialSubject/randomize", () => CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get)), Text("randomize"))}</td>
+            <td>{link("/trialSubject/randomize", () => CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get)), Text(S.?("randomize")))}</td>
           </tr>
         })}
         </tbody>
@@ -98,13 +98,13 @@ class OverviewSnippet {
     val trialsWithRandomizeRight = trials.filter(trial => !user.rights.filter(right => right.trial.id == trial.id).map(right => right.role).isEmpty)
     if (!trialsWithRandomizeRight.isEmpty) {
       <fieldset>
-        <legend>View trial information</legend>
+        <legend>{S.?("overview.viewTrialInformation")}</legend>
         <table class="randi2Table">
           <thead>
             <tr>
-              <th>Trial abbreviation</th>
-              <th>Trial name</th>
-              <th>Trial status</th>
+              <th>{S.?("trial.abbreviation")}</th>
+              <th>{S.?("trial.name")}</th>
+              <th>{S.?("trial.status")}</th>
               <th></th>
             </tr>
           </thead>
@@ -115,7 +115,7 @@ class OverviewSnippet {
               <td>{trial.abbreviation}</td>
               <td>{trial.name}</td>
               <td>{trial.status.toString}</td>
-              <td>{link("/trial/generalInformation", () => CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get)), Text("show"))}</td>
+              <td>{link("/trial/generalInformation", () => CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get)), Text(S.?("show")))}</td>
             </tr>
           })}
           </tbody>

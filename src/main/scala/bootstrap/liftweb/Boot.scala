@@ -22,6 +22,9 @@ import org.randi3.utility.Logging
 
 import org.randi3.schema.LiquibaseUtil
 import java.sql.SQLSyntaxErrorException
+import java.util.Locale
+import javax.servlet.http.HttpServletRequest
+
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -31,12 +34,13 @@ class Boot extends Logging {
 
   def boot {
 
-
+   Locale.setDefault(Locale.ENGLISH)
 
 
     initializeJDBCDriver()
 
     checkAndGenerateConfigDatabase()
+
 
 
     if(DependencyFactory.configurationService.isConfigurationComplete) {
@@ -48,7 +52,9 @@ class Boot extends Logging {
 
 
 
-    LiftRules.resourceNames =  "i18n/messages" :: LiftRules.resourceNames
+    LiftRules.resourceNames =  "i18n/Messages" :: LiftRules.resourceNames
+
+    LiftRules.localeCalculator =  calcLocale _
 
     // where to search snippet
     LiftRules.addToPackages("org.randi3.web")
@@ -144,6 +150,15 @@ class Boot extends Logging {
 
     //LiftRules.loggedInTest = Full(() => User.loggedIn_?)
 
+
+
+
+  }
+
+  private def calcLocale(in: Box[HTTPRequest]): Locale = {
+   val loc = if (CurrentLoggedInUser.isEmpty) Locale.getDefault
+    else CurrentLoggedInUser.get.get.locale
+    loc
   }
 
   /**
@@ -280,4 +295,7 @@ class Boot extends Logging {
     })
 
   }
+
+
 }
+
