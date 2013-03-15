@@ -1,12 +1,10 @@
 package org.randi3.web.snippet
 
 
-import net.liftweb.http.SHtml._
 import net.liftweb.util.Helpers._
 import xml.{Text, NodeSeq, Group}
 
 import net.liftweb.http.SHtml._
-import net.liftweb.http.S._
 import net.liftweb.http._
 import org.randi3.web.util.{CurrentTrialSite, CurrentUser, CurrentTrial, CurrentLoggedInUser}
 
@@ -27,7 +25,7 @@ class UserLoggedInForm {
           CurrentTrial(None)
           CurrentTrialSite(None)
           CurrentUser(None)
-        }, Text("logout") ++ <img src="/images/arrowleft16.png" alt=" "/>)
+        }, Text(S.?("logout")) ++ <img src="/images/arrowleft16.png" alt=" "/>)
       )
     } else {
       bind("user", xhtml,
