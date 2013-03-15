@@ -4,18 +4,29 @@
         // Tabs
         $('#registerTabs').tabs();
         });
+
+        $(function() {
+
+        $('#registerTabs').tabs();
+
+        $(".next1").click(function() {$("#registerTabs").tabs("option", "active", 1);});
+
+        $(".next2").click(function() {$("#registerTabs").tabs("option", "active", 2);});
+
+        });
     </script>
 
-    <h1>Registration</h1> <hr />
 
     <form class="lift:RegisterForm?form=post">
+
+        <h1><lift:loc locid="registration">Registration</lift:loc></h1> <hr />
 
         <lift:msg id="registerMsg" errorClass="err"/>
         <div id="registerTabs">
             <ul>
-                <li><a href="#registerTab-1">User account data</a></li>
-                <li><a href="#registerTab-2">Contact data</a></li>
-                <li><a href="#registerTab-3">Trial site</a></li>
+                <li><a href="#registerTab-1"><lift:loc locid="accountInformation">Account information</lift:loc></a></li>
+                <li><a href="#registerTab-2"><lift:loc locid="contactInformation">Contact information</lift:loc></a></li>
+                <li><a href="#registerTab-3"><lift:loc locid="trialSite">Trial site</lift:loc></a></li>
             </ul>
             <fieldset>
 
@@ -25,6 +36,7 @@
                         <register:password/>
                         <register:passwordCheck/>
                     </ul>
+                    <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
                 </div>
                 <div id="registerTab-2">
                     <ul>
@@ -33,15 +45,19 @@
                         <register:email/>
                         <register:phoneNumber/>
                     </ul>
+                    <h4 style="text-align:right;"><a class="next2" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
                 </div>
                 <div id="registerTab-3">
                     <ul>
                         <register:trialSite/>
                         <register:trialSitePassword/>
                     </ul>
+                    <br/>
+                    <br/>
+                    <hr/>
+                    <div style="text-align:center;"><register:submit/></div>
                 </div>
             </fieldset>
-            <register:submit/>
         </div>
 
     </form>

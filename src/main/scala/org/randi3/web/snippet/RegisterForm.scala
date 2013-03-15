@@ -16,7 +16,7 @@ import xml._
 import net.liftweb.http.{LiftScreen, StatefulSnippet, S, SHtml}
 
 
-class RegisterForm extends StatefulSnippet{
+class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
 
   private val userService = DependencyFactory.userService
   private val trialSiteService = DependencyFactory.trialSiteService
@@ -184,25 +184,6 @@ class RegisterForm extends StatefulSnippet{
     )
 
   }
-
-  private def generateEntry(id: String, failure: Boolean, element: Elem): Elem = {
-    <li id={id + "Li"} class={if (failure) "errorHint" else ""}>
-      <label for={id}>
-        {id}
-      </label>{element}<lift:msg id={id + "Msg"} errorClass="err"/>
-    </li>
-  }
-
-
-  private def showErrorMessage(id: String, errors: NonEmptyList[String]) {
-    S.error(id + "Msg", "<-" + errors.list.reduce((acc, el) => acc + ", " + el))
-  }
-
-  private def clearErrorMessage(id: String) {
-    S.error(id + "Msg", "")
-  }
-
-
 
   private def clearFields() {
       username = ""
