@@ -23,7 +23,6 @@ import org.randi3.utility.Logging
 import org.randi3.schema.LiquibaseUtil
 import java.sql.SQLSyntaxErrorException
 import java.util.Locale
-import javax.servlet.http.HttpServletRequest
 
 
 /**
@@ -42,15 +41,12 @@ class Boot extends Logging {
     checkAndGenerateConfigDatabase()
 
 
-
     if(DependencyFactory.configurationService.isConfigurationComplete) {
       LiquibaseUtil.updateDatabase(DependencyFactory.database)
         //TODO use properties from sub project
     //   LiquibaseUtil.updateDatabase(DependencyFactory.database, "db/db.changelog-master-edc.xml")
        checkAndGenerateRandomizationTables()
      }
-
-
 
     LiftRules.resourceNames =  "i18n/Messages" :: LiftRules.resourceNames
 
@@ -64,40 +60,40 @@ class Boot extends Logging {
 
     lazy val noGAE = Unless(() => Props.inGAE, "Disabled for GAE")
 
-    val trialSiteMenu = Menu("Trial site") / "trialSiteInfo" submenus(
-      Menu(Loc("trialSiteAdd", List("trialSite", "add"), "add", If(() => isAdministrator, ""))),
-      Menu(Loc("trialSiteEdit", List("trialSite", "edit"), "edit", If(() => isAdministrator, ""))),
-      Menu(Loc("trialSiteActive", List("trialSite", "activate"), "Activate", If(() => isAdministrator && CurrentTrialSite.isDefined && !CurrentTrialSite.get.get.isActive, ""))),
-      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), "Dectivate", If(() => isAdministrator && CurrentTrialSite.isDefined && CurrentTrialSite.get.get.isActive, ""))),
-      Menu(Loc("trialSiteList", List("trialSite", "list"), "list")),
+    val trialSiteMenu = Menu(S.?("menu.trialSite")) / "trialSiteInfo" submenus(
+      Menu(Loc("trialSiteList", List("trialSite", "list"), S.?("menu.list"))),
+      Menu(Loc("trialSiteAdd", List("trialSite", "add"), S.?("menu.add"), If(() => isAdministrator, ""))),
+      Menu(Loc("trialSiteEdit", List("trialSite", "edit"), S.?("menu.edit"), If(() => isAdministrator, ""), Hidden)),
+      Menu(Loc("trialSiteActive", List("trialSite", "activate"), S.?("menu.trialSiteActivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && !CurrentTrialSite.get.get.isActive, ""))),
+      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), S.?("menu.trialSiteDeactivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && CurrentTrialSite.get.get.isActive, ""))),
       Menu(Loc("trialSiteDelete", List("trialSite", "delete"), "delete", Hidden, If(() => isAdministrator, ""))))
 
-    val userMenu = Menu("User") / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
-      Menu(Loc("userList", List("user", "list"), "list")),
-      Menu(Loc("userAdd", List("user", "add"), "add", If(() => isAdministrator, ""))),
+    val userMenu = Menu(S.?("menu.user")) / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
+      Menu(Loc("userList", List("user", "list"), S.?("menu.list"))),
+      Menu(Loc("userAdd", List("user", "add"), S.?("menu.add"), If(() => isAdministrator, ""))),
       Menu(Loc("userShow", List("user", "show"), "show", If(() => isAdministrator || isOwnUser, ""), Hidden)),
-      Menu(Loc("userEdit", List("user", "edit"), "edit", If(() => isAdministrator || isOwnUser, ""), Hidden)),
+      Menu(Loc("userEdit", List("user", "edit"),  S.?("menu.edit"), If(() => isAdministrator || isOwnUser, ""), Hidden)),
       Menu(Loc("userDelete", List("user", "delete"), "delete", Hidden)))
 
-    val trialMenu = Menu("Trial") / "trialInfo" submenus(
-      Menu(Loc("trialAdd", List("trial", "add"), "add", If(() => canCreateTrial, ""))),
+    val trialMenu = Menu(S.?("menu.trial")) / "trialInfo" submenus(
+      Menu(Loc("trialList", List("trial", "list"), S.?("menu.list"))),
+      Menu(Loc("trialAdd", List("trial", "add"), S.?("menu.add"), If(() => canCreateTrial, ""))),
       Menu("show") / "trialShow" >> If(() => isTrialSelected, "") submenus(
-        Menu(Loc("trialShowGeneral", List("trial", "generalInformation"), "General Information", If(() => isTrialSelected, ""))),
-        Menu(Loc("trialShowRadomizationData", List("trial", "randomizationData"), "Randomization Data", If(() => canViewTrialInformation, ""))),
-        Menu(Loc("trialShowRadomizationDataInvestigator", List("trial", "randomizationDataInvestigator"), "Own Randomization Data", If(() => (isInvestigator && !canViewTrialInformation), ""))),
-        Menu(Loc("trialShowAudit", List("trial", "audit"), "Audit", If(() => canViewTrialInformation, ""))),
-        Menu(Loc("trialShowUsers", List("trial", "users"), "Users", If(() => canViewTrialInformation, "")))
+        Menu(Loc("trialShowGeneral", List("trial", "generalInformation"), S.?("menu.generalInformation"), If(() => isTrialSelected, ""))),
+        Menu(Loc("trialShowRadomizationData", List("trial", "randomizationData"), S.?("menu.randomizationData"), If(() => canViewTrialInformation, ""))),
+        Menu(Loc("trialShowRadomizationDataInvestigator", List("trial", "randomizationDataInvestigator"),  S.?("menu.ownRandomizationData"), If(() => (isInvestigator && !canViewTrialInformation), ""))),
+        Menu(Loc("trialShowAudit", List("trial", "audit"),  S.?("menu.audit"), If(() => canViewTrialInformation, ""))),
+        Menu(Loc("trialShowUsers", List("trial", "users"),  S.?("menu.users"), If(() => canViewTrialInformation, "")))
         ),
-      Menu("edit") / "trialEdit" >> If(() => canViewTrialEdit, "") submenus(
-        Menu(Loc("trialEditGeneral", List("trial", "editGeneralData"), "General Data", If(() => canChangeTrial, ""))),
-        Menu(Loc("trialEditStatus", List("trial", "editTrialStatus"), "Status", If(() => canChangeTrialStatus, ""))),
-        Menu(Loc("trialEditUsers", List("trial", "editUsers"), "Users", If(() => isTrialSelected, "")))
+      Menu(S.?("menu.edit")) / "trialEdit" >> If(() => canViewTrialEdit, "") submenus(
+        Menu(Loc("trialEditGeneral", List("trial", "editGeneralData"), S.?("menu.generalInformation"), If(() => canChangeTrial, ""))),
+        Menu(Loc("trialEditStatus", List("trial", "editTrialStatus"), S.?("trial.status"), If(() => canChangeTrialStatus, ""))),
+        Menu(Loc("trialEditUsers", List("trial", "editUsers"), S.?("menu.users"), If(() => isTrialSelected, "")))
         ),
-      Menu(Loc("trialList", List("trial", "list"), "list")),
       Menu(Loc("trialDelete", List("trial", "delete"), "delete", Hidden, If(() => canChangeTrial, "")))
       )
 
-    val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), "Randomize", If(() => canRandomize, "")))
+    val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), S.?("Randomize"), If(() => canRandomize, "")))
     val trialSubjectRandomizationResultMenu = Menu(Loc("trialSubjectRandomizationResult", List("trialSubject", "randomizationResult"), "Randomization result", Hidden ,If(() => canRandomize, "")))
 
    val edcMenu = Menu("EDC") / "edcInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
@@ -147,10 +143,6 @@ class Boot extends Logging {
 
 
     LiftRules.early.append(makeUtf8)
-
-    //LiftRules.loggedInTest = Full(() => User.loggedIn_?)
-
-
 
 
   }

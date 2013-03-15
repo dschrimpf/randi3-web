@@ -1,29 +1,22 @@
 package org.randi3.web.snippet
 
-import java.util.Locale
 
 import scala.xml._
 import scala.xml.Group
 import scala.xml.NodeSeq
-import scala.xml.Text
 
 import org.randi3.web.lib.DependencyFactory
 
-import net.liftweb.common._
 import net.liftweb.http.SHtml._
 import net.liftweb.http.S._
 import net.liftweb.http._
 import js.JsCmds._
 
 import net.liftweb.util.Helpers._
-import net.liftweb.util._
-import net.liftweb._
-import org.randi3.model.{User, TrialSite}
-import scalaz.NonEmptyList
+import org.randi3.model.TrialSite
 import scala.Right
 import scalaz._
-import Scalaz._
-import org.randi3.web.util.{CurrentTrialSite, CurrentLoggedInUser}
+import org.randi3.web.util.CurrentTrialSite
 
 class TrialSiteSnippet extends StatefulSnippet {
 
@@ -40,7 +33,6 @@ class TrialSiteSnippet extends StatefulSnippet {
 
   def dispatch = {
     case "info" => redirectTo("/trialSite/list")
-    case "trialSites" => trialSites _
     case "create" => create _
     case "edit" => edit _
     case "activate" => activate _
@@ -49,46 +41,6 @@ class TrialSiteSnippet extends StatefulSnippet {
 
   private val trialSiteService = DependencyFactory.trialSiteService
 
-  /**
-   * Get the XHTML containing a list of users
-   */
-  private def trialSites(xhtml: NodeSeq): NodeSeq = {
-    val currentUser = CurrentLoggedInUser.getOrElse(
-      redirectTo("/index")
-    )
-    trialSiteService.getAll.either match {
-      case Left(x) => <tr>
-        <td colspan="7">
-          {x}
-        </td>
-      </tr> //TODO show Failure
-      case Right(trialSites) => trialSites.flatMap(trialSite => <tr>
-        <td>
-          {trialSite.name}
-        </td>
-        <td>
-          {trialSite.street}
-        </td>
-        <td>
-          {trialSite.postCode}
-        </td>
-        <td>
-          {trialSite.city}
-        </td>
-        <td>
-          {trialSite.country}
-        </td>
-        <td>
-          {trialSite.isActive}
-        </td>
-        <td>
-          {if (currentUser.administrator) {
-          link("/trialSite/edit", () => CurrentTrialSite.set(Some(trialSite)), Text("Edit"))
-        }}
-        </td>
-      </tr>)
-    }
-  }
 
   /**
    * Confirm deleting a user

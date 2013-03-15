@@ -1,25 +1,25 @@
 <lift:surround with="default" at="content">
-    <h1>Trial sites</h1><hr />
+    <h1><lift:loc locid="trialSite.listOfAll">List of all trial sites</lift:loc></h1><hr />
   <table class="randi2Table" >
       <thead>
     <tr>
-      <th>Name</th>
-      <th>Street</th>
-      <th>Post code</th>
-      <th>City</th>
-      <th>Country</th>
-      <th>Active?</th>
+      <th><lift:loc locid="trialSite.name">Name</lift:loc></th>
+      <th><lift:loc locid="trialSite.street">Street</lift:loc></th>
+      <th><lift:loc locid="trialSite.postCode">Post code</lift:loc></th>
+      <th><lift:loc locid="trialSite.city">City</lift:loc></th>
+      <th><lift:loc locid="trialSite.country">Country</lift:loc></th>
+      <th><lift:loc locid="trialSite.active">Active?</lift:loc></th>
       <th></th>
 
     </tr>
       </thead>
       <tfoot>
       <tr>
-          <td colspan="6">all trial sites</td>
+          <td colspan="7"><lift:loc locid="trialSite.all">all trial sites</lift:loc></td>
       </tr>
       </tfoot>
       <tbody>
-	<tr class="lift:TrialSiteSnippet.trialSites"><td>test</td></tr>
+	<tr class="lift:TrialSiteListSnippet.list"><td>test</td></tr>
       </tbody>
   </table>
 </lift:surround>
