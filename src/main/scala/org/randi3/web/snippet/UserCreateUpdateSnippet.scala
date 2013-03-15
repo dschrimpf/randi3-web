@@ -372,12 +372,12 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       "rights" -> rights,
       "numberOfFailedLogins" -> generateEntry("numberOfFailedLogins", false, {
         <span>
-          {CurrentUser.get.get.numberOfFailedLogins}
+          {if(CurrentUser.isDefined) CurrentUser.get.get.numberOfFailedLogins}
         </span>
       }),
       "lockedUntil" -> generateEntry("lockedUntil", false, {
         <span>
-          {if(CurrentUser.get.get.lockedUntil.isDefined) CurrentUser.get.get.lockedUntil.get else <span>---</span>}
+          {if(CurrentUser.isDefined && CurrentUser.get.get.lockedUntil.isDefined) CurrentUser.get.get.lockedUntil.get else <span>---</span>}
         </span>
       }),
       "resetLock" -> button(S.?("resetLock"), () => {

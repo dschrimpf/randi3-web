@@ -1,8 +1,12 @@
 <lift:surround with="default" at="content">
     <script type="text/javascript">
-        $(function(){
-        // Tabs
+        $(function() {
+
         $('#trialSiteTabs').tabs();
+
+        $(".next1").click(function() {$("#trialSiteTabs").tabs("option", "active", 1);});
+
+
         });
     </script>
 
@@ -22,7 +26,7 @@
                 <li><a href="#trialSiteTab-2"><lift:loc locid="password">Password</lift:loc></a></li>
             </ul>
 
-            <fieldset>
+
 
                 <div id="trialSiteTab-1">
                     <ul>
@@ -32,6 +36,7 @@
                         <trialSite:city/>
                         <trialSite:country/>
                     </ul>
+                    <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
                 </div>
 
                 <div id="trialSiteTab-2">
@@ -39,10 +44,12 @@
                         <trialSite:password/>
                         <trialSite:passwordCheck/>
                     </ul>
+                     <br/>
+                    <div style="text-align:center;"><trialSite:submit /></div>
                 </div>
-             </fieldset>
+
          </div>
-             <trialSite:submit />
+
     </form>
 
 </lift:surround>
