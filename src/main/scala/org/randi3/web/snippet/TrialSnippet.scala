@@ -1,15 +1,10 @@
 package org.randi3.web.snippet
 
-import java.util.Date
 
-import java.util.Locale
-import net.liftweb.http.StatefulSnippet
 import org.randi3.model.criterion._
 import org.randi3.model.criterion.constraint._
 import scala.xml._
-import scala.xml.Group
 import scala.xml.NodeSeq
-import scala.xml.Text
 
 import org.randi3.web.lib.DependencyFactory
 
@@ -17,10 +12,8 @@ import net.liftweb.common._
 import net.liftweb.http.S._
 
 import net.liftweb.http._
-import js.JE
 
-import js.jquery.JqJsCmds.ModalDialog
-import js.JsCmds.{Confirm, Alert, Replace, SetHtml}
+import js.JsCmds.{Replace, SetHtml}
 
 import net.liftweb.util.Helpers._
 import net.liftweb._
@@ -36,7 +29,7 @@ import org.randi3.model._
 
 import scalaz.{Empty => _, Node => _, _}
 import Scalaz._
-import org.randi3.web.util.{CurrentLoggedInUser, Utility, CurrentTrial}
+import org.randi3.web.util.{Utility, CurrentTrial}
 import org.joda.time.LocalDate
 import collection.mutable.{HashMap, ListBuffer, HashSet}
 import org.joda.time.format.DateTimeFormat
@@ -48,28 +41,25 @@ import scala.Left
 import scala.Right
 import collection.mutable
 
-class TrialSnippet extends StatefulSnippet with HelperSnippet {
+import org.randi3.web.model._
+
+
+class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
   private val trialSiteService = DependencyFactory.trialSiteService
   private val userService = DependencyFactory.userService
   private val trialService = DependencyFactory.trialService
   private val randomizationPluginManager = DependencyFactory.randomizationPluginManager
 
-  private var selectedTrialSubject: Option[TrialSubject] = None
 
   def dispatch = {
     case "info" => redirectTo("/trial/list")
-    case "trials" => trials _
-    case "create" => create _
     case "show" => redirectTo("/trial/generalInformation")
+    case "create" => create _
     case "editView" => redirectTo("/trial/editUsers")
     case "edit" => edit _
     case "editStatus" => editStatus _
     case "editUsers" => editUsers _
-    case "randomize" => randomize _
-    case "randomizationResult" => showRandomizationResult _
-    case "trialSubjects" => trialSubjects _
-    case "showTrialSubject" => showTrialSubject _
     case "confirmDelete" => confirmDelete _
   }
 
@@ -271,6 +261,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     }
 
     bind("trial", xhtml,
+     "name" -> <span>{trial.name}</span>,
       "status" -> {
         if (trial.status == TrialStatus.ACTIVE) {
           trialStatusTmp = TrialStatus.PAUSED.toString
@@ -279,10 +270,10 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           trialStatusTmp = TrialStatus.ACTIVE.toString
           ajaxSelect(Seq((TrialStatus.ACTIVE.toString, TrialStatus.ACTIVE.toString), (TrialStatus.FINISHED.toString, TrialStatus.FINISHED.toString)), Full(trialStatusTmp), trialStatusTmp = _)
         } else {
-          <span>change not possible</span>
+          <span>{S.?("trial.changesNotPossible")}</span>
         }
       },
-      "submit" -> submit("save", save _)
+      "submit" -> submit(S.?("save"), save _)
     )
   }
 
@@ -338,7 +329,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           Replace("roles", roleField)
         }, "id" -> "possibleUsers")
       } else {
-        <span id="possibleUsers">no users to select</span>
+        <span id="possibleUsers">{S.?("trial.noUsersAvailable")}</span>
       }
     }
 
@@ -356,8 +347,8 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       <table id="rights" class="randi2Table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Role</th>
+            <th>{S.?("menu.user")}</th>
+            <th>{S.?("role")}</th>
             <th></th>
           </tr>
         </thead>{if (!actualRights.isEmpty) {
@@ -365,8 +356,8 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       } else {
         <tfoot>
           <tr>
-            <td rowspan="3"></td>
-            No users defined</tr>
+            <td rowspan="3">{S.?("trial.noUsersAvailable")}</td>
+           </tr>
         </tfoot>
       }}<tbody>
         {actualRights.toList.sortWith((elem1, elem2) => (elem1._1.username + elem1._2.role.toString).compareTo((elem2._1.username + elem2._2.role.toString)) < 0).flatMap(entry => {
@@ -378,7 +369,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
               {entry._2.role.toString}
             </td>
             <td>
-              {ajaxButton("remove", () => {
+              {ajaxButton(S.?("remove"), () => {
               actualRights.remove(entry)
               Replace("rights", rights)
             })}
@@ -391,14 +382,15 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     }
 
     bind("trial", xhtml,
+    "name" -> <span>{trial.name}</span>,
       "userSelect" -> usersSelectField,
       "roleSelect" -> roleField,
-      "addRight" -> ajaxButton("add", () => {
+      "addRight" -> ajaxButton(S.?("add"), () => {
         actualRights.add((selectedUser, TrialRight(selectedRole, trial).toOption.get))
         Replace("rights", rights)
       }),
       "rights" -> rights,
-      "submit" -> submit("save", save _)
+      "submit" -> submit(S.?("save"), save _)
     )
   }
 
@@ -507,11 +499,11 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       <div id="participatedTrialSiteTable">
         <table width="90%">
           <tr>
-            <th>Name</th>
-            <th>Street</th>
-            <th>Post code</th>
-            <th>City</th>
-            <th>Country</th>
+            <th>{S.?("trialSite.name")}</th>
+            <th>{S.?("trialSite.street")}</th>
+            <th>{S.?("trialSite.postCode")}</th>
+            <th>{S.?("trialSite.city")}</th>
+            <th>{S.?("trialSite.country")}</th>
             <th></th>
           </tr>{participatingSites.toList.sortWith((e1, e2) => e1.name.compareTo(e2.name) < 0).flatMap(trialSite => <tr>
           <td>
@@ -530,7 +522,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
             {trialSite.country}
           </td>
           <td>
-            {ajaxButton(Text("remove"), () => {
+            {ajaxButton(Text(S.?("remove")), () => {
             participatingSites.remove(trialSite)
             Replace("participatedTrialSiteTable", participatedSitesTable)
           })}
@@ -550,6 +542,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     }
 
     bind("trial", xhtml,
+      "info" -> <span>{name}</span>,
       "name" -> nameField(),
       "abbreviation" -> abbreviationField(),
       "description" -> descriptionField(),
@@ -559,7 +552,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       "pInvestigator" -> principalInvestigatorField,
       "status" -> ajaxSelect(TrialStatus.values.map(value => (value.toString, value.toString)).toSeq, Full(trialStatusTmp), trialStatusTmp = _),
       "participatingSiteSelect" -> ajaxSelectObj(trialSites, Empty, (trialSite: TrialSite) => participatingSiteTmp = trialSite, "id" -> "participatingSite"),
-      "addParticipatingSite" -> ajaxButton(Text("add"), () => {
+      "addParticipatingSite" -> ajaxButton(Text(S.?("add")), () => {
         participatingSites += participatingSiteTmp
         Replace("participatedTrialSiteTable", participatedSitesTable)
       }),
@@ -567,7 +560,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       "treatmentArmName" -> ajaxText(nameNewTreatmentArm, nameNewTreatmentArm = _, "id" -> "nameNewTreatmentArm"),
       "treatmentArmDescription" -> ajaxText(descriptionNewTreatmentArm, descriptionNewTreatmentArm = _),
       "treatmentArmPlannedSubjects" -> ajaxText(plannedSubjectSizeNewTreatmentArm.toString, size => plannedSubjectSizeNewTreatmentArm = size.toInt),
-      "addTreatmentArm" -> ajaxButton("add", () => {
+      "addTreatmentArm" -> ajaxButton(S.?("add"), () => {
         armsTmp += new TreatmentArmTmp(Int.MinValue, 0, "", "", 0)
         Replace("treatmentArms", generateTreatmentArms(xhtml))
       }),
@@ -575,7 +568,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       //TODO selectElem
       "identificationCreationTypeSelect" -> ajaxSelect(TrialSubjectIdentificationCreationType.values.map(value => (value.toString, value.toString)).toSeq, Full(identificationCreationTypeTmp), identificationCreationTypeTmp = _),
       "criterionSelect" -> ajaxSelect(criterionTypes, Empty, criterionTypeTmp = _),
-      "addSelectedCriterion" -> ajaxButton("add", () => {
+      "addSelectedCriterion" -> ajaxButton(S.?("add"), () => {
         addSelectedCriterion(criterionTypeTmp, criterionsTmp)
         Replace("criterions", generateCriterions(xhtml))
       }),
@@ -595,17 +588,17 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   private def generateRandomizationConfigField: Elem = {
     <div id="randomizationConfig">
       <fieldset>
-        <legend>General informations</legend>
+        <legend>{S.?("generalInformation")}</legend>
         <ul>
           <li>
-            <label for="randomizationMethodName">Name:
+            <label for="randomizationMethodName">{S.?("name")}:
             </label>
             <span id="randomizationMethodName">
               {randomizationMethodTmp.name}
             </span>
           </li>
           <li>
-            <label for="randomizationMethodDescription">Description:
+            <label for="randomizationMethodDescription">{S.?("description")}:
             </label>
             <span id="randomizationMethodDescription">
               {randomizationMethodTmp.description}
@@ -614,7 +607,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         </ul>
       </fieldset>{if (!randomizationMethodTmp.configurationEntries.isEmpty) {
       <fieldset>
-        <legend>Configurations</legend>
+        <legend>{S.?("trial.randomizationConfiguration")}</legend>
         <ul>
           {randomizationMethodTmp.configurationEntries.flatMap(configuration => {
           <li>
@@ -637,8 +630,8 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
       val criterionList = criterionsTmp
       <div>
-        <h3>Stratification:</h3>
-        Trial site stratification: {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
+        <h3>{S.?("trial.stratification")}:</h3>
+        {S.?("trial.trialSiteStratification")}: {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
         {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
@@ -661,14 +654,14 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         </legend>
         <ul>
           <li>
-            <label>Name</label>{criterion.name}
+            <label>{S.?("name")}</label>{criterion.name}
           </li>
           <li>
-            <label>Description</label>{criterion.description}
+            <label>{S.?("description")}</label>{criterion.description}
           </li>
         </ul>
         <div>
-          {ajaxButton("add stratum", () => {
+          {ajaxButton(S.?("trial.addStratum"), () => {
           val constraint = new ConstraintTmp()
           if (criterion.typ == "OrdinalCriterion") {
             constraint.ordinalValues.clear()
@@ -679,7 +672,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           criterion.strata.append(constraint)
           Replace(id, generateStratumConfig(id, criterion))
         })}
-          {ajaxButton("remove stratum", () => {
+          {ajaxButton(S.?("remove"), () => {
           criterion.strata.remove(criterion.strata.size-1)
           Replace(id, generateStratumConfig(id, criterion))
         })}
@@ -699,7 +692,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
 
   private def generateStratumElement(id: String, criterion: CriterionTmp, constraint: ConstraintTmp): Elem = {
     <fieldset id={id} class="inclusionConstraint">
-      <legend>Constraint</legend>{if (criterion.typ != "OrdinalCriterion") {
+      <legend>{S.?("group")}</legend>{if (criterion.typ != "OrdinalCriterion") {
       <ul>
         <li>
           {ajaxCheckbox(constraint.minValue.isDefined, v => {
@@ -710,7 +703,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           }
           Replace(id, generateStratumElement(id, criterion, constraint))
         }, "style" -> "width: 20px;")}
-          lower boundary?
+          {S.?("lowerBoundary")}
           {if (constraint.minValue.isDefined) {
           ajaxText(constraint.minValue.get, v => {
             constraint.minValue = Some(v)
@@ -726,7 +719,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           }
           Replace(id, generateStratumElement(id, criterion, constraint))
         }, "style" -> "width: 20px;")}
-          upper boundary?
+          {S.?("upperBoundary")}
           {if (constraint.maxValue.isDefined) {
           ajaxText(constraint.maxValue.get, v => {
             constraint.maxValue = Some(v)
@@ -926,11 +919,11 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     <div id="participatedTrialSiteTable">
       <table width="90%">
         <tr>
-          <th>Name</th>
-          <th>Street</th>
-          <th>Post code</th>
-          <th>City</th>
-          <th>Country</th>
+          <th>{S.?("trialSite.name")}</th>
+          <th>{S.?("street")}</th>
+          <th>{S.?("postCode")}</th>
+          <th>{S.?("city")}</th>
+          <th>{S.?("country")}</th>
           <th></th>
         </tr>{participatingSites.toList.sortWith((e1, e2) => e1.name.compareTo(e2.name) < 0).flatMap(trialSite => <tr>
         <td>
@@ -949,7 +942,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           {trialSite.country}
         </td>
         <td>
-          {ajaxButton(Text("remove"), () => {
+          {ajaxButton(Text(S.?("remove")), () => {
           participatingSites.remove(trialSite)
           SetHtml("participatedTrialSiteTable", showParticipatedSites(in))
         })}
@@ -967,7 +960,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       val arm = armsTmp(i)
       result += <div class="singleField">
         <fieldset>
-          <legend>Treatment arm
+          <legend>{S.?("treatmentArm")}
             {ajaxButton(<img alt="remove" src="/images/icons/error16.png"/>, () => {
             armsTmp.remove(i)
             Replace("treatmentArms", generateTreatmentArms(xhtml))
@@ -975,13 +968,13 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           </legend>
           <ul>
             <li>
-              <label for={"armName" + i}>Name</label>{ajaxText(arm.name, arm.name = _, "id" -> ("armName" + i))}
+              <label for={"armName" + i}>{S.?("name")}</label>{ajaxText(arm.name, arm.name = _, "id" -> ("armName" + i))}
             </li>
             <li>
-              <label for={"armDescription" + i}>Description</label>{ajaxTextarea(arm.description, arm.description = _, "id" -> ("armDescription" + i))}
+              <label for={"armDescription" + i}>{S.?("description")}</label>{ajaxTextarea(arm.description, arm.description = _, "id" -> ("armDescription" + i))}
             </li>
             <li>
-              <label for={"armPlannedSize" + i}>Planned size</label>{ajaxText(arm.plannedSize.toString, (v) => arm.plannedSize = v.toInt, "id" -> ("armPlannedSize" + i)) /*TODO check toInt */}
+              <label for={"armPlannedSize" + i}>{S.?("trial.plannedSubjectSize")}</label>{ajaxText(arm.plannedSize.toString, (v) => arm.plannedSize = v.toInt, "id" -> ("armPlannedSize" + i)) /*TODO check toInt */}
             </li>
           </ul>
         </fieldset>
@@ -1007,10 +1000,10 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           </legend>
           <ul>
             <li>
-              <label for={id + "Name" + i}>Name</label>{ajaxText(criterion.name, criterion.name = _, "id" -> (id + "Name" + i))}
+              <label for={id + "Name" + i}>{S.?("name")}</label>{ajaxText(criterion.name, criterion.name = _, "id" -> (id + "Name" + i))}
             </li>
             <li>
-              <label for={id + "Description" + +i}>Description</label>{ajaxTextarea(criterion.description, criterion.description = _, "id" -> (id + "Description" + +i))}
+              <label for={id + "Description" + +i}>{S.?("description")}</label>{ajaxTextarea(criterion.description, criterion.description = _, "id" -> (id + "Description" + +i))}
             </li>{createValues(criterion, xhtml, id, criterionList)}
           </ul>{generateInclusionConstraint(xhtml, "inclusionConstraintFieldset" + i, criterion)}
 
@@ -1028,7 +1021,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   private def generateInclusionConstraint(xhtml: NodeSeq, id: String, criterion: CriterionTmp): NodeSeq = {
 
     <fieldset id={id} class="inclusionConstraint">
-      <legend>Inclusion constraint
+      <legend>{S.?("trial.inclusionConstraint")}
         {ajaxCheckbox(criterion.inclusionConstraint.isDefined, v => {
         if (!v) criterion.inclusionConstraint = None
         else {
@@ -1059,7 +1052,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
       } else if(criterion.typ == "FreeTextCriterion") {
          <ul>
            <li>
-             <div>Element have to be set!</div>
+             <div>{S.?("elementIsNecessary")}</div>
            </li>
          </ul>
       } else {
@@ -1073,7 +1066,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
              }
              Replace(id, generateInclusionConstraint(xhtml, id, criterion))
            }, "style" -> "width: 20px;")}
-             lower boundary?
+             {S.?("lowerBoundary")}
              {if (criterion.inclusionConstraint.get.minValue.isDefined) {
              ajaxText(criterion.inclusionConstraint.get.minValue.get, v => {
                criterion.inclusionConstraint.get.minValue = Some(v)
@@ -1089,7 +1082,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
              }
              Replace(id, generateInclusionConstraint(xhtml, id, criterion))
            }, "style" -> "width: 20px;")}
-             upper boundary?
+             {S.?("upperBoundary")}
              {if (criterion.inclusionConstraint.get.maxValue.isDefined) {
              ajaxText(criterion.inclusionConstraint.get.maxValue.get, v => {
                criterion.inclusionConstraint.get.maxValue = Some(v)
@@ -1099,7 +1092,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
          </ul>
        }
     } else {
-      <span>No inclusion constraint</span>
+      <span>{S.?("noInclusionConstraint")}</span>
     }}
     </fieldset>
   }
@@ -1112,10 +1105,10 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
         //TODO implement specific replacement
         <li>
           <fieldset>
-            <legend>Values</legend>
+            <legend>{S.?("values")}</legend>
             <ul>
               <div>
-                {ajaxButton("add element", () => {
+                {ajaxButton(S.?("add"), () => {
                 x += ""
                 criterion.inclusionConstraint = None
                 Replace(id, generateGeneralCriterions(xhtml, id, criterionList))
@@ -1125,7 +1118,7 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
                   x(i) = v
                   criterion.inclusionConstraint = None
                   Replace(id, generateGeneralCriterions(xhtml, id, criterionList))
-                })}{ajaxButton("remove", () => {
+                })}{ajaxButton(S.?("remove"), () => {
                   x.remove(i)
                   criterion.inclusionConstraint = None
                   Replace(id, generateGeneralCriterions(xhtml, id, criterionList))
@@ -1156,8 +1149,8 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
           })}
           </legend>
           <ul>
-            <li>Please select:
-              {ajaxSelect(criterionTypes, Empty, criterionType = _)}{ajaxButton("add", () => {
+            <li>{S.?("pleaseSelect")}:
+              {ajaxSelect(criterionTypes, Empty, criterionType = _)}{ajaxButton(S.?("add"), () => {
               addSelectedCriterion(criterionType, stageElements)
               Replace(id, generateGeneralCriterions(xhtml, id, stageElements))
             })}
@@ -1171,269 +1164,6 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
     }
     NodeSeq fromSeq result}
     </div>
-  }
-
-  private def trials(in: NodeSeq): NodeSeq = {
-    trialService.getAll.either match {
-      case Left(x) => <tr>
-        <td colspan="8">
-          {x}
-        </td>
-      </tr>
-      case Right(trials) => {
-        trials.flatMap(trial => {
-          <tr>
-            <td>
-              {trial.abbreviation}
-            </td>
-            <td>
-              {trial.name}
-            </td>
-            <td>
-              {trial.status}
-            </td>
-            <td>
-              {trial.startDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))}
-            </td>
-            <td>
-              {trial.endDate.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))}
-            </td>
-            <td>
-              {trial.description}
-            </td>
-            <td>
-              {link("/trial/generalInformation", () => {
-              CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get))
-              subjectIdentifier = ""
-              subjectDataList.clear()
-            }, Text("select")) /*TODO error handling*/}
-            </td>
-          </tr>
-        })
-      }
-    }
-  }
-
-  private var subjectIdentifier = ""
-  private var subjectDataList = new ListBuffer[SubjectDataTmp]()
-
-  private def randomize(in: NodeSeq): NodeSeq = {
-    val trial = CurrentTrial.get.getOrElse {
-      error("Trial not found")
-      redirectTo("/trial/list")
-    }
-
-    if (subjectDataList.isEmpty) {
-      trial.criterions.foreach(criterion => subjectDataList +=  {
-        if(criterion.getClass == classOf[FreeTextCriterion])
-          new SubjectDataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]], "")
-        else
-        new SubjectDataTmp(criterion.asInstanceOf[Criterion[Any, Constraint[Any]]], null)
-      })
-    }
-
-    val subjectDataNodeSeq = new ListBuffer[Node]()
-
-    for (subjectData <- subjectDataList) {
-      subjectDataNodeSeq +=  <fieldset> {
-      // generateEntryWithInfo(subjectData.criterion.name, false, subjectData.criterion.description,
-        <legend>
-            <span>
-              {subjectData.criterion.name}
-            </span>
-            <span class="tooltip">
-              <img src="/images/icons/help16.png" alt={subjectData.criterion.description} title={subjectData.criterion.description}/> <span class="info">
-              {subjectData.criterion.description}
-            </span>
-            </span>
-        </legend>
-          <div>
-            {if (subjectData.criterion.getClass == classOf[DateCriterion]) {
-            {
-              ajaxText("", (y: String) => {
-                if (!y.isEmpty) {
-                  try {
-                    val value = Utility.slashDate.parse(y)
-                    subjectData.value = value
-                    if (!subjectData.criterion.isValueCorrect(value))
-                      S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
-                  } catch {
-                    case _ => S.error("randomizeMsg", subjectData.criterion.name + ": unknown failure")
-                  }
-                } else {
-                  S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
-                }
-              })
-            }
-          } else if (subjectData.criterion.getClass == classOf[DoubleCriterion]) {
-            {
-              ajaxText(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
-                if (!y.isEmpty) {
-                  try {
-                    val value = y.toDouble
-                    subjectData.value = value
-                    if (!subjectData.criterion.isValueCorrect(value))
-                      S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
-                  } catch {
-                    case nfe: NumberFormatException => S.error("randomizeMsg", subjectData.criterion.name + ": not a number")
-                    case _ => S.error("randomizeMsg", "unknown failure")
-                  }
-                } else {
-                  S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
-                }
-              })
-            }
-          } else if (subjectData.criterion.getClass == classOf[IntegerCriterion]) {
-            {
-              ajaxText(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
-                if (!y.isEmpty) {
-                  try {
-                    val value = y.toInt
-                    subjectData.value = value
-                    if (!subjectData.criterion.isValueCorrect(value))
-                      S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
-                  } catch {
-                    case nfe: NumberFormatException => S.error("randomizeMsg", subjectData.criterion.name + ": not a number")
-                    case _ => S.error("randomizeMsg", "unknown failure")
-                  }
-                } else {
-                  S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
-                }
-              })
-            }
-          } else if (subjectData.criterion.getClass == classOf[FreeTextCriterion]) {
-            {
-              ajaxText(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
-                subjectData.value = y
-                if (subjectData.value == null)
-                  S.error("randomizeMsg", subjectData.criterion.name + ": Element not set")
-                else if (!subjectData.criterion.isValueCorrect(y))
-                  S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
-              })
-            }
-          } else if (subjectData.criterion.getClass == classOf[OrdinalCriterion]) {
-            {
-              <div>
-                {ajaxRadio(subjectData.criterion.asInstanceOf[OrdinalCriterion].values.toSeq, Empty, (y: String) => {
-                subjectData.value = y
-                if (!subjectData.criterion.isValueCorrect(y))
-                  S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
-              }).toForm}
-              </div>
-            }
-          } else {
-            <span>?</span>
-          }}
-          </div>
-        //)
-        }
-      </fieldset>
-    }
-
-    def randomizeSubject() {
-      val properties: List[SubjectProperty[Any]] = subjectDataList.toList.map(subjectData => SubjectProperty(criterion = subjectData.criterion, value = subjectData.value).either match {
-        case Left(x) => null
-        case Right(prop) => prop
-      })
-
-      if (trial.criterions.isEmpty || subjectDataList.toList.map(subjectData => subjectData.criterion.isValueCorrect(subjectData.value)).reduce((acc, elem) => acc && elem)) {
-        if (trial.identificationCreationType != TrialSubjectIdentificationCreationType.EXTERNAL) subjectIdentifier = "system"
-        TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentLoggedInUser.get.get.username, trialSite = CurrentLoggedInUser.get.get.site, properties = properties).either match {
-          case Left(x) => S.error("randomizeMsg", x.toString())
-          case Right(subject) => {
-            trialService.randomize(trial, subject).either match {
-              case Left(x) => S.error("randomizeMsg", x)
-              case Right(result) => {
-                RandomizationResult.set(Some((result._1, result._2, subject)))
-                CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get))
-                subjectDataList.clear()
-                subjectIdentifier = ""
-                S.notice("Thanks patient (" + result._2 + ") randomized to treatment arm: " + result._1.name + "!")
-                S.redirectTo("/trialSubject/randomizationResult")
-              }
-            }
-          }
-        }
-      } else S.error("randomizeMsg", "Inclusion constraints not fulfilled")
-    }
-
-    bind("form", in,
-      "identifier" -> {
-        if (trial.identificationCreationType == TrialSubjectIdentificationCreationType.EXTERNAL)
-          ajaxText(subjectIdentifier, s => subjectIdentifier = s)
-        else <span>System generated identifier</span>
-      },
-      "data" -> {
-        NodeSeq fromSeq subjectDataNodeSeq
-      },
-      "cancel" -> <a href={val user = CurrentLoggedInUser.get.get
-      val rightList = user.rights.filter(right => right.trial.id == trial.id)
-      val roles = rightList.map(right => right.role)
-      if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
-        "/trial/randomizationData"
-      } else {
-        "/trial/randomizationDataInvestigator"
-      }}>Cancel</a>,
-      "submit" -> button("Randomize", randomizeSubject _))
-  }
-
-
-  private def showRandomizationResult(in: NodeSeq): NodeSeq = {
-   if (RandomizationResult.isDefined && RandomizationResult.get.isDefined) {
-
-      val result = RandomizationResult.get.get
-      bind("trialSubject", in,
-        "treatmentArm" -> <span style="font-weight:bold"> {result._1.name}</span>,
-        "identifier" -> <span style="font-weight:bold">{result._2}</span> ,
-        "ok" -> button("Ok", () => {
-          RandomizationResult.set(None)
-          val user = CurrentLoggedInUser.get.get
-          val trial = CurrentTrial.get.get
-          val rightList = user.rights.filter(right => right.trial.id == trial.id)
-          val roles = rightList.map(right => right.role)
-          if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
-                S.redirectTo("/trial/randomizationData")
-           } else {
-                S.redirectTo("/trial/randomizationDataInvestigator")
-           }
-        })
-     )
-    } else S.redirectTo("/trial/list")
-  }
-
-  private def trialSubjects(in: NodeSeq): NodeSeq = {
-    val trial = CurrentTrial.get.getOrElse {
-      error("Trial not found")
-      redirectTo("/trial/list")
-    }
-    var odd = true
-    trial.getSubjects.flatMap(trialSubject => {
-      odd = !odd
-      <tr class={if (odd) "odd" else "even"}>
-        <td>
-          {trialSubject.createdAt.toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm"))}
-        </td>
-        <td>
-          {trialSubject.identifier}
-        </td>
-        <td>
-          {if (!trialSubject.properties.isEmpty) trialSubject.properties.map(prop => prop.criterion.name + ": " + prop.value).reduce((acc, element) => acc + " | " + element)}
-        </td>
-        <td>
-          {link("/trialSubject/show", () => selectedTrialSubject = Some(trialSubject), Text("Show"))}
-        </td>
-      </tr>
-    })
-  }
-
-  private def showTrialSubject(in: NodeSeq): NodeSeq = {
-    val trialSubject: TrialSubject = selectedTrialSubject.getOrElse {
-      error("Trial subject not found")
-      redirectTo("/trialSubject/list")
-    }
-    bind("form", in,
-      "identifier" -> trialSubject.identifier,
-      "back" -> <a href="/trialSubject/list">Cancel</a>)
   }
 
   private def confirmDelete(in: NodeSeq): NodeSeq = {
@@ -1500,32 +1230,3 @@ class TrialSnippet extends StatefulSnippet with HelperSnippet {
   }
 
 }
-
-case class TreatmentArmTmp(id: Int, version: Int, var name: String, var description: String, var plannedSize: Int) {}
-
-case class CriterionTmp(id: Int, version: Int, typ: String, var name: String, var description: String, values: Option[ListBuffer[String]], var inclusionConstraint: Option[ConstraintTmp] = None, var strata: ListBuffer[ConstraintTmp] = new ListBuffer()) {}
-
-case class ConstraintTmp(id: Int = Int.MinValue, version: Int = 0, var minValue: Option[String] = None, var maxValue: Option[String] = None, ordinalValues: HashSet[(Boolean, String)] = new HashSet())
-
-case class SubjectDataTmp(criterion: Criterion[Any, Constraint[Any]], var value: Any) {}
-
-case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0, name: String, description: String, canBeUsedWithStratification: Boolean, configurationEntries: List[RandomizationMethodConfigEntryTmp[Any]]) {
-
-  def getConfigurationProperties: List[ConfigurationProperty[Any]] = {
-    configurationEntries.map(config => {
-      if (config.configurationType.getClass == classOf[BooleanConfigurationType]) {
-        new ConfigurationProperty(config.configurationType, config.value.toString.toBoolean)
-      } else if (config.configurationType.getClass == classOf[DoubleConfigurationType]) {
-        new ConfigurationProperty(config.configurationType, config.value.toString.toDouble)
-      } else if (config.configurationType.getClass == classOf[IntegerConfigurationType]) {
-        new ConfigurationProperty(config.configurationType, config.value.toString.toInt)
-      } else if (config.configurationType.getClass == classOf[OrdinalConfigurationType]) {
-        new ConfigurationProperty(config.configurationType, config.value)
-      }
-    }).asInstanceOf[List[ConfigurationProperty[Any]]]
-  }
-}
-
-case class RandomizationMethodConfigEntryTmp[T](configurationType: ConfigurationType[T], var value: T) {}
-
-object RandomizationResult extends SessionVar[Option[(TreatmentArm, String, TrialSubject)]](None)

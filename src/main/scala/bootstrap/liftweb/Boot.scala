@@ -82,7 +82,7 @@ class Boot extends Logging {
         Menu(Loc("trialShowGeneral", List("trial", "generalInformation"), S.?("menu.generalInformation"), If(() => isTrialSelected, ""))),
         Menu(Loc("trialShowRadomizationData", List("trial", "randomizationData"), S.?("menu.randomizationData"), If(() => canViewTrialInformation, ""))),
         Menu(Loc("trialShowRadomizationDataInvestigator", List("trial", "randomizationDataInvestigator"),  S.?("menu.ownRandomizationData"), If(() => (isInvestigator && !canViewTrialInformation), ""))),
-        Menu(Loc("trialShowAudit", List("trial", "audit"),  S.?("menu.audit"), If(() => canViewTrialInformation, ""))),
+        Menu(Loc("trialShowAudit", List("trial", "audit"),  S.?("audit"), If(() => canViewTrialInformation, ""))),
         Menu(Loc("trialShowUsers", List("trial", "users"),  S.?("menu.users"), If(() => canViewTrialInformation, "")))
         ),
       Menu(S.?("menu.edit")) / "trialEdit" >> If(() => canViewTrialEdit, "") submenus(

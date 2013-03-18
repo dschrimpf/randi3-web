@@ -5,22 +5,22 @@
     <table class="randi2Table">
         <thead>
         <tr>
-            <th>Abbreviation</th>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Start date</th>
-            <th>End date</th>
-            <th>Description</th>
+            <th><lift:loc locid="abbreviation">Abbreviation</lift:loc></th>
+            <th><lift:loc locid="name">Name</lift:loc></th>
+            <th><lift:loc locid="status">Status</lift:loc></th>
+            <th><lift:loc locid="startDate">Start date</lift:loc></th>
+            <th><lift:loc locid="endDate">End date</lift:loc></th>
+            <th><lift:loc locid="description">Description</lift:loc></th>
             <th></th>
         </tr>
         </thead>
         <tfoot>
         <tr>
-            <td colspan="7">only trials with role shown</td>
+            <td colspan="7"><lift:loc locid="trial.onlyTrialsWithParticipation">only trials with own participation are shown</lift:loc></td>
         </tr>
         </tfoot>
         <tbody>
-        <tr class="lift:trialSnippet.trials"></tr>
+        <tr class="lift:TrialListSnippet.show"></tr>
         </tbody>
 
     </table>

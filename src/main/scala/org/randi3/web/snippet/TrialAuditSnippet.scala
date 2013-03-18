@@ -45,17 +45,17 @@ class TrialAuditSnippet {
         <table class="randi2Table">
           <thead>
             <tr>
-              <th>Time</th>
-              <th>User</th>
-              <th>Action</th>
-              <th>Type</th>
-              <th>Identifier</th>
-              <th>Text</th>
+              <th>{S.?("time")}</th>
+              <th>{S.?("username")}</th>
+              <th>{S.?("action")}</th>
+              <th>{S.?("type")}</th>
+              <th>{S.?("identifier")}</th>
+              <th>{S.?("description")}</th>
             </tr>
           </thead>{if (entries.isEmpty) {
           <tfoot>
             <tr>
-              <td colspan="2">no audit available</td>
+              <td colspan="2">{S.?("trial.noAuditAvailable")}</td>
             </tr>
           </tfoot>
         } else {

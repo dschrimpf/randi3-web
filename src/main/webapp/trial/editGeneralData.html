@@ -14,27 +14,28 @@
 
     </script>
 
-    <h1>Edit a trial</h1>
-    <hr/>
-
 
     <form class="lift:TrialSnippet.edit?form=post">
+
+        <h1><lift:loc locid="trial.edit"></lift:loc> (<trial:info/>)</h1>
+        <hr/>
 
         <lift:msg id="trialMsg" errorClass="err"/>
         <div id="trialAddTabs">
             <ul>
-                <li><a href="#tabs-1">General data</a></li>
-                <li><a href="#tabs-2">Centers</a></li>
-                <li><a href="#tabs-3">Treatments</a></li>
-                <li><a href="#tabs-4">Properties</a></li>
-            <!--    <li><a href="#tabs-5">Stages</a></li>-->
-                <li><a href="#tabs-6">Randomization</a></li>
+                <li><a href="#tabs-1"><lift:loc locid="general">General</lift:loc></a></li>
+                <li><a href="#tabs-2"><lift:loc locid="trialSites">Trial sites</lift:loc></a></li>
+                <li><a href="#tabs-3"><lift:loc locid="treatmentArms">Treatment arms</lift:loc></a></li>
+                <li><a href="#tabs-4"><lift:loc locid="subjectProperties">Subject properties</lift:loc></a></li>
+                <!--    <li><a href="#tabs-5">Stages</a></li>-->
+                <li><a href="#tabs-6"><lift:loc locid="randomization">Randomization</lift:loc></a></li>
+
             </ul>
 
             <div id="tabs-1">
 
                 <fieldset>
-                    <legend>General informations</legend>
+                    <legend><lift:loc locid="generalInformation">General information</lift:loc></legend>
                     <ul>
                         <trial:name/>
                         <trial:abbreviation/>
@@ -43,7 +44,7 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Duration</legend>
+                    <legend><lift:loc locid="duration">Duration</lift:loc></legend>
 
                     <ul>
                         <trial:startDate/>
@@ -52,7 +53,7 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend>Status</legend>
+                    <legend><lift:loc locid="trial.status">Status</lift:loc></legend>
 
                     <ul>
                         <trial:status/>
@@ -61,7 +62,7 @@
             </div>
 
             <div id="tabs-2">
-                <span>Please select: </span>
+                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>: </span>
                 <trial:participatingSiteSelect/>
                 <trial:addParticipatingSite/>
                 <hr/>
@@ -69,12 +70,12 @@
                     <trial:pSites>
                         <table width="90%">
                             <tr>
-                                <th>Name</th>
-                                <th>Street</th>
-                                <th>Post code</th>
-                                <th>City</th>
-                                <th>Country</th>
-                                <th></th>
+                            <th><lift:loc locid="name">Name</lift:loc></th>
+                            <th><lift:loc locid="street">Street</lift:loc></th>
+                            <th><lift:loc locid="postCode">Post code</lift:loc></th>
+                            <th><lift:loc locid="city">City</lift:loc></th>
+                            <th><lift:loc locid="country">Country</lift:loc></th>
+                            <th></th>
                             </tr>
                         </table>
                     </trial:pSites>
@@ -90,10 +91,10 @@
             </div>
 
             <div id="tabs-4">
-                <span>Identification creation:</span>
+                <span><lift:loc locid="identificationCreationType">Identification creation type</lift:loc>:</span>
                 <trial:identificationCreationTypeSelect/>
                 <hr/>
-                <span>Please Select:</span>
+                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>:</span>
                 <trial:criterionSelect/>
                 <trial:addSelectedCriterion/>
                 <hr/>
@@ -108,7 +109,7 @@
             </div>-->
 
             <div id="tabs-6">
-                <span>Please Select:</span>
+                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>:</span>
                 <trial:randomizationMethodSelect/>
                 <trial:randomizationConfig/>
             </div>

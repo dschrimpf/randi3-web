@@ -8,17 +8,20 @@
 
 
     </script>
-    <h1>General Information</h1><hr />
+
+
+    <h1><lift:loc locid="generalInformation">General Information</lift:loc></h1><hr />
+
     <lift:TrialGeneralInformationSnippet.show>
 
     <div id="trialShowTabs">
         <ul>
-            <li><a href="#generalInformation">General data</a></li>
-            <li><a href="#trialSites">Trial sites</a></li>
-            <li><a href="#treatmentArms">Treatment arms</a></li>
-            <li><a href="#properties">Subject properties</a></li>
+            <li><a href="#generalInformation"><lift:loc locid="general">General</lift:loc></a></li>
+            <li><a href="#trialSites"><lift:loc locid="trialSites">Trial sites</lift:loc></a></li>
+            <li><a href="#treatmentArms"><lift:loc locid="treatmentArms">Treatment arms</lift:loc></a></li>
+            <li><a href="#properties"><lift:loc locid="subjectProperties">Subject properties</lift:loc></a></li>
           <!--  <li><a href="#stages">Stages</a></li>-->
-            <li><a href="#algorithm">Algorithm</a></li>
+            <li><a href="#algorithm"><lift:loc locid="randomizationMethod">Randomization method</lift:loc></a></li>
         </ul>
 
         <div id="generalInformation">
@@ -26,27 +29,27 @@
             <table>
                 <tbody>
                 <tr>
-                    <td style="text-align: right;" width="50em">Abbreviation:</td>
+                    <td style="text-align: right;" width="50em"><lift:loc locid="abbreviation">Abbreviation</lift:loc>:</td>
                     <td style="font-weight:bold;"><trial:abbreviation /></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Name:</td>
+                    <td style="text-align: right;"><lift:loc locid="name">Name</lift:loc>:</td>
                     <td style="font-weight:bold;"><trial:name /></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Description:</td>
+                    <td style="text-align: right;"><lift:loc locid="description">Description</lift:loc>:</td>
                     <td style="font-weight:bold;"><trial:description /></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Start date:</td>
+                    <td style="text-align: right;"><lift:loc locid="startDate">Start date</lift:loc>:</td>
                     <td style="font-weight:bold;"><trial:startDate /></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">End date:</td>
+                    <td style="text-align: right;"><lift:loc locid="endDate">End date</lift:loc>:</td>
                     <td style="font-weight:bold;"><trial:endDate /></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right;">Status:</td>
+                    <td style="text-align: right;"><lift:loc locid="status">Status</lift:loc>:</td>
                     <td style="font-weight:bold;"><trial:status /></td>
                 </tr>
                 </tbody>

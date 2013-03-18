@@ -36,13 +36,13 @@ object TrialGeneralInformationSnippet {
       <table class="randi2Table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Country</th>
+            <th>{S.?("name")}</th>
+            <th>{S.?("country")}</th>
           </tr>
         </thead>{if (trial.participatingSites.isEmpty) {
         <tfoot>
           <tr>
-            <td colspan="2">no site defined</td>
+            <td colspan="2">{S.?("trial.noSiteDefined")}</td>
           </tr>
         </tfoot>
       } else {
@@ -66,14 +66,14 @@ object TrialGeneralInformationSnippet {
       <table class="randi2Table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Planned subject size</th>
+            <th>{S.?("name")}</th>
+            <th>{S.?("description")}</th>
+            <th>{S.?("trial.plannedSubjectSize")}</th>
           </tr>
         </thead>{if (trial.treatmentArms.isEmpty) {
         <tfoot>
           <tr>
-            <td colspan="3">no arms defined</td>
+            <td colspan="3">{S.?("trial.noArmsDefined")}</td>
           </tr>
         </tfoot>
       } else {
@@ -118,7 +118,7 @@ object TrialGeneralInformationSnippet {
       <div>
         {
         if(trial.randomizationMethod.isEmpty){
-          <span>No algorithm defined</span>
+          <span>{S.?("trial.noAlgorithmDefined")}</span>
           }else {
          val method = trial.randomizationMethod.get
          val plugin = randomizationPluginManager.getPluginForMethod(method).get
@@ -129,7 +129,7 @@ object TrialGeneralInformationSnippet {
             {plugin.description}
           </div>
             <br />
-            <h5>Configuration:</h5>
+            <h5>{S.?("trial.randomizationConfiguration")}:</h5>
             {configuration.flatMap(conf =>{
             val info = conf.configurationType.description
             <div>
@@ -145,12 +145,12 @@ object TrialGeneralInformationSnippet {
           }
             )}
             <br />
-            <h5>Stratification:</h5>
+            <h5>{S.?("trial.stratification")}:</h5>
             {
             <div>
-              Trial site stratification = {trial.stratifyTrialSite.toString}
+              {S.?("trial.trialSiteStratification")} = {trial.stratifyTrialSite.toString}
             <br />
-            <h6>Strata</h6>
+            <h6>{S.?("trial.strata")}</h6>
             {trial.criterions.flatMap(criterion =>
             {if(!criterion.strata.isEmpty)
             <div>
@@ -191,15 +191,15 @@ object TrialGeneralInformationSnippet {
     <table class="randi2Table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Inclusion Constraint</th>
+          <th>{S.?("name")}</th>
+          <th>{S.?("type")}</th>
+          <th>{S.?("description")}</th>
+          <th>{S.?("trial.inclusionConstraint")}</th>
         </tr>
       </thead>{if (criterions.isEmpty) {
       <tfoot>
         <tr>
-          <td colspan="2">no criterions defined</td>
+          <td colspan="2">{S.?("trial.noCriterionsDefined")}</td>
         </tr>
       </tfoot>
     } else {

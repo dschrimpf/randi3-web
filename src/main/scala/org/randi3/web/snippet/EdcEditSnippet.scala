@@ -34,6 +34,8 @@ import net.liftweb.common.Full
 import scala.Right
 import org.randi3.randomization.configuration.DoubleConfigurationType
 
+import org.randi3.web.model._
+
 
 
 class EdcEditSnippet extends StatefulSnippet {

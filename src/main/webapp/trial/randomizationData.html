@@ -8,18 +8,18 @@
 
 
     </script>
-    <h1>Randomization data</h1>
+    <h1><lift:loc locid="randomizationData">Randomization data</lift:loc></h1>
     <hr/>
 
     <lift:TrialRandomizationDataSnippet.show>
 
         <div id="trialShowTabs">
             <ul>
-                <li><a href="#randomizations">Randomizations</a></li>
+                <li><a href="#randomizations"><lift:loc locid="patients">Patients</lift:loc></a></li>
               <!--  <li><a href="#stages">Stages</a></li>-->
-                <li><a href="#treatmentArms">Treatments</a></li>
-                <li><a href="#trialSites">Trial sites</a></li>
-                <li><a href="#recruitment">Recruitment chart</a></li>
+                <li><a href="#treatmentArms"><lift:loc locid="treatmentArms">Treatment arms</lift:loc></a></li>
+                <li><a href="#trialSites"><lift:loc locid="trialSites">Trial sites</lift:loc></a></li>
+                <li><a href="#recruitment"><lift:loc locid="recruitmentChart">Recruitment chart</lift:loc></a></li>
               <!--  <li><a href="#subgroups">Subgroups</a></li>-->
             </ul>
 
@@ -30,7 +30,7 @@
                 </div>
 
                 <div>
-                    <trial:randomizationDataFile/>
+                    <a href="/downloadRandomizationData"><img src="/images/icons/saved30.png"/> Download</a>
                 </div>
             </div>
 
@@ -40,7 +40,7 @@
             </div>-->
 
             <div id="treatmentArms">
-                <h4>Treatment arm chart:</h4>
+                <h4><lift:loc locid="treatmentArmChart">Treatment arm chart</lift:loc>:</h4>
 
                 <div align="center">
                     <div id="treatmentArmChart_area" style="width:600px;height:300px;"></div>
@@ -51,7 +51,7 @@
             </div>
 
             <div id="trialSites">
-                <div align="center">                        n
+                <div align="center">
                     <div id="trialSitesChart_area" style="width:600px;height:300px;"></div>
                 </div>
                 <trial:trialSitesChart/>

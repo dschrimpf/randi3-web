@@ -38,7 +38,6 @@ class TrialRandomizationDataSnippet {
 
     bind("trial", in,
       "randomizationDataTable" -> randomizationDataTable(trial),
-      "randomizationDataFile" -> <a href="/downloadRandomizationData">Download</a>,
       "treatmentArmChart" -> treatmentArmChart(in, trial),
       "treatmentArmTable" -> treatmentArmTable(trial),
       "trialSitesChart" -> trialSitesChart(in, trial),
@@ -62,13 +61,13 @@ class TrialRandomizationDataSnippet {
     <table class="randi2Table">
       <thead>
         <tr>
-          <th>Arm</th>
-          <th>Current size</th>
-          <th>Planned Size</th>
-          <th>Fill level</th>
+          <th>{S.?("treatmentArms")}</th>
+          <th>{S.?("currentSize")}</th>
+          <th>{S.?("trial.plannedSubjectSize")}</th>
+          <th>{S.?("perCent")}</th>
         </tr>
       </thead>{if (trial.treatmentArms.isEmpty)
-      <tfoot>no treatment arms available</tfoot>}<tbody>
+      <tfoot>{S.?("trial.noArmsDefined")}</tfoot>}<tbody>
       {trial.treatmentArms.flatMap(arm => {
         <tr>
           <td>
@@ -129,15 +128,17 @@ class TrialRandomizationDataSnippet {
 
 
   def trialSitesTable(trial: Trial): Elem = {
-    <table class="randi2Table">
+    val trialSites= trial.getSubjects.map(subject => subject.trialSite).toSet.toList
+
+     <table class="randi2Table">
       <thead>
         <tr>
-          <th>Trial site</th>
-          <th>Trial subject count</th>
+          <th>{S.?("trialSite")}</th>
+          <th>{S.?("currentSize")}</th>
         </tr>
       </thead>{if (trial.treatmentArms.isEmpty)
-      <tfoot>no treatment arms available</tfoot>}<tbody>
-      {trial.participatingSites.flatMap(site => {
+      <tfoot>{S.?("trial.noSiteDefined")}</tfoot>}<tbody>
+      {trialSites.flatMap(site => {
         <tr>
           <td>
             {site.name}
@@ -154,8 +155,10 @@ class TrialRandomizationDataSnippet {
 
   def trialSitesChart(xhtml: NodeSeq, trial: Trial): NodeSeq = {
 
-    val data = trial.participatingSites.map(site => trial.getSubjects.filter(subject => subject.trialSite == site).size)
-    val bar_labels = trial.participatingSites.map(site => site.name)
+    val trialSites= trial.getSubjects.map(subject => subject.trialSite).toSet.toList
+
+    val data = trialSites.map(site => trial.getSubjects.filter(subject => subject.trialSite == site).size)
+    val bar_labels = trialSites.map(site => site.name)
 
     val data_to_plot = for ((y, x) <- data zipWithIndex) yield new FlotSerie() {
       override val data: List[(Double, Double)] = (x.toDouble, y.toDouble) :: Nil
@@ -202,11 +205,11 @@ class TrialRandomizationDataSnippet {
     <table class="randi2Table">
       <thead>
         <tr>
-          <th>Created At</th>
-          <th>Identifier</th>
-          <th>Treatment</th>
-          <th>Site</th>
-          <th>Investigator</th>{propertiesHeader(criterions)}
+          <th>{S.?("createdAt")}</th>
+          <th>{S.?("identifier")}</th>
+          <th>{S.?("treatmentArm")}</th>
+          <th>{S.?("trialSite")}</th>
+          <th>{S.?("investigator")}</th>{propertiesHeader(criterions)}
         </tr>
       </thead>{if (trial.getSubjects.isEmpty)
       <tfoot>no subjects available</tfoot>}<tbody>
@@ -257,7 +260,7 @@ class TrialRandomizationDataSnippet {
 
     val data_to_plot = List(new FlotSerie() {
       override val data: List[(Double, Double)] = dataSet
-      override val label = Full("current recruitment")
+      override val label = Full(S.?("currentRecruitment"))
       override val lines = Full(new FlotLinesOptions {
         override val show = Full(true)
       })
@@ -268,7 +271,7 @@ class TrialRandomizationDataSnippet {
 
     }, new FlotSerie() {
       override val data: List[(Double, Double)] = estimatedDataSet
-      override val label = Full("estimated recruitment")
+      override val label = Full(S.?("estimatedRecruitment"))
       override val lines = Full(new FlotLinesOptions {
         override val show = Full(true)
       })
@@ -344,7 +347,7 @@ object DownloadRandomizationData extends RestHelper {
     val result = new mutable.StringBuilder()
     //no or not the necessary rights
     if (rightList.isEmpty || !(roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor) || roles.contains(Role.investigator))) {
-      result.append("No right to dowload the data")
+      result.append("No right to download the data")
     } else {
 
       val criterions: List[Criterion[_, Constraint[_]]] =

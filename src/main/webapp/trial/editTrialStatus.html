@@ -8,22 +8,22 @@
 
     </script>
 
-    <h1>Edit a trial</h1>
-    <hr/>
 
 
     <form class="lift:TrialSnippet.editStatus?form=post">
+        <h1><lift:loc locid="trial.edit"></lift:loc> (<trial:name/>)</h1>
+        <hr/>
 
         <lift:msg id="trialMsg" errorClass="err"/>
         <div id="trialEditTabs">
             <ul>
-                <li><a href="#tabs-1">Status</a></li>
+                <li><a href="#tabs-1"><lift:loc locid="trial.status">Status</lift:loc></a></li>
             </ul>
 
             <div id="tabs-1">
 
                 <fieldset>
-                    <legend>Status</legend>
+                    <legend><lift:loc locid="trial.status">Status</lift:loc></legend>
 
                     <ul>
                         <trial:status/>
