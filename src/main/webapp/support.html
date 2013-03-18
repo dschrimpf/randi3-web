@@ -2,31 +2,32 @@
 
     <lift:ConfigurationSnippet.configured>
 
-        <h1>Support</h1>
+        <h1><lift:loc locid="support">Support</lift:loc></h1>
         <hr/>
-        <h4>Please, contact one of the following administrators of this RANDI2 installation for support:</h4>
+        <h4><lift:loc locid="support.contact">Please, contact one of the following administrators of this RANDI2 installation for support:</lift:loc></h4>
         <table class="randi2Table">
             <thead>
             <tr>
-                <th>Identifier</th>
-                <th>Name</th>
-                <th>Last name</th>
-                <th>Email</th>
-                <th>Phone number</th>
-                <th>Trial site</th>
+                <th><lift:loc locid="identifier">Identifier</lift:loc></th>
+                <th><lift:loc locid="name">Name</lift:loc></th>
+                <th><lift:loc locid="lastName">Last name</lift:loc></th>
+                <th><lift:loc locid="email">E-Mail</lift:loc></th>
+                <th><lift:loc locid="phoneNumber">Phone number</lift:loc></th>
+                <th><lift:loc locid="trialSite">Trial site</lift:loc></th>
             </tr>
             </thead>
             <tfoot>
 
             </tfoot>
             <tbody>
-            <tr class="lift:supportSnippet.supportUsers">
-                <td>test</td>
+            <tr class="lift:SupportSnippet.supportUsers">
+                <td></td>
             </tr>
             </tbody>
         </table>
     </lift:ConfigurationSnippet.configured>
-    <h4>For general information concerning the system or if you have suggestions for improvement, please visit our
-        web page <a href="http://randi2.org">http://randi2.org</a>  or send an email at <a href="mailto:contact@randi2.de">contact@randi2.de</a>.
+    <h4><lift:loc locid="support.general1"> For general information concerning the system or if you have suggestions for improvement, please visit our
+        web page </lift:loc>
+       <a href="http://randi2.org">http://randi2.org</a> <lift:loc locid="support.general2"> or send an email at</lift:loc> <a href="mailto:contact@randi2.de">contact@randi2.de</a>.
     </h4>
 </lift:surround>
