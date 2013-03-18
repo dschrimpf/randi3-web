@@ -26,7 +26,7 @@ import org.randi3.model.StratifiedTrialSite
 
 object TrialGeneralInformationSnippet {
 
-  private val randomizationPluginManager = DependencyFactory.randomizationPluginManager
+  private val randomizationPluginManager = DependencyFactory.get.randomizationPluginManager
 
   def show(in: NodeSeq): NodeSeq = {
     val trial = CurrentTrial.get.getOrElse {

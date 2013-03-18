@@ -37,7 +37,7 @@ class TrialAuditSnippet {
       redirectTo("/trial/list")
     }
 
-    DependencyFactory.auditService.getAudit(trial).either match {
+    DependencyFactory.get.auditService.getAudit(trial).either match {
       case Left(x) => <div>
         {x}
       </div>

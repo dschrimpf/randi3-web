@@ -49,7 +49,7 @@ class EdcEditSnippet extends StatefulSnippet {
 
   private val armsTmp = new ListBuffer[TreatmentArmTmp]()
 
- private val randomizationPluginManager = DependencyFactory.randomizationPluginManager
+ private val randomizationPluginManager = DependencyFactory.get.randomizationPluginManager
 
  private val randomizationMethods = randomizationPluginManager.getPluginNames
 
@@ -83,7 +83,7 @@ class EdcEditSnippet extends StatefulSnippet {
           val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), newTrial, randomizationMethodTmp.getConfigurationProperties).toOption.get
           val trialWithMethod = newTrial.copy(randomizationMethod = Some(randomMethod))
 
-          DependencyFactory.openClinicaService.createNewLocalTrial(trial.copy(trial = Some(newTrial)))
+          DependencyFactory.get.openClinicaService.createNewLocalTrial(trial.copy(trial = Some(newTrial)))
         }
       }
       println("save !!!!!!!!!")

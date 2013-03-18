@@ -11,8 +11,8 @@ import org.randi3.model.{TrialStatus, Role}
 
 class OverviewSnippet {
 
-  val userService = DependencyFactory.userService
-  val trialService = DependencyFactory.trialService
+  val userService = DependencyFactory.get.userService
+  val trialService = DependencyFactory.get.trialService
 
   val user = CurrentLoggedInUser.get.get
 

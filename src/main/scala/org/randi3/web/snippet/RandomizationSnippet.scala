@@ -21,7 +21,7 @@ import org.randi3.web.lib.DependencyFactory
 class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
-  private val trialService = DependencyFactory.trialService
+  private val trialService = DependencyFactory.get.trialService
 
 
   def dispatch = {

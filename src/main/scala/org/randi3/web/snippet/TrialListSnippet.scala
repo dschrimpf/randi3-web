@@ -13,7 +13,7 @@ import org.randi3.web.util.CurrentTrial
 
 class TrialListSnippet {
 
-  private val trialService = DependencyFactory.trialService
+  private val trialService = DependencyFactory.get.trialService
 
   def show(in: NodeSeq): NodeSeq = {
     trialService.getAll.either match {

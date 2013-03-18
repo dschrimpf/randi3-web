@@ -20,7 +20,7 @@ import org.randi3.web.util.CurrentLoggedInUser
 
 class LoginForm {
 
-  val userService = DependencyFactory.userService
+  val userService = DependencyFactory.get.userService
 
   def login(xhtml: NodeSeq): NodeSeq = {
     var username = ""

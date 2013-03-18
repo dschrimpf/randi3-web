@@ -19,7 +19,7 @@ class UserAuditSnippet {
       redirectTo("/user/list")
     }
 
-    DependencyFactory.auditService.getAudit(user.username).either match {
+    DependencyFactory.get.auditService.getAudit(user.username).either match {
       case Left(x) => <div>
         {x}
       </div>

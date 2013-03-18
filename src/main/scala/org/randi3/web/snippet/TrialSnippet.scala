@@ -46,10 +46,10 @@ import org.randi3.web.model._
 
 class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
-  private val trialSiteService = DependencyFactory.trialSiteService
-  private val userService = DependencyFactory.userService
-  private val trialService = DependencyFactory.trialService
-  private val randomizationPluginManager = DependencyFactory.randomizationPluginManager
+  private val trialSiteService = DependencyFactory.get.trialSiteService
+  private val userService = DependencyFactory.get.userService
+  private val trialService = DependencyFactory.get.trialService
+  private val randomizationPluginManager = DependencyFactory.get.randomizationPluginManager
 
 
   def dispatch = {
@@ -293,7 +293,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     selectedUser = if (allUsers.isEmpty) null else allUsers.head
 
-    val allUsersTrial = DependencyFactory.userService.getAllFromTrial(trial).either match {
+    val allUsersTrial = DependencyFactory.get.userService.getAllFromTrial(trial).either match {
       case Left(failure) => return <div>
         {failure}
       </div>

@@ -26,8 +26,8 @@ import collection.mutable.{HashSet, ListBuffer}
 class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
-  private val userService = DependencyFactory.userService
-  private val trialSiteService = DependencyFactory.trialSiteService
+  private val userService = DependencyFactory.get.userService
+  private val trialSiteService = DependencyFactory.get.trialSiteService
 
   private var username = ""
   private var password = ""

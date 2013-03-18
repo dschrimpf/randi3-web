@@ -39,7 +39,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
     case "deactivate" => deactivate _
   }
 
-  private val trialSiteService = DependencyFactory.trialSiteService
+  private val trialSiteService = DependencyFactory.get.trialSiteService
 
 
   /**

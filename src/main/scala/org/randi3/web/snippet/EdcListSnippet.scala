@@ -73,7 +73,7 @@ class EdcListSnippet {
     def edcTrials: Elem = {
       <div id="edcTrialList">
         {if (!(location.isEmpty || username.isEmpty || passwordHash.isEmpty)) {
-        val trials = DependencyFactory.openClinicaService.getTrials(
+        val trials = DependencyFactory.get.openClinicaService.getTrials(
           new ConnectionOC(location = location, username = username, passwordHash = passwordHash)
         )
         if (trials.isEmpty) {
@@ -98,7 +98,7 @@ class EdcListSnippet {
               <td>{trial.identifier}</td>
               <td>{trial.name}</td>
               <td>{link("/trial/generalInformation", () => {
-                CurrentEDCTrial.set(Some(DependencyFactory.openClinicaService.getFullTrialOC(trial).get))
+                CurrentEDCTrial.set(Some(DependencyFactory.get.openClinicaService.getFullTrialOC(trial).get))
                 redirectTo("/edcTrial/viewRemoteDetails")
                 }, Text("select"))}</td>
             </tr>

@@ -7,8 +7,8 @@ import org.randi3.web.lib.DependencyFactory
 
 class ConfigurationSnippet {
   def configured(html: NodeSeq) =
-    if (DependencyFactory.configurationService.isConfigurationComplete) html else NodeSeq.Empty
+    if (DependencyFactory.get.configurationService.isConfigurationComplete) html else NodeSeq.Empty
 
   def install(html: NodeSeq) =
-    if (!DependencyFactory.configurationService.isConfigurationComplete) redirectTo("install") else NodeSeq.Empty
+    if (!DependencyFactory.get.configurationService.isConfigurationComplete) redirectTo("install") else NodeSeq.Empty
 }

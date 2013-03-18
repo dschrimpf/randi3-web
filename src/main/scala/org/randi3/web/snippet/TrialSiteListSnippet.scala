@@ -11,7 +11,7 @@ import net.liftweb.http.S
 
 class TrialSiteListSnippet {
 
-  private val trialSiteService = DependencyFactory.trialSiteService
+  private val trialSiteService = DependencyFactory.get.trialSiteService
 
 
   def list(xhtml: NodeSeq): NodeSeq = {

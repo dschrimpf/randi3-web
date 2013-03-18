@@ -18,7 +18,7 @@ import net.liftweb.http.js.JsCmds.Alert
 class SupportSnippet {
 
 
-  val userService = DependencyFactory.userService
+  val userService = DependencyFactory.get.userService
 
   def supportUsers(xhtml: NodeSeq): NodeSeq = {
     userService.getAllAdministrators.either match {

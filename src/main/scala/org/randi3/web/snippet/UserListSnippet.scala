@@ -10,7 +10,7 @@ import net.liftweb.http.S
 class UserListSnippet {
 
 
-  private val userService = DependencyFactory.userService
+  private val userService = DependencyFactory.get.userService
 
   def list(nodeSeq: NodeSeq): NodeSeq  = {
       val currentUser = CurrentLoggedInUser.get.get

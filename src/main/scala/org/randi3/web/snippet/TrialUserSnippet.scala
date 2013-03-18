@@ -30,7 +30,7 @@ class TrialUserSnippet {
     val trial = CurrentTrial.get.getOrElse {
       redirectTo("/trial/list")
     }
-    val allUsers = DependencyFactory.userService.getAllFromTrial(trial).either match {
+    val allUsers = DependencyFactory.get.userService.getAllFromTrial(trial).either match {
       case Left(failure) => return <div>
         {failure}
       </div>

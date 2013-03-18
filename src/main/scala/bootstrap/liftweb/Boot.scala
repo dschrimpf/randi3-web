@@ -13,12 +13,11 @@ import org.randi3.model.{TrialStatus, Role}
 import net.liftweb.sitemap.Loc._
 import net.liftweb.sitemap._
 import net.liftweb.widgets.flot._
-import org.randi3.configuration.ConfigurationSchema
-import org.randi3.web.lib.DependencyFactory
+import org.randi3.configuration.{ConfigurationServiceComponent, ConfigurationSchema}
 import org.scalaquery.meta.MTable
 import org.randi3.web.snippet.DownloadRandomizationData
 
-import org.randi3.utility.Logging
+import org.randi3.utility.{Utility, Logging}
 
 import org.randi3.schema.LiquibaseUtil
 import java.sql.SQLSyntaxErrorException
@@ -29,11 +28,13 @@ import java.util.Locale
  * A class that's instantiated early and run.  It allows the application
  * to modify lift's environment
  */
-class Boot extends Logging {
+class Boot extends Utility with Logging with ConfigurationServiceComponent {
+
+  val configurationService = new ConfigurationService
 
   def boot {
 
-   Locale.setDefault(Locale.ENGLISH)
+    Locale.setDefault(Locale.ENGLISH)
 
 
     initializeJDBCDriver()
@@ -41,10 +42,10 @@ class Boot extends Logging {
     checkAndGenerateConfigDatabase()
 
 
-    if(DependencyFactory.configurationService.isConfigurationComplete) {
-      LiquibaseUtil.updateDatabase(DependencyFactory.database)
+    if(configurationService.isConfigurationComplete) {
+      LiquibaseUtil.updateDatabase(org.randi3.web.lib.DependencyFactory.get.database)
         //TODO use properties from sub project
-    //   LiquibaseUtil.updateDatabase(DependencyFactory.database, "db/db.changelog-master-edc.xml")
+    //   LiquibaseUtil.updateDatabase(DependencyFactory.get.database, "db/db.changelog-master-edc.xml")
        checkAndGenerateRandomizationTables()
      }
 
@@ -105,16 +106,16 @@ class Boot extends Logging {
     // Build SiteMap
     def sitemap() = SiteMap(
       Menu("Home") / "index", // Simple menu form
-      Menu(S.?("menu.login")) / "login" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
-      Menu(S.?("menu.register")) / "register" >> If(() => CurrentLoggedInUser.isEmpty && DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.login")) / "login" >> If(() => CurrentLoggedInUser.isEmpty && configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.register")) / "register" >> If(() => CurrentLoggedInUser.isEmpty && configurationService.isConfigurationComplete, ""),
       trialSiteMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialSubjectMenu,
     //  edcMenu,
       trialSubjectRandomizationResultMenu,
-      Menu(S.?("menu.install")) / "install" >> If(() => !DependencyFactory.configurationService.isConfigurationComplete, ""),
-      Menu(S.?("menu.support")) / "support" >> If(() => DependencyFactory.configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.install")) / "install" >> If(() => !configurationService.isConfigurationComplete, ""),
+      Menu(S.?("menu.support")) / "support" >> If(() => configurationService.isConfigurationComplete, ""),
       // Menu with special Link
       Menu(Loc("Static", Link(List("static"), true, "/static/index"),
         S.?("menu.about"))))
@@ -277,8 +278,9 @@ class Boot extends Logging {
   }
 
   private def checkAndGenerateRandomizationTables() {
+    import org.randi3.web.lib.DependencyFactory
 
-    val  pluginManager = DependencyFactory.randomizationPluginManager
+    val  pluginManager = DependencyFactory.get.randomizationPluginManager
 
     pluginManager.getPluginNames.foreach(pluginName => {
       val plugin = pluginManager.getPlugin(pluginName).get

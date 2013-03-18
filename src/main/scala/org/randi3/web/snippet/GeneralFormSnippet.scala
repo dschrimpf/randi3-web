@@ -26,7 +26,7 @@ trait GeneralFormSnippet {
     S.error(id + "Msg", "")
   }
 
-  private val userService = DependencyFactory.userService
+  private val userService = DependencyFactory.get.userService
 
   protected def updateCurrentUser = {
     userService.get(CurrentLoggedInUser.get.get.id).either match {

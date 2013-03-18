@@ -19,8 +19,8 @@ import java.util.Locale
 
 class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
 
-  private val userService = DependencyFactory.userService
-  private val trialSiteService = DependencyFactory.trialSiteService
+  private val userService = DependencyFactory.get.userService
+  private val trialSiteService = DependencyFactory.get.trialSiteService
 
 
   def dispatch = {case _ => render}

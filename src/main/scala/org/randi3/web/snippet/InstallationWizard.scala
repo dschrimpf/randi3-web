@@ -3,30 +3,33 @@ package org.randi3.web.snippet
 
 import net.liftweb.http._
 import net.liftweb.wizard._
-import org.randi3.configuration.ConfigurationValues
-import org.randi3.configuration.ConfigurationService
+import org.randi3.configuration.{ConfigurationServiceComponent, ConfigurationValues, ConfigurationService}
 
-import org.randi3.schema.{LiquibaseUtil, DatabaseSchema}
+import org.randi3.schema.{SupportedDatabases, LiquibaseUtil, DatabaseSchema}
 import org.randi3.model.{TrialSite, User}
 import org.randi3.web.lib.DependencyFactory
 import net.liftweb.util.FieldError
-import org.randi3.utility.Logging
+import org.randi3.utility.{Utility, Logging}
 
-import org.scalaquery.session.Database
 import org.scalaquery.meta.MTable
+import java.util.Locale
+import org.scalaquery.ql.extended.ExtendedProfile
+import org.scalaquery.session._
+import org.scalaquery.ql._
+import org.scalaquery.session.Database.threadLocalSession
 
-object InstallationWizard extends Wizard with Logging {
+object InstallationWizard extends Wizard with Utility with Logging  with ConfigurationServiceComponent{
 
 
   import ConfigurationValues._
 
-  val configurationService =  DependencyFactory.configurationService
+  val configurationService = new ConfigurationService
 
   var skipUserTrialSiteInformation = false
 
   val serverUrlScreen = new Screen {
     override val screenName = "Server URL"
-    val serverURL = field("Server url", configurationService.getConfigurationEntry(SERVER_URL.toString).toOption.getOrElse(""), valMinLen(1, "URL is neccesary"))
+    val serverURL = field("Server url", configurationService.getConfigurationEntry(SERVER_URL.toString).toOption.getOrElse(""), valMinLen(1, "URL is necessary"))
 
     override def nextScreen = {
 
@@ -48,16 +51,17 @@ object InstallationWizard extends Wizard with Logging {
     var firstView = true
     override val screenName = "Database"
 
-    val dbType = select("Database type", configurationService.getConfigurationEntry(DB_TYPE.toString).toOption.getOrElse("MySQL"), List("MySQL"))
+    val dbType = select("Database type", configurationService.getConfigurationEntry(DB_TYPE.toString).toOption.getOrElse(SupportedDatabases.MySQL.toString), SupportedDatabases.values.map(value => value.toString).toList)
     val dbAddress = field("Database URL", configurationService.getConfigurationEntry(DB_ADDRESS.toString).toOption.getOrElse(""))
-    val dbName = field("Database Name", configurationService.getConfigurationEntry(DB_NAME.toString).toOption.getOrElse(""))
-    val dbUser = field("Database User", configurationService.getConfigurationEntry(DB_USER.toString).toOption.getOrElse(""))
-    val dbPassword = password("Database Password", configurationService.getConfigurationEntry(DB_PASSWORD.toString).toOption.getOrElse(""))
+    val dbName = field("Database name", configurationService.getConfigurationEntry(DB_NAME.toString).toOption.getOrElse(""))
+    val dbUser = field("Database user", configurationService.getConfigurationEntry(DB_USER.toString).toOption.getOrElse(""))
+    val dbPassword = password("Database password", configurationService.getConfigurationEntry(DB_PASSWORD.toString).toOption.getOrElse(""))
 
     override def nextScreen = if (isDBSettingCorrect) mailScreen else this
 
 
     def isDBSettingCorrect: Boolean = {
+
       if (firstView) {
         firstView = false
         return false
@@ -69,7 +73,29 @@ object InstallationWizard extends Wizard with Logging {
         val tableList = MTable.getTables.list()(database.createSession())
 
         if (tableList.size != 0) {
-          skipUserTrialSiteInformation  = true
+          if(dbType == SupportedDatabases.PostgreSQL.toString) {
+          try {
+          val driver: ExtendedProfile =
+            org.scalaquery.ql.extended.PostgresDriver
+
+
+          val schema = new DatabaseSchema(driver)
+
+           import schema._
+           import driver.Implicit._
+
+          database withSession {
+            val users = Query(Users).list
+            if(!users.isEmpty)
+              skipUserTrialSiteInformation  = true
+          }
+          } catch {
+            case e:Exception => println(e)
+          }
+          }
+          else {
+            skipUserTrialSiteInformation  = true
+          }
         }
 
         LiquibaseUtil.updateDatabase(database)
@@ -95,8 +121,8 @@ object InstallationWizard extends Wizard with Logging {
 
     override val screenName = "Mail Server"
     //TODO checks
-    val mailServer = field("Mail Server", configurationService.getConfigurationEntry(MAIL_SERVER.toString).toOption.getOrElse(""), valMinLen(1, "Entry neccesary"))
-    val mailPort = field("Mail Port", configurationService.getConfigurationEntry(MAIL_PORT.toString).toOption.getOrElse("25"), valMinLen(1, "Entry neccesary"))
+    val mailServer = field("Mail Server", configurationService.getConfigurationEntry(MAIL_SERVER.toString).toOption.getOrElse(""), valMinLen(1, "Entry necessary"))
+    val mailPort = field("Mail Port", configurationService.getConfigurationEntry(MAIL_PORT.toString).toOption.getOrElse("25"), valMinLen(1, "Entry necessary"))
 
     val mailSMPT_Auth = select("SMTP AUTH?", configurationService.getConfigurationEntry(MAIL_SMTP_AUTH.toString).toOption.getOrElse("false"), Seq("true", "false"))
 
@@ -105,7 +131,7 @@ object InstallationWizard extends Wizard with Logging {
 
     val mailSSL = select("SSL", configurationService.getConfigurationEntry(MAIL_SSL.toString).toOption.getOrElse("false"), Seq("true", "false"))
 
-    val mailFrom = field("Mail Sender", configurationService.getConfigurationEntry(MAIL_FROM.toString).toOption.getOrElse(""), valMinLen(1, "Entry neccesary"))
+    val mailFrom = field("Mail Sender", configurationService.getConfigurationEntry(MAIL_FROM.toString).toOption.getOrElse(""), valMinLen(1, "Entry necessary"))
 
 
     override def nextScreen = {
@@ -128,7 +154,7 @@ object InstallationWizard extends Wizard with Logging {
 
   val pluginPathScreen = new Screen {
     override val screenName = "Randomization Plugin Path"
-    val pluginPath = field("Plugin Path", configurationService.getConfigurationEntry(PLUGIN_PATH.toString).toOption.getOrElse(""), valMinLen(1, "Path is neccesary"))
+    val pluginPath = field("Plugin Path", configurationService.getConfigurationEntry(PLUGIN_PATH.toString).toOption.getOrElse(""), valMinLen(1, "Path is necessary"))
 
     override def nextScreen = {
       configurationService.saveConfigurationEntry(PLUGIN_PATH.toString, pluginPath)
@@ -137,7 +163,8 @@ object InstallationWizard extends Wizard with Logging {
       if (!pluginPath.isEmpty) {
         logger.info("Installation: Plugin-path (" + pluginPath + ") saved!")
 
-        val pluginManager = DependencyFactory.randomizationPluginManager
+        DependencyFactory.reInitializeDependencies
+        val pluginManager = DependencyFactory.get.randomizationPluginManager
         pluginManager.init()
 
         if (pluginManager.getPluginNames.isEmpty){
@@ -159,20 +186,24 @@ object InstallationWizard extends Wizard with Logging {
   val trialSiteScreen = new Screen {
 
 
+
     var firstView = true
 
-    val trialSiteDao = DependencyFactory.trialSiteDao
+
+    def trialSiteDao = {
+      DependencyFactory.reInitializeDependencies
+      DependencyFactory.get.trialSiteDao
+    }
 
     var site: TrialSite = null
 
-
     override val screenName = "Trial Site"
-    val name = field("Trial site name", "", valMinLen(1, "Field entry neccesary"))
-    val street = field("Trial site street", "", valMinLen(1, "Field entry neccesary"))
-    val postCode = field("Trial site post code", "", valMinLen(1, "Field entry neccesary"))
-    val city = field("Trial site city", "", valMinLen(1, "Field entry neccesary"))
-    val country = field("Trial site country", "", valMinLen(1, "Field entry neccesary"))
-    val password1 = password("Trial site password", "", valMinLen(1, "Field entry neccesary"))
+    val name = field("Trial site name", "", valMinLen(1, "Field entry necessary"))
+    val street = field("Trial site street", "", valMinLen(1, "Field entry necessary"))
+    val postCode = field("Trial site post code", "", valMinLen(1, "Field entry necessary"))
+    val city = field("Trial site city", "", valMinLen(1, "Field entry necessary"))
+    val country = field("Trial site country", "", valMinLen(1, "Field entry necessary"))
+    val password1 = password("Trial site password", "", valMinLen(1, "Field entry necessary"))
     val password2 = password("Retype password", "", mustMatch _)
 
     def mustMatch(s: String): List[FieldError] =
@@ -209,18 +240,28 @@ object InstallationWizard extends Wizard with Logging {
   }
 
   val adminScreen = new Screen {
-    val userDao = DependencyFactory.userDao
+    def userDao = {
+      DependencyFactory.reInitializeDependencies
+      DependencyFactory.get.userDao
+    }
 
     var firstView = true
 
+    private val locales = Locale.getAvailableLocales.toList
+      .sortBy(locale =>  if(!locale.getCountry.isEmpty) {locale.getDisplayLanguage +" ("+ locale.getDisplayCountry +")"} else {locale.getDisplayLanguage})
+      .map(locale => (locale, if(!locale.getCountry.isEmpty) {locale.getDisplayLanguage +" ("+ locale.getDisplayCountry +")"} else {locale.getDisplayLanguage})).toSeq
+
+    private var locale: Locale = Locale.ENGLISH
+
+
     override val screenName = "Trial Site"
-    val name = field("User name", "", valMinLen(1, "Field entry neccesary"))
-    val firstName = field("User first name", "", valMinLen(1, "Field entry neccesary"))
-    val lastName = field("User last name", "", valMinLen(1, "Field entry neccesary"))
-    val eMail = field("E-Mail Address", "", valMinLen(1, "Field entry neccesary"))
-    //val locale = field("Locale", "", valMinLen(1, "Field entry neccesary"))
-    val phoneNumber = field("Phone Number", "", valMinLen(1, "Field entry neccesary"))
-    val password1 = password("Password", "", valMinLen(1, "Field entry neccesary"))
+    val name = field("User name", "", valMinLen(1, "Field entry necessary"))
+    val firstName = field("User first name", "", valMinLen(1, "Field entry necessary"))
+    val lastName = field("User last name", "", valMinLen(1, "Field entry necessary"))
+    val eMail = field("E-Mail Address", "", valMinLen(1, "Field entry necessary"))
+    val localeField = select("Locale", locale, locales)
+    val phoneNumber = field("Phone Number", "", valMinLen(1, "Field entry necessary"))
+    val password1 = password("Password", "", valMinLen(1, "Field entry necessary"))
     val password2 = password("Retype password", "", mustMatch _)
 
     def mustMatch(s: String): List[FieldError] =
@@ -231,7 +272,7 @@ object InstallationWizard extends Wizard with Logging {
         firstView = false
         this
       } else {
-        User(username = name, password = password1, firstName = firstName, lastName = lastName, email = eMail, phoneNumber = phoneNumber, rights = Set(), administrator = true, canCreateTrial = false, site = trialSiteScreen.site).either match {
+        User(username = name, password = password1, firstName = firstName, lastName = lastName, email = eMail, phoneNumber = phoneNumber, rights = Set(), administrator = true, canCreateTrial = false, site = trialSiteScreen.site, locale=locale).either match {
           case Left(failureCreate) => S.error("Error: " + failureCreate); this
           case Right(user) => {
             userDao.create(user).either match {
