@@ -19,7 +19,7 @@ case class ConstraintTmp(id: Int = Int.MinValue, version: Int = 0, var minValue:
 
 case class SubjectDataTmp(criterion: Criterion[Any, Constraint[Any]], var value: Any) {}
 
-case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0, name: String, description: String, canBeUsedWithStratification: Boolean, configurationEntries: List[RandomizationMethodConfigEntryTmp[Any]]) {
+case class RandomizationMethodConfigTmp(id: Int = Int.MinValue, version: Int = 0, name: String, i18nName: String, description: String, canBeUsedWithStratification: Boolean, configurationEntries: List[RandomizationMethodConfigEntryTmp[Any]]) {
 
   def getConfigurationProperties: List[ConfigurationProperty[Any]] = {
     configurationEntries.map(config => {

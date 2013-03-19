@@ -111,14 +111,10 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
   private var selectedRole = Role.investigator
   private val actualRights = new HashSet[(User, TrialRight)]()
 
-  private val randomizationMethods = randomizationPluginManager.getPluginNames
+  private val randomizationMethods = randomizationPluginManager.getPluginNamesWithI18N
 
-  private val randomizationMethodSelect = {
-    randomizationMethods map {
-      s => (s, s)
-    } toSeq
-  }
-  private var randomizationMethodTmp = generateEmptyRandomizationMethodConfig(randomizationMethods.head)
+
+  private var randomizationMethodTmp = generateEmptyRandomizationMethodConfig(randomizationMethods.head._1)
 
   private var trialSiteStratificationStatus = StratifiedTrialSite.NO.toString
 
@@ -535,7 +531,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
     def randomizationMethodSelectField: NodeSeq = {
-      ajaxSelect(randomizationMethodSelect, Empty, v => {
+      ajaxSelect(randomizationMethods.toSeq, Empty, v => {
         randomizationMethodTmp = generateEmptyRandomizationMethodConfig(v)
         Replace("randomizationConfig", generateRandomizationConfigField)
       })
@@ -594,7 +590,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
             <label for="randomizationMethodName">{S.?("name")}:
             </label>
             <span id="randomizationMethodName">
-              {randomizationMethodTmp.name}
+              {randomizationMethodTmp.i18nName}
             </span>
           </li>
           <li>
@@ -1202,11 +1198,11 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       }
 
     })
-    new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+    new RandomizationMethodConfigTmp(name = plugin.name, i18nName = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
   }
 
   private def generateRandomizationMethodConfig(randomizationMethod: Option[RandomizationMethod]): RandomizationMethodConfigTmp = {
-    if (randomizationMethod.isEmpty) generateEmptyRandomizationMethodConfig(randomizationMethods.head)
+    if (randomizationMethod.isEmpty) generateEmptyRandomizationMethodConfig(randomizationMethods.head._1)
     else {
       val method = randomizationMethod.get
 
@@ -1225,7 +1221,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         }
 
       })
-      new RandomizationMethodConfigTmp(name = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+      new RandomizationMethodConfigTmp(name = plugin.name, i18nName =plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
     }
   }
 
