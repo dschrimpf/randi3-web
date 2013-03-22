@@ -21,7 +21,6 @@ import org.joda.time.format.DateTimeFormat
 import org.randi3.web.lib.DependencyFactory
 import org.randi3.model.criterion.Criterion
 import org.randi3.model.criterion.constraint.Constraint
-import org.randi3.model.StratifiedTrialSite
 
 
 object TrialGeneralInformationSnippet {
@@ -33,6 +32,9 @@ object TrialGeneralInformationSnippet {
       redirectTo("/trial/list")
     }
     def trialSites: Elem = {
+     <div>
+       {S.?("isTrialOpen")}  <b>{trial.isTrialOpen}</b>
+      <hr/>
       <table class="randi2Table">
         <thead>
           <tr>
@@ -60,6 +62,8 @@ object TrialGeneralInformationSnippet {
         })}
       </tbody>
       </table>
+
+     </div>
     }
 
     def treatmentArms: Elem = {
@@ -148,7 +152,7 @@ object TrialGeneralInformationSnippet {
             <h5>{S.?("trial.stratification")}:</h5>
             {
             <div>
-              {S.?("trial.trialSiteStratification")} = {trial.stratifyTrialSite.toString}
+              {S.?("trial.trialSiteStratification")} = {trial.isStratifiedByTrialSite.toString}
             <br />
             <h6>{S.?("trial.strata")}</h6>
             {trial.criterions.flatMap(criterion =>

@@ -89,6 +89,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       Menu(S.?("menu.edit")) / "trialEdit" >> If(() => canViewTrialEdit, "") submenus(
         Menu(Loc("trialEditGeneral", List("trial", "editGeneralData"), S.?("menu.generalInformation"), If(() => canChangeTrial, ""))),
         Menu(Loc("trialEditStatus", List("trial", "editTrialStatus"), S.?("trial.status"), If(() => canChangeTrialStatus, ""))),
+        Menu(Loc("trialEditSites", List("trial", "editParticipatingTrialSites"), S.?("trialSites"), If(() => canChangeParticipatingTrialSites, ""))),
         Menu(Loc("trialEditUsers", List("trial", "editUsers"), S.?("menu.users"), If(() => isTrialSelected, "")))
         ),
       Menu(Loc("trialDelete", List("trial", "delete"), "delete", Hidden, If(() => canChangeTrial, "")))
@@ -255,6 +256,19 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       rightList.map(right => right.role).contains(Role.principleInvestigator) || rightList.map(right => right.role).contains(Role.trialAdministrator)
     }
   }
+
+  private def canChangeParticipatingTrialSites: Boolean = {
+    val user = CurrentLoggedInUser.getOrElse(return false)
+    val trial = CurrentTrial.getOrElse(return false)
+    if (trial.status != TrialStatus.ACTIVE && trial.status != TrialStatus.PAUSED && !trial.isTrialOpen) return false
+     val rightList = user.rights.filter(right => right.trial.id == trial.id)
+    if (rightList.isEmpty) {
+      false
+    } else {
+      rightList.map(right => right.role).contains(Role.principleInvestigator) || rightList.map(right => right.role).contains(Role.trialAdministrator)
+    }
+  }
+
 
   private def initializeJDBCDriver(){
     java.lang.Class.forName("org.hsqldb.jdbc.JDBCDriver")

@@ -62,7 +62,6 @@ class EdcEditSnippet extends StatefulSnippet {
 
   private val criterionsTmp = new ListBuffer[CriterionTmp]()
 
-  private var trialSiteStratificationStatus = StratifiedTrialSite.NO.toString
 
 
   private def add(nodeSeq: NodeSeq): NodeSeq = {
@@ -76,7 +75,22 @@ class EdcEditSnippet extends StatefulSnippet {
 
     def save() {
       println(selectedCriterions)
-      Trial(name = trial.identifier, abbreviation = trial.identifier, description = trial.description, startDate = new LocalDate(), endDate = new LocalDate(), stratifyTrialSite = StratifiedTrialSite.withName(trialSiteStratificationStatus), status = TrialStatus.IN_PREPARATION, treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = List(CurrentLoggedInUser.get.get.site), randomizationMethod = None, stages = Map(), identificationCreationType = TrialSubjectIdentificationCreationType.EXTERNAL).either match {
+      Trial(
+        name = trial.identifier,
+        abbreviation = trial.identifier,
+        description = trial.description,
+        startDate = new LocalDate(),
+        endDate = new LocalDate(),
+        status = TrialStatus.IN_PREPARATION,
+        treatmentArms = createTreatmentArms(armsTmp),
+        criterions = createCriterionsList(criterionsTmp),
+        participatingSites = List(CurrentLoggedInUser.get.get.site),
+        randomizationMethod = None,
+        stages = Map(),
+        identificationCreationType = TrialSubjectIdentificationCreationType.EXTERNAL,
+        isTrialOpen = false,
+        isStratifiedByTrialSite = false
+      ).either match {
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(newTrial) => {
           //TODO Random Config
@@ -305,7 +319,7 @@ class EdcEditSnippet extends StatefulSnippet {
       val criterionList = criterionsTmp
       <div>
         <h3>Stratification:</h3>
-        Trial site stratification: {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
+        Trial site stratification: {<span>TODO</span>}
         {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)

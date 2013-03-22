@@ -222,7 +222,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
     def trialSiteField: Elem = {
       val id = "trialSite"
       generateEntry(id, false, {
-        ajaxSelectObj(trialSites, Empty, (trialSite: TrialSite) => {
+        ajaxSelectObj(trialSites, Full(actualTrialSite), (trialSite: TrialSite) => {
           actualTrialSite = trialSite
           Replace("trialSiteInfo", trialSiteInfo)
         })
@@ -390,7 +390,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
         val actUser = CurrentUser.get.get
         val dbUser = userService.get(actUser.id).toOption.get.get
         val changedUser = dbUser.copy(numberOfFailedLogins = 0, lockedUntil=None)
-        val updatedUser = userService.update(changedUser).either match {
+         userService.update(changedUser).either match {
           case Left(failure) => S.error(failure)
           case Right(user) => CurrentUser.set(Some(user))
         }
@@ -409,8 +409,11 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
   private def generatePossibleTrials() {
     if (CurrentLoggedInUser.get.isDefined) {
       val rights = CurrentLoggedInUser.get.get.rights.toList
+      val currentSelectedUser = CurrentUser.get.get
 
-      trials = rights.filter(right => (right.role == Role.principleInvestigator || right.role == Role.trialAdministrator)).map(right => (right.trial, right.trial.name)).toSet.toList
+      trials = rights.filter(right => (right.role == Role.principleInvestigator || right.role == Role.trialAdministrator))
+        .filter(trialRight => trialRight.trial.participatingSites.map(site => site.id).contains(currentSelectedUser.site.id))
+        .map(right => (right.trial, right.trial.name)).toSet.toList
 
       selectedTrial = if (!trials.isEmpty) trials.head._1 else null
     } else {

@@ -59,6 +59,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     case "editView" => redirectTo("/trial/editUsers")
     case "edit" => edit _
     case "editStatus" => editStatus _
+    case "editParticipatingTrialSites" => editParticipatingTrialSites _
     case "editUsers" => editUsers _
     case "confirmDelete" => confirmDelete _
   }
@@ -116,7 +117,9 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
   private var randomizationMethodTmp = generateEmptyRandomizationMethodConfig(randomizationMethods.head._1)
 
-  private var trialSiteStratificationStatus = StratifiedTrialSite.NO.toString
+  private var isTrialOpen: Boolean = true
+
+  private var isStratifiedByTrialSite = false
 
   private def createCriterionsList(criterions: ListBuffer[CriterionTmp]): List[Criterion[Any, Constraint[Any]]] = {
     val result = ListBuffer[Criterion[Any, Constraint[Any]]]()
@@ -205,7 +208,22 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     def save() {
       //TODO validate
-      Trial(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, stratifyTrialSite = StratifiedTrialSite.withName(trialSiteStratificationStatus), status = TrialStatus.IN_PREPARATION, treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, randomizationMethod = None, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp)).either match {
+      Trial(
+        name = name,
+        abbreviation = abbreviation,
+        description = description,
+        startDate = startDate,
+        endDate = endDate,
+        status = TrialStatus.IN_PREPARATION,
+        treatmentArms = createTreatmentArms(armsTmp),
+        criterions = createCriterionsList(criterionsTmp),
+        participatingSites = participatingSites.toList,
+        randomizationMethod = None,
+        stages = createStages(stages),
+        identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),
+        isTrialOpen = isTrialOpen,
+        isStratifiedByTrialSite = isStratifiedByTrialSite
+      ).either match {
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(trial) => {
           //TODO Random Config
@@ -237,7 +255,21 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     def save() {
       val trial = CurrentTrial.get.get
       val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
-      val actTrial = trial.copy(name = name, abbreviation = abbreviation, description = description, startDate = startDate, endDate = endDate, status = TrialStatus.withName(trialStatusTmp), treatmentArms = createTreatmentArms(armsTmp), criterions = createCriterionsList(criterionsTmp), participatingSites = participatingSites.toList, stages = createStages(stages), identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp), stratifyTrialSite = StratifiedTrialSite.withName(trialSiteStratificationStatus), randomizationMethod = Some(randomMethod))
+      val actTrial = trial.copy(
+        name = name,
+        abbreviation = abbreviation,
+        description = description,
+        startDate = startDate,
+        endDate = endDate,
+        treatmentArms = createTreatmentArms(armsTmp),
+        criterions = createCriterionsList(criterionsTmp),
+        participatingSites = participatingSites.toList,
+        stages = createStages(stages),
+        identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),
+        randomizationMethod = Some(randomMethod),
+        isTrialOpen = isTrialOpen,
+        isStratifiedByTrialSite = isStratifiedByTrialSite
+      )
       trialService.update(actTrial)
       redirectTo("/trial/list")
     }
@@ -274,12 +306,41 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
   }
 
 
+  private def editParticipatingTrialSites(xhtml: NodeSeq): NodeSeq = {
+    val trial = CurrentTrial.get.get
+    setFields()
+
+    def save() {
+      val actTrial = trial.copy(participatingSites = participatingSites.toList)
+      trialService.saveParticipationSites(actTrial).either match {
+        case Left(failure) => S.error("trialMsg", failure)
+        case Right(trial) => {
+          CurrentTrial.set(Some(trial))
+          redirectTo("/trial/generalInformation")
+        }
+      }
+
+    }
+
+    bind("trial", xhtml,
+      "name" -> <span>{trial.name}</span>,
+      "participatingSiteSelect" -> ajaxSelectObj(trialSites, Empty, (trialSite: TrialSite) => participatingSiteTmp = trialSite, "id" -> "participatingSite"),
+      "addParticipatingSite" -> ajaxButton(Text(S.?("add")), () => {
+        participatingSites += participatingSiteTmp
+        Replace("participatedTrialSiteTable", participatedSitesTable(false))
+      }),
+      "pSites" -> participatedSitesTable(false),
+      "submit" -> submit(S.?("save"), save _)
+    )
+  }
+
+
   private def editUsers(xhtml: NodeSeq): NodeSeq = {
     val trial = CurrentTrial.get.getOrElse {
       redirectTo("/trial/list")
     }
 
-    val allUsers = userService.getAll.either match {
+    val allUsers = userService.getAllPossibleFromTrial(trial).either match {
       case Left(failure) => return <div>
         {failure}
       </div>
@@ -300,11 +361,22 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     actualRights.clear()
 
     allUsersTrial.foreach(user => {
-      val actUser = allUsers.find(actUser => actUser.id == user.id).get
-      actUser.rights.foreach(right => {
+
+      val actUser = allUsers.find(actUser => actUser.id == user.id)
+     if(actUser.isDefined){
+      actUser.get.rights.foreach(right => {
         if (right.trial.id == trial.id)
-          actualRights.add((actUser, TrialRight(right.role, trial).toOption.get))
+          actualRights.add((actUser.get, TrialRight(right.role, trial).toOption.get))
       })
+    }else {
+       S.error("trialMsg", "The following user doesn't belong to one of the participating sites, please remove the user or add the site: " + user.username)
+       val dbUser = userService.get(user.id).toOption.get
+       dbUser.get.rights.foreach(right => {
+         if (right.trial.id == trial.id)
+           actualRights.add((dbUser.get, TrialRight(right.role, trial).toOption.get))
+       })
+    }
+
     })
 
     val rightsBefore = actualRights.toList
@@ -491,42 +563,10 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       })
     }
 
-    def participatedSitesTable: NodeSeq = {
-      <div id="participatedTrialSiteTable">
-        <table width="90%">
-          <tr>
-            <th>{S.?("trialSite.name")}</th>
-            <th>{S.?("trialSite.street")}</th>
-            <th>{S.?("trialSite.postCode")}</th>
-            <th>{S.?("trialSite.city")}</th>
-            <th>{S.?("trialSite.country")}</th>
-            <th></th>
-          </tr>{participatingSites.toList.sortWith((e1, e2) => e1.name.compareTo(e2.name) < 0).flatMap(trialSite => <tr>
-          <td>
-            {trialSite.name}
-          </td>
-          <td>
-            {trialSite.street}
-          </td>
-          <td>
-            {trialSite.postCode}
-          </td>
-          <td>
-            {trialSite.city}
-          </td>
-          <td>
-            {trialSite.country}
-          </td>
-          <td>
-            {ajaxButton(Text(S.?("remove")), () => {
-            participatingSites.remove(trialSite)
-            Replace("participatedTrialSiteTable", participatedSitesTable)
-          })}
-          </td>
-        </tr>)}
-        </table>
+    def isTrialOpenField: Elem = {
+      <div>
+        <b> {S.?("isTrialOpen")}</b>  {checkbox(isTrialOpen, value => isTrialOpen = value)}
       </div>
-
     }
 
 
@@ -550,9 +590,10 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       "participatingSiteSelect" -> ajaxSelectObj(trialSites, Empty, (trialSite: TrialSite) => participatingSiteTmp = trialSite, "id" -> "participatingSite"),
       "addParticipatingSite" -> ajaxButton(Text(S.?("add")), () => {
         participatingSites += participatingSiteTmp
-        Replace("participatedTrialSiteTable", participatedSitesTable)
+        Replace("participatedTrialSiteTable", participatedSitesTable())
       }),
-      "pSites" -> participatedSitesTable,
+      "pSites" -> participatedSitesTable(),
+      "isTrialOpen" -> isTrialOpenField,
       "treatmentArmName" -> ajaxText(nameNewTreatmentArm, nameNewTreatmentArm = _, "id" -> "nameNewTreatmentArm"),
       "treatmentArmDescription" -> ajaxText(descriptionNewTreatmentArm, descriptionNewTreatmentArm = _),
       "treatmentArmPlannedSubjects" -> ajaxText(plannedSubjectSizeNewTreatmentArm.toString, size => plannedSubjectSizeNewTreatmentArm = size.toInt),
@@ -579,6 +620,47 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       "randomizationConfig" -> generateRandomizationConfigField,
       "submit" -> submit("save", code _)
     )
+  }
+
+  private def participatedSitesTable(withRemoveOption: Boolean = true): NodeSeq = {
+    <div id="participatedTrialSiteTable">
+      <table width="90%">
+        <tr>
+          <th>{S.?("trialSite.name")}</th>
+          <th>{S.?("trialSite.street")}</th>
+          <th>{S.?("trialSite.postCode")}</th>
+          <th>{S.?("trialSite.city")}</th>
+          <th>{S.?("trialSite.country")}</th>
+          <th></th>
+        </tr>{participatingSites.toList.sortWith((e1, e2) => e1.name.compareTo(e2.name) < 0).flatMap(trialSite => <tr>
+        <td>
+          {trialSite.name}
+        </td>
+        <td>
+          {trialSite.street}
+        </td>
+        <td>
+          {trialSite.postCode}
+        </td>
+        <td>
+          {trialSite.city}
+        </td>
+        <td>
+          {trialSite.country}
+        </td>
+        <td>
+          {
+          if(withRemoveOption)
+            ajaxButton(Text(S.?("remove")), () => {
+              participatingSites.remove(trialSite)
+              Replace("participatedTrialSiteTable", participatedSitesTable())
+            })
+          }
+        </td>
+      </tr>)}
+      </table>
+    </div>
+
   }
 
   private def generateRandomizationConfigField: Elem = {
@@ -627,7 +709,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       val criterionList = criterionsTmp
       <div>
         <h3>{S.?("trial.stratification")}:</h3>
-        {S.?("trial.trialSiteStratification")}: {ajaxSelect(StratifiedTrialSite.values.map(value => (value.toString, value.toString)).toSeq, Full(trialSiteStratificationStatus), trialSiteStratificationStatus = _)}
+        {S.?("trial.trialSiteStratification")}:
+        { checkbox(isStratifiedByTrialSite, value => isStratifiedByTrialSite = value)}
         {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
@@ -778,6 +861,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     armsTmp += new TreatmentArmTmp(Int.MinValue, 0, "", "", 0)
     criterionsTmp.clear()
     cleanTreatmentArmVariables()
+    isTrialOpen = false
+    isStratifiedByTrialSite = false
   }
 
   private def cleanTreatmentArmVariables() {
@@ -815,7 +900,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     identificationCreationTypeTmp = trial.identificationCreationType.toString
 
-    trialSiteStratificationStatus = trial.stratifyTrialSite.toString
+    isStratifiedByTrialSite = trial.isStratifiedByTrialSite
+    isTrialOpen = trial.isTrialOpen
 
     criterionsTmp.clear()
     trial.criterions.foreach {
