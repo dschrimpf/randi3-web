@@ -312,7 +312,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     def save() {
       val actTrial = trial.copy(participatingSites = participatingSites.toList)
-      trialService.saveParticipationSites(actTrial).either match {
+      trialService.saveParticipatingSites(actTrial).either match {
         case Left(failure) => S.error("trialMsg", failure)
         case Right(trial) => {
           CurrentTrial.set(Some(trial))
