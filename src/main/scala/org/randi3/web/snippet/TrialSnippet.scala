@@ -227,15 +227,19 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(trial) => {
           //TODO Random Config
-          val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
-          val trialWithMethod = trial.copy(randomizationMethod = Some(randomMethod))
-          trialService.create(trialWithMethod, principleInvestigator).either match {
-            case Left(x) => S.error("trialMsg", x)
-            case Right(b) => {
-              cleanVariables()
-              updateCurrentUser
-              S.notice("Thanks trial \"" + name + "\" saved!")
-              S.redirectTo("/trial/list")
+          randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).either match {
+            case Left(failure) =>  S.error("trialMsg", failure)
+            case Right(randomMethod) => {
+              val trialWithMethod = trial.copy(randomizationMethod = Some(randomMethod))
+              trialService.create(trialWithMethod, principleInvestigator).either match {
+                case Left(x) => S.error("trialMsg", x)
+                case Right(b) => {
+                  cleanVariables()
+                  updateCurrentUser
+                  S.notice("Thanks trial \"" + name + "\" saved!")
+                  S.redirectTo("/trial/list")
+                }
+              }
             }
           }
         }
