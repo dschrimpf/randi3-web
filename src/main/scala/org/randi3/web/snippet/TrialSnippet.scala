@@ -265,6 +265,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         criterions = createCriterionsList(criterionsTmp),
         participatingSites = participatingSites.toList,
         stages = createStages(stages),
+        status = TrialStatus.withName(trialStatusTmp),
         identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),
         randomizationMethod = Some(randomMethod),
         isTrialOpen = isTrialOpen,
@@ -385,8 +386,14 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       val newRights = actualRights.toList.filter(actRight => !rightsBefore.contains(actRight))
       val removedRights = rightsBefore.filter(right => !actualRights.contains(right))
 
-      newRights.foreach(userRight => userService.addTrialRight(userRight._1.id, userRight._2))
-      removedRights.foreach(userRight => userService.removeTrialRight(userRight._1.id, userRight._2))
+      newRights.foreach(userRight => userService.addTrialRight(userRight._1.id, userRight._2).either match {
+        case Left(failure) =>  S.error("trialMsg", "Failure by adding a new right: "+ failure)
+        case Right(x) =>
+      })
+      removedRights.foreach(userRight => userService.removeTrialRight(userRight._1.id, userRight._2).either match {
+        case Left(failure) =>  S.error("trialMsg","Failure by removeing right: "+failure)
+        case Right(x) =>
+      })
       S.notice("Saved!")
     }
 
