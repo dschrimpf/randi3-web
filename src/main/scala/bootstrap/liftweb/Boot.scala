@@ -260,7 +260,8 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
   private def canChangeParticipatingTrialSites: Boolean = {
     val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
-    if (trial.status != TrialStatus.ACTIVE && trial.status != TrialStatus.PAUSED && !trial.isTrialOpen) return false
+    if (!trial.isTrialOpen) return false
+    if (trial.status != TrialStatus.ACTIVE && trial.status != TrialStatus.PAUSED) return false
      val rightList = user.rights.filter(right => right.trial.id == trial.id)
     if (rightList.isEmpty) {
       false
