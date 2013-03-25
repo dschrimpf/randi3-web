@@ -154,7 +154,9 @@ object InstallationWizard extends Wizard with Utility with Logging  with Configu
 
   val pluginPathScreen = new Screen {
     override val screenName = "Randomization Plugin Path"
-    val pluginPath = field("Plugin Path", configurationService.getConfigurationEntry(PLUGIN_PATH.toString).toOption.getOrElse(""), valMinLen(1, "Path is necessary"))
+
+
+    val pluginPath = field("Plugin Path (the path have to end with a slash (linux) or a backslash (windows))", configurationService.getConfigurationEntry(PLUGIN_PATH.toString).toOption.getOrElse(""), valMinLen(1, "Path is necessary"))
 
     override def nextScreen = {
       configurationService.saveConfigurationEntry(PLUGIN_PATH.toString, pluginPath)
