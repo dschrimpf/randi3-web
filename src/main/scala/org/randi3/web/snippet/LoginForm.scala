@@ -27,7 +27,10 @@ class LoginForm {
     var password = ""
     def authentificate() {
       userService.login(username, password).either match {
-        case Left(x) => S.error(x)
+        case Left(x) => {
+          if (x != null) S.error(x)
+          redirectTo("/index")
+        }
         case Right(user) => {
           CurrentLoggedInUser(Some(user))
           redirectTo("/index")
