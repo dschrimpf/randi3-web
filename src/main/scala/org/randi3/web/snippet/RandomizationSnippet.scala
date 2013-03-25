@@ -16,6 +16,7 @@ import scala.Right
 import scala.Some
 import org.randi3.web.model.SubjectDataTmp
 import org.randi3.web.lib.DependencyFactory
+import org.joda.time.LocalDate
 
 
 class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
@@ -69,7 +70,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
               ajaxText("", (y: String) => {
                 if (!y.isEmpty) {
                   try {
-                    val value = Utility.slashDate.parse(y)
+                    val value = new LocalDate(Utility.slashDate.parse(y).getTime)
                     subjectData.value = value
                     if (!subjectData.criterion.isValueCorrect(value))
                       S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
@@ -152,7 +153,6 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
         case Left(x) => null
         case Right(prop) => prop
       })
-
       if (trial.criterions.isEmpty || subjectDataList.toList.map(subjectData => subjectData.criterion.isValueCorrect(subjectData.value)).reduce((acc, elem) => acc && elem)) {
         if (trial.identificationCreationType != TrialSubjectIdentificationCreationType.EXTERNAL) subjectIdentifier = "system"
         TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentLoggedInUser.get.get.username, trialSite = CurrentLoggedInUser.get.get.site, properties = properties).either match {
@@ -162,6 +162,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
               case Left(x) => S.error("randomizeMsg", x)
               case Right(result) => {
                 RandomizationResult.set(Some((result._1, result._2, subject)))
+
                 CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get))
                 subjectDataList.clear()
                 subjectIdentifier = ""
