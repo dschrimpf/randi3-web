@@ -73,7 +73,7 @@ object InstallationWizard extends Wizard with Utility with Logging  with Configu
         val tableList = MTable.getTables.list()(database.createSession())
 
         if (tableList.size != 0) {
-          if(dbType == SupportedDatabases.PostgreSQL.toString) {
+          if(dbType.toString() == SupportedDatabases.PostgreSQL.toString) {
           try {
           val driver: ExtendedProfile =
             org.scalaquery.ql.extended.PostgresDriver
