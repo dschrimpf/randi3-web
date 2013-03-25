@@ -407,7 +407,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
   private def generatePossibleTrials() {
-    if (CurrentLoggedInUser.get.isDefined) {
+    if (CurrentLoggedInUser.get.isDefined && CurrentUser.isDefined) {
       val rights = CurrentLoggedInUser.get.get.rights.toList
       val currentSelectedUser = CurrentUser.get.get
 
@@ -416,6 +416,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
         .map(right => (right.trial, right.trial.name)).toSet.toList
 
       selectedTrial = if (!trials.isEmpty) trials.head._1 else null
+
     } else {
       trials = Nil
       selectedTrial = null
