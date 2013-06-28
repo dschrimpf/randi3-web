@@ -258,6 +258,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     def save() {
       val trial = CurrentTrial.get.get
+
       val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toOption.get
       val actTrial = trial.copy(
         name = name,
@@ -306,7 +307,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
           <span>{S.?("trial.changesNotPossible")}</span>
         }
       },
-      "submit" -> submit(S.?("save"), save _)
+      "submit" -> submit(S.?("save"), save _, "class" -> "btnSend")
     )
   }
 
@@ -335,7 +336,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         Replace("participatedTrialSiteTable", participatedSitesTable(false))
       }),
       "pSites" -> participatedSitesTable(false),
-      "submit" -> submit(S.?("save"), save _)
+      "submit" -> submit(S.?("save"), save _, "class" -> "btnSend")
     )
   }
 
@@ -469,7 +470,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         Replace("rights", rights)
       }),
       "rights" -> rights,
-      "submit" -> submit(S.?("save"), save _)
+      "submit" -> submit(S.?("save"), save _, "class" -> "btnSend")
     )
   }
 
@@ -575,9 +576,10 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     }
 
     def isTrialOpenField: Elem = {
-      <div>
-        <b> {S.?("isTrialOpen")}</b>  {checkbox(isTrialOpen, value => isTrialOpen = value)}
-      </div>
+      val id = "isTrialOpen"
+      generateEntry(id, false, {
+        ajaxCheckbox(isTrialOpen, value => isTrialOpen = value)
+      })
     }
 
 
@@ -611,7 +613,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       "addTreatmentArm" -> ajaxButton(S.?("add"), () => {
         armsTmp += new TreatmentArmTmp(Int.MinValue, 0, "", "", 0)
         Replace("treatmentArms", generateTreatmentArms(xhtml))
-      }),
+      }, "class" -> "btnNormal"),
       "treatmentArms" -> generateTreatmentArms(xhtml),
       //TODO selectElem
       "identificationCreationTypeSelect" -> ajaxSelect(TrialSubjectIdentificationCreationType.values.map(value => (value.toString, value.toString)).toSeq, Full(identificationCreationTypeTmp), identificationCreationTypeTmp = _),
@@ -629,7 +631,11 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       //      "stages" -> generateStages(xhtml),
       "randomizationMethodSelect" -> randomizationMethodSelectField,
       "randomizationConfig" -> generateRandomizationConfigField,
-      "submit" -> submit("save", code _)
+       "cancel" -> submit("cancel", () => {
+         cleanVariables()
+         redirectTo("/trial/list")
+       }, "class" -> "btnCancel"),
+      "submit" -> submit(S.?("save"), code _, "class" -> "btnSend")
     )
   }
 
@@ -675,7 +681,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
   }
 
   private def generateRandomizationConfigField: Elem = {
-    <div id="randomizationConfig">
+    <div id="randomizationConfig" class="clearfix">
       <fieldset>
         <legend>{S.?("generalInformation")}</legend>
         <ul>
@@ -718,17 +724,21 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       </fieldset>
     } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
       val criterionList = criterionsTmp
-      <div>
-        <h3>{S.?("trial.stratification")}:</h3>
-        {S.?("trial.trialSiteStratification")}:
-        { checkbox(isStratifiedByTrialSite, value => isStratifiedByTrialSite = value)}
+      <fieldset>
+        <legend>{S.?("trial.stratification")}</legend>
+        <ul>
+        <li>
+         <label for="trialSiteStratification" >{S.?("trial.trialSiteStratification")}:</label>
+        { checkbox(isStratifiedByTrialSite, value => isStratifiedByTrialSite = value, "id" -> "trialSiteStratification")}
+        </li>
         {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
         result += generateStratumConfig("stratum-" + criterion.name, criterion)
       }
       NodeSeq fromSeq result}
-      </div>
+        </ul>
+      </fieldset>
 
     } else <div></div>}
 
@@ -737,8 +747,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
   private def generateStratumConfig(id: String, criterion: CriterionTmp): Elem = {
    if(criterion.typ != "FreeTextCriterion"){
-    <div class="singleField" id={id}>
-      <fieldset>
+     <li>
+      <fieldset id={id} class ="criterionForStrata">
         <legend>
           {criterion.typ}
         </legend>
@@ -769,22 +779,22 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         </div>{val result = new ListBuffer[Node]()
       for (i <- criterion.strata.indices) {
         val constraint = criterion.strata(i)
-        result += <div class="singleField">
-          {//TODO stratum configuration
-          generateStratumElement(id + i, criterion, constraint)}
-        </div>
+        result +=
+          { generateStratumElement(id + i, criterion, constraint)}
+
       }
       NodeSeq fromSeq result}
       </fieldset>
-    </div>
+     </li>
    }else <div></div>
   }
 
   private def generateStratumElement(id: String, criterion: CriterionTmp, constraint: ConstraintTmp): Elem = {
-    <fieldset id={id} class="inclusionConstraint">
+    <fieldset id={id} class="stratum">
       <legend>{S.?("group")}</legend>{if (criterion.typ != "OrdinalCriterion") {
       <ul>
         <li>
+          <label for={"groupLowerBoundary" + id}> {S.?("lowerBoundary")}
           {ajaxCheckbox(constraint.minValue.isDefined, v => {
           if (!v) {
             constraint.minValue = None
@@ -792,8 +802,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
             constraint.minValue = Some("")
           }
           Replace(id, generateStratumElement(id, criterion, constraint))
-        }, "style" -> "width: 20px;")}
-          {S.?("lowerBoundary")}
+        }, "id" -> ("groupLowerBoundary" + id))}
+          </label>
           {if (constraint.minValue.isDefined) {
           ajaxText(constraint.minValue.get, v => {
             constraint.minValue = Some(v)
@@ -801,6 +811,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         }}
         </li>
         <li>
+          <label for={"upperBoundary" + id}> {S.?("upperBoundary")}
           {ajaxCheckbox(constraint.maxValue.isDefined, v => {
           if (!v) {
             constraint.maxValue = None
@@ -808,8 +819,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
             constraint.maxValue = Some("")
           }
           Replace(id, generateStratumElement(id, criterion, constraint))
-        }, "style" -> "width: 20px;")}
-          {S.?("upperBoundary")}
+        }, "id" -> ("upperBoundary" + id))}
+          </label>
           {if (constraint.maxValue.isDefined) {
           ajaxText(constraint.maxValue.get, v => {
             constraint.maxValue = Some(v)
@@ -819,17 +830,18 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       </ul>
     } else {
       val ordinalValues = constraint.ordinalValues
+      <ul>{
       ordinalValues.toList.sortWith((elem1, elem2) => elem1._2.compareTo(elem2._2) < 0).flatMap(value => {
-        <div>
+        <li>
+          <label>{value._2}</label>
           {ajaxCheckbox(value._1, v => {
           ordinalValues.remove(value)
           ordinalValues.add((v, value._2))
           Replace(id, generateStratumElement(id, criterion, constraint))
-        })}<span>
-          {value._2}
-        </span>
-        </div>
+        })}
+        </li>
       })
+      }</ul>
     }}
     </fieldset>
   }
@@ -1127,30 +1139,38 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
           }
         }
         Replace(id, generateInclusionConstraint(xhtml, id, criterion))
-      }, "style" -> "width: 20px;")}
+      }, "class" ->"inclustionConstraintLegendCheckbox")}
       </legend>{if (criterion.inclusionConstraint.isDefined) {
        if(criterion.typ == "OrdinalCriterion") {
         val ordinalValues = criterion.inclusionConstraint.get.ordinalValues
+         <fieldset class="noBorder">
+           <ul>{
         ordinalValues.toList.sortWith((elem1, elem2) => elem1._2.compareTo(elem2._2) < 0).flatMap(value => {
-          <div>
+          <li>
+            <label for={"ordIncValue"+value._2}> {value._2}</label>
             {ajaxCheckbox(value._1, v => {
             ordinalValues.remove(value)
             ordinalValues.add((v, value._2))
             Replace(id, generateInclusionConstraint(xhtml, id, criterion))
-          })}<span>
-            {value._2}
-          </span>
-          </div>
+          }, "id" ->("ordIncValue"+value._2))}
+          </li>
         })
+           }
+           </ul>
+        </fieldset>
       } else if(criterion.typ == "FreeTextCriterion") {
-         <ul>
+         <fieldset class="noBorder">
+          <ul>
            <li>
              <div>{S.?("elementIsNecessary")}</div>
            </li>
          </ul>
+           </fieldset>
       } else {
+         <fieldset class="noBorder">
          <ul>
            <li>
+             <label for =""> {S.?("lowerBoundary")}</label>
              {ajaxCheckbox(criterion.inclusionConstraint.get.minValue.isDefined, v => {
              if (!v) {
                criterion.inclusionConstraint.get.minValue = None
@@ -1158,8 +1178,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
                criterion.inclusionConstraint.get.minValue = Some("")
              }
              Replace(id, generateInclusionConstraint(xhtml, id, criterion))
-           }, "style" -> "width: 20px;")}
-             {S.?("lowerBoundary")}
+           }, "id" -> ("lowerBoundary"+ id))}
+
              {if (criterion.inclusionConstraint.get.minValue.isDefined) {
              ajaxText(criterion.inclusionConstraint.get.minValue.get, v => {
                criterion.inclusionConstraint.get.minValue = Some(v)
@@ -1167,6 +1187,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
            }}
            </li>
            <li>
+             <label for ="">  {S.?("upperBoundary")}</label>
              {ajaxCheckbox(criterion.inclusionConstraint.get.maxValue.isDefined, v => {
              if (!v) {
                criterion.inclusionConstraint.get.maxValue = None
@@ -1174,8 +1195,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
                criterion.inclusionConstraint.get.maxValue = Some("")
              }
              Replace(id, generateInclusionConstraint(xhtml, id, criterion))
-           }, "style" -> "width: 20px;")}
-             {S.?("upperBoundary")}
+           }, "id" -> ("upperBoundary"+ id))}
+
              {if (criterion.inclusionConstraint.get.maxValue.isDefined) {
              ajaxText(criterion.inclusionConstraint.get.maxValue.get, v => {
                criterion.inclusionConstraint.get.maxValue = Some(v)
@@ -1183,6 +1204,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
            }}
            </li>
          </ul>
+         </fieldset>
        }
     } else {
       <span>{S.?("noInclusionConstraint")}</span>
@@ -1197,16 +1219,16 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       case Some(x) => {
         //TODO implement specific replacement
         <li>
-          <fieldset>
-            <legend>{S.?("values")}</legend>
+          <fieldset class ="criterionValues">
+            <legend>{S.?("values")}
+              {ajaxButton(S.?("add"), () => {
+              x += ""
+              criterion.inclusionConstraint = None
+              Replace(id, generateGeneralCriterions(xhtml, id, criterionList))
+            })}</legend>
             <ul>
-              <div>
-                {ajaxButton(S.?("add"), () => {
-                x += ""
-                criterion.inclusionConstraint = None
-                Replace(id, generateGeneralCriterions(xhtml, id, criterionList))
-              })}{val result = new ListBuffer[Node]()
-              for (i <- x.indices) result += <div>
+                {val result = new ListBuffer[Node]()
+              for (i <- x.indices) result += <li>
                 {ajaxText(x(i), v => {
                   x(i) = v
                   criterion.inclusionConstraint = None
@@ -1216,9 +1238,8 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
                   criterion.inclusionConstraint = None
                   Replace(id, generateGeneralCriterions(xhtml, id, criterionList))
                 })}
-              </div>
+              </li>
               NodeSeq fromSeq result}
-              </div>
             </ul>
           </fieldset>
         </li>

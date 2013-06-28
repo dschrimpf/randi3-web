@@ -130,7 +130,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       }
 
       bind("trialSite", xhtml,
-        "submit" -> submit("activate " + CurrentTrialSite.get.get.name, activate _)
+        "submit" -> submit("activate " + CurrentTrialSite.get.get.name, activate _, "class" -> "btnSendBig")
       )
     } else S.redirectTo("/trialSite/list")
 
@@ -151,7 +151,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       }
 
       bind("trialSite", xhtml,
-        "submit" -> submit("deactivate " + CurrentTrialSite.get.get.name, deactivate _)
+        "submit" -> submit("deactivate " + CurrentTrialSite.get.get.name, deactivate _, "class" -> "btnSendBig")
       )
     } else S.redirectTo("/trialSite/list")
 
@@ -261,6 +261,14 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       )
     }
 
+    def activeField(failure: Boolean = false): Elem = {
+      val id = if (active) "active" else "inactive"
+      generateEntry(id, failure, {
+        submit(S.?( if (active) "menu.trialSiteDeactivate" else "menu.trialSiteActivate"), () => if(active) redirectTo("/trialSite/deactivate") else redirectTo("/trialSite/activate"), "class" -> "btnSend")
+      }
+      )
+    }
+
     bind("trialSite", xhtml,
     "info" -> <span>{name}</span>,
       "name" -> nameField(),
@@ -270,8 +278,13 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       "country" -> countryField(),
       "password" -> passwordField(),
       "passwordCheck" -> passwordCheckField(),
-      "submit" -> submit(S.?("save"), code _)
-    )
+    "active" -> activeField(),
+      "cancel" -> submit("cancel", () => {
+        clearFields()
+        redirectTo("/trialSite/list")
+      }, "class" -> "btnCancel"),
+      "submit" -> submit(S.?("save"), code _, "class" -> "btnSend")
+     )
   }
 
 

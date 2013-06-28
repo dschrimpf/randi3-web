@@ -65,8 +65,8 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       Menu(Loc("trialSiteList", List("trialSite", "list"), S.?("menu.list"))),
       Menu(Loc("trialSiteAdd", List("trialSite", "add"), S.?("menu.add"), If(() => isAdministrator, ""))),
       Menu(Loc("trialSiteEdit", List("trialSite", "edit"), S.?("menu.edit"), If(() => isAdministrator, ""), Hidden)),
-      Menu(Loc("trialSiteActive", List("trialSite", "activate"), S.?("menu.trialSiteActivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && !CurrentTrialSite.get.get.isActive, ""))),
-      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), S.?("menu.trialSiteDeactivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && CurrentTrialSite.get.get.isActive, ""))),
+      Menu(Loc("trialSiteActive", List("trialSite", "activate"), S.?("menu.trialSiteActivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && !CurrentTrialSite.get.get.isActive, ""), Hidden)),
+      Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), S.?("menu.trialSiteDeactivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && CurrentTrialSite.get.get.isActive, ""), Hidden)),
       Menu(Loc("trialSiteDelete", List("trialSite", "delete"), "delete", Hidden, If(() => isAdministrator, ""))))
 
     val userMenu = Menu(S.?("menu.user")) / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(

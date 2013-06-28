@@ -1,16 +1,4 @@
 <lift:surround with="default" at="content">
-    <script type="text/javascript">
-        $(function() {
-
-        $('#trialSiteTabs').tabs();
-
-        $(".next1").click(function() {$("#trialSiteTabs").tabs("option", "active", 1);});
-
-
-        });
-    </script>
-
-
 
     <form class="lift:TrialSiteSnippet.create?form=post">
 
@@ -19,16 +7,8 @@
 
         <lift:msg id="trialSiteMsg" errorClass="err"/>
 
-
-        <div id="trialSiteTabs">
-            <ul>
-                <li><a href="#trialSiteTab-1"><lift:loc locid="generalInformation">General information</lift:loc></a></li>
-                <li><a href="#trialSiteTab-2"><lift:loc locid="password">Password</lift:loc></a></li>
-            </ul>
-
-
-
-                <div id="trialSiteTab-1">
+                    <fieldset>
+                        <legend><lift:loc locid="generalInformation">General information</lift:loc></legend>
                     <ul>
                         <trialSite:name/>
                         <trialSite:street/>
@@ -36,19 +16,17 @@
                         <trialSite:city/>
                         <trialSite:country/>
                     </ul>
-                    <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
-                </div>
+                    </fieldset>
 
-                <div id="trialSiteTab-2">
+                    <fieldset>
+                        <legend><lift:loc locid="password">Password</lift:loc></legend>
                     <ul>
                         <trialSite:password/>
                         <trialSite:passwordCheck/>
                     </ul>
-                     <br/>
-                    <div style="text-align:center;"><trialSite:submit /></div>
-                </div>
-
-         </div>
+                    </fieldset>
+                     <trialSite:cancel/>
+                    <trialSite:submit />
 
     </form>
 

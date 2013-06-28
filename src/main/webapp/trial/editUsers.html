@@ -1,32 +1,35 @@
 <lift:surround with="default" at="content">
-    <script type="text/javascript">
-        $(function(){
-        // Tabs
-        $('#trialAddTabs').tabs();
-
-        $('#stagesTabs').tabs();
-
-        $('#startDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
-
-        $('#endDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
-
-        });
-
-    </script>
-
 
     <form class="lift:TrialSnippet.editUsers?form=post">
 
-        <h1><lift:loc locid="trial.editUsers">Edit trial users</lift:loc> (<trial:name/>)</h1>
+        <h1>
+            <lift:loc locid="trial.editUsers">Edit trial users</lift:loc>
+            (
+            <trial:name/>
+            )
+        </h1>
         <hr/>
 
         <lift:msg id="trialMsg" errorClass="err"/>
 
-        <trial:userSelect/>
-        <trial:roleSelect/>
-        <trial:addRight/>
+        <fieldset class="noBorder">
+            <ul>
+                <li>
+                    <label for="addUser">
+                        <lift:loc locid="pleaseSelect">Please select</lift:loc>
+                        : </label>
+                    <span id="addUser">
+                        <trial:userSelect/>
+                        <trial:roleSelect/>
+                        <trial:addRight/>
+                    </span>
+                </li>
 
-        <trial:rights/>
+            </ul>
+            <trial:rights/>
+
+
+        </fieldset>
 
         <trial:submit/>
 

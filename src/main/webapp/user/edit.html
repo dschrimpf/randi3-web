@@ -9,7 +9,7 @@
 
     <form class="lift:UserCreateUpdateSnippet.edit?form=post">
 
-        <h1><lift:loc locid="user.edit">Edit user</lift:loc> (<user:info/>)</h1><hr />
+        <h1><lift:loc locid="user.edit">Edit user</lift:loc> (<user:info/>)</h1>
         <hr/>
 
         <lift:msg id="userMsg" errorClass="err"/>
@@ -28,6 +28,12 @@
                         <user:username/>
                         <user:password/>
                         <user:passwordCheck/>
+                    </ul>
+                </fieldset>
+                <fieldset>
+                    <legend><lift:loc locid="language">Language</lift:loc></legend>
+                    <ul>
+                        <user:locale/>
                     </ul>
                 </fieldset>
                 <fieldset>
@@ -52,12 +58,7 @@
 
                     </ul>
                 </fieldset>
-                <fieldset>
-                    <legend><lift:loc locid="language">Language</lift:loc></legend>
-                    <ul>
-                        <user:locale/>
-                    </ul>
-                </fieldset>
+
                 <fieldset>
                     <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
                     <ul>
@@ -68,22 +69,34 @@
             </div>
             <div id="userTab-2">
                 <span style="color:red;"><b><lift:loc locid="warningUserSiteChange">If the trial site changes all trial specific rights will be removed!</lift:loc></b></span>
-                <ul>
-                    <user:trialSite/>
-                </ul>
+                <fieldset class="noBorder">
+                    <ul>
+                        <user:trialSite/>
+                    </ul>
+                </fieldset>
                 <user:trialSiteInfo/>
             </div>
             <div id="userTab-3">
-                <ul>
-                    <user:administrator/>
-                    <user:canCreateTrials/>
-                    <hr />
-                    <user:trialsSelect />
-                    <user:roleSelect />
-                    <user:addRight />
-                    <br />
-                    <user:rights/>
-                </ul>
+                <fieldset>
+                    <legend>General rights</legend>
+                    <ul>
+
+                        <user:administrator/>
+                        <user:canCreateTrials/>
+                    </ul>
+                </fieldset>
+                <fieldset>
+                    <legend>Study depending rights</legend>
+                    <ul>
+
+                        <user:trialsSelect />
+                        <user:roleSelect />
+                        <user:addRight />
+
+                        <user:rights/>
+
+                    </ul>
+                    </fieldset>
             </div>
 
         </div>

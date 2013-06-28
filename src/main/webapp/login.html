@@ -1,27 +1,20 @@
 <lift:surround with="default" at="content">
 
     <lift:ConfigurationSnippet.configured>
-        <script type="text/javascript">
-            $(function(){
-            // Tabs
-            $('#loginTabs').tabs();
-            });
-        </script>
 
-        <h1><lift:loc locid="login">Login</lift:loc></h1>
-        <hr/>
-        <div id="loginTabs" style="width: 50%; margin-left:auto; margin-right:auto;">
-            <div id="loginTab">
-                <form class="lift:LoginForm.login?form=post" style="font-weight: bold;">
-                    <lift:loc locid="username">Username</lift:loc>: <br/>
-                    <login:username/>
-                    <br/>
-                    <lift:loc locid="password">Password</lift:loc>: <br/>
-                    <login:password/>
-                    <br/>
-                    <login:submit/>
+        <div class="centeredDiv">
+        <form class="lift:LoginForm.login?form=post">
+                    <fieldset style ="width:35=em;">
+                        <legend style ="font-size:150%;"><lift:loc locid="login">Login</lift:loc></legend>
+                        <ul>
+                            <login:username/>
+                            <login:password/>
+                        </ul>
+
+                        <login:submit/>
+                    </fieldset>
+
                 </form>
-            </div>
         </div>
     </lift:ConfigurationSnippet.configured>
     <lift:ConfigurationSnippet.install/>

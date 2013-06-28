@@ -1,13 +1,4 @@
 <lift:surround with="default" at="content">
-    <script type="text/javascript">
-        $(function(){
-        // Tabs
-        $('#trialEditTabs').tabs();
-
-        });
-
-    </script>
-
 
 
     <form class="lift:TrialSnippet.editStatus?form=post">
@@ -15,12 +6,7 @@
         <hr/>
 
         <lift:msg id="trialMsg" errorClass="err"/>
-        <div id="trialEditTabs">
-            <ul>
-                <li><a href="#tabs-1"><lift:loc locid="trial.status">Status</lift:loc></a></li>
-            </ul>
 
-            <div id="tabs-1">
 
                 <fieldset>
                     <legend><lift:loc locid="trial.status">Status</lift:loc></legend>
@@ -29,9 +15,7 @@
                         <trial:status/>
                     </ul>
                 </fieldset>
-            </div>
 
-        </div>
         <trial:submit/>
     </form>
 

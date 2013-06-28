@@ -12,7 +12,7 @@ class TrialSelectForm {
   def render(xhtml: Group): NodeSeq = {
     if (CurrentTrial.get.isDefined) {
       bind("trial", xhtml,
-        "name" ->  <div>{S.?("header.selectedTrial")}:<br /><b>{CurrentTrial.get.get.name}</b></div>
+        "name" ->  <div id="selectedTrial" >{S.?("header.selectedTrial")}:<br /><b>{CurrentTrial.get.get.name}</b></div>
       )
     } else {
       bind("trial", xhtml,

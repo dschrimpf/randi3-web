@@ -5,7 +5,7 @@ import org.randi3.web.util.CurrentUser
 import net.liftweb.util.Helpers._
 import net.liftweb.http.S._
 import net.liftweb.http.S
-
+import net.liftweb.http.SHtml._
 
 class UserShowSnippet extends GeneralFormSnippet{
 
@@ -125,14 +125,10 @@ class UserShowSnippet extends GeneralFormSnippet{
       }),
       "trialSiteInfo" -> trialSiteInfo,
       "administrator" -> generateEntry("user.isUserAdministrator", false, {
-        <span>
-          {user.administrator}
-        </span>
+        <span>{checkbox(user.administrator, () => _ , "id" -> "user.isUserAdministrator", "disabled" -> "disabled")}</span>
       }),
       "canCreateTrials" -> generateEntry("canCreateTrials", false, {
-        <span>
-          {user.canCreateTrial}
-        </span>
+        <span>{checkbox(user.canCreateTrial, () => _ , "id" -> "canCreateTrial", "disabled" -> "disabled")}</span>
       }),
       "rights" -> rights,
       "isActive" -> generateEntry("isActive", false, {
@@ -145,6 +141,7 @@ class UserShowSnippet extends GeneralFormSnippet{
           {user.numberOfFailedLogins}
         </span>
       }),
+    "edit" -> submit(S.?("user.edit"), () => S.redirectTo("/user/edit"), "class" -> "btnSend") ,
       "lockedUntil" -> generateEntry("lockedUntil", false, {
         <span>
           {if(user.lockedUntil.isDefined) user.lockedUntil.get else <span>---</span>}

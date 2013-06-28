@@ -9,39 +9,60 @@
     </script>
 
 
-
     <form class="lift:TrialSnippet.editParticipatingTrialSites?form=post">
-        <h1><lift:loc locid="trial.edit"></lift:loc> (<trial:name/>)</h1>
+        <h1>
+            <lift:loc locid="trial.edit"></lift:loc>
+            (
+            <trial:name/>
+            )
+        </h1>
         <hr/>
 
         <lift:msg id="trialMsg" errorClass="err"/>
-        <div id="trialEditTabs">
-            <ul>
-                <li><a href="#tabs-1"><lift:loc locid="trialSites">Trial sites</lift:loc></a></li>
-            </ul>
 
-            <div id="tabs-1">
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>: </span>
-                <trial:participatingSiteSelect/>
+        <fieldset>
+            <legend>
+                <lift:loc locid="trialSites">Trial sites</lift:loc>
+            </legend>
+
+            <ul>
+                <li>
+                    <label for="addPartSite">
+                        <lift:loc locid="pleaseSelect">Please select</lift:loc>
+                        : </label>
+                        <span id="addPartSite">
+                              <trial:participatingSiteSelect/>
                 <trial:addParticipatingSite/>
-                <hr/>
-                <div id="participatedTrialSiteTable">
-                    <trial:pSites>
-                        <table width="90%">
-                            <tr>
-                                <th><lift:loc locid="name">Name</lift:loc></th>
-                                <th><lift:loc locid="street">Street</lift:loc></th>
-                                <th><lift:loc locid="postCode">Post code</lift:loc></th>
-                                <th><lift:loc locid="city">City</lift:loc></th>
-                                <th><lift:loc locid="country">Country</lift:loc></th>
-                                <th></th>
-                            </tr>
-                        </table>
-                    </trial:pSites>
-                </div>
+                        </span>
+                </li>
+            </ul>
+            <hr/>
+            <div id="participatedTrialSiteTable">
+                <trial:pSites>
+                    <table width="90%">
+                        <tr>
+                            <th>
+                                <lift:loc locid="name">Name</lift:loc>
+                            </th>
+                            <th>
+                                <lift:loc locid="street">Street</lift:loc>
+                            </th>
+                            <th>
+                                <lift:loc locid="postCode">Post code</lift:loc>
+                            </th>
+                            <th>
+                                <lift:loc locid="city">City</lift:loc>
+                            </th>
+                            <th>
+                                <lift:loc locid="country">Country</lift:loc>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </table>
+                </trial:pSites>
             </div>
 
-        </div>
+        </fieldset>
         <trial:submit/>
     </form>
 

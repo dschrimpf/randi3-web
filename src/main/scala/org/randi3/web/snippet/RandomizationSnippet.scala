@@ -52,9 +52,9 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
     val subjectDataNodeSeq = new ListBuffer[Node]()
 
     for (subjectData <- subjectDataList) {
-      subjectDataNodeSeq +=  <fieldset> {
+      subjectDataNodeSeq +=  <li> {
         // generateEntryWithInfo(subjectData.criterion.name, false, subjectData.criterion.description,
-        <legend>
+        <label for={subjectData.criterion.name + subjectData.criterion.id}>
           <span>
             {subjectData.criterion.name}
           </span>
@@ -63,8 +63,8 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
             {subjectData.criterion.description}
           </span>
           </span>
-        </legend>
-          <div>
+        </label>
+          <div id={subjectData.criterion.name + subjectData.criterion.id}>
             {if (subjectData.criterion.getClass == classOf[DateCriterion]) {
             {
               ajaxText("", (y: String) => {
@@ -120,7 +120,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
             }
           } else if (subjectData.criterion.getClass == classOf[FreeTextCriterion]) {
             {
-              ajaxText(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
+              ajaxTextarea(if (subjectData.value == null) "" else subjectData.value.toString, (y: String) => {
                 subjectData.value = y
                 if (subjectData.value == null)
                   S.error("randomizeMsg", subjectData.criterion.name + ": Element not set")
@@ -130,13 +130,13 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
             }
           } else if (subjectData.criterion.getClass == classOf[OrdinalCriterion]) {
             {
-              <div>
-                {ajaxRadio(subjectData.criterion.asInstanceOf[OrdinalCriterion].values.toSeq, Empty, (y: String) => {
+               <div class="radio">{
+                ajaxRadio(subjectData.criterion.asInstanceOf[OrdinalCriterion].values.toSeq, Empty, (y: String) => {
                 subjectData.value = y
                 if (!subjectData.criterion.isValueCorrect(y))
                   S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
-              }).toForm}
-              </div>
+              }).toForm
+              }</div>
             }
           } else {
             <span>?</span>
@@ -144,7 +144,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
           </div>
         //)
         }
-      </fieldset>
+      </li>
     }
 
 
@@ -184,15 +184,17 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
       "data" -> {
         NodeSeq fromSeq subjectDataNodeSeq
       },
-      "cancel" -> <a href={val user = CurrentLoggedInUser.get.get
-      val rightList = user.rights.filter(right => right.trial.id == trial.id)
-      val roles = rightList.map(right => right.role)
-      if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
-        "/trial/randomizationData"
-      } else {
-        "/trial/randomizationDataInvestigator"
-      }}>Cancel</a>,
-      "submit" -> button("Randomize", randomizeSubject _))
+      "cancel" ->       submit(S.?("cancel"), () => {
+        val user = CurrentLoggedInUser.get.get
+        val rightList = user.rights.filter(right => right.trial.id == trial.id)
+        val roles = rightList.map(right => right.role)
+        if (roles.contains(Role.principleInvestigator) || roles.contains(Role.statistician) || roles.contains(Role.trialAdministrator) || roles.contains(Role.monitor)) {
+          redirectTo("/trial/randomizationData")
+        } else {
+          redirectTo("/trial/randomizationDataInvestigator")
+        }
+        }, "class" -> "btnCancel"),
+      "submit" -> submit("Randomize", randomizeSubject _, "class" -> "btnSend"))
   }
 
 

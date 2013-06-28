@@ -19,52 +19,72 @@
 
     <form class="lift:RegisterForm?form=post">
 
-        <h1><lift:loc locid="registration">Registration</lift:loc></h1> <hr />
+        <h1>
+            <lift:loc locid="registration">Registration</lift:loc>
+        </h1>
+        <hr/>
 
         <lift:msg id="registerMsg" errorClass="err"/>
         <div id="registerTabs">
             <ul>
-                <li><a href="#registerTab-1"><lift:loc locid="accountInformation">Account information</lift:loc></a></li>
-                <li><a href="#registerTab-2"><lift:loc locid="contactInformation">Contact information</lift:loc></a></li>
-                <li><a href="#registerTab-3"><lift:loc locid="trialSite">Trial site</lift:loc></a></li>
+                <li><a href="#registerTab-1">
+                    <lift:loc locid="accountInformation">Account information</lift:loc>
+                </a></li>
+                <li><a href="#registerTab-2">
+                    <lift:loc locid="contactInformation">Contact information</lift:loc>
+                </a></li>
+                <li><a href="#registerTab-3">
+                    <lift:loc locid="trialSite">Trial site</lift:loc>
+                </a></li>
             </ul>
-            <fieldset>
 
-                <div id="registerTab-1">
+
+            <div id="registerTab-1">
+                <fieldset>
+                    <legend>
+                        <lift:loc locid="credentials">Credentials</lift:loc>
+                    </legend>
                     <ul>
                         <register:username/>
                         <register:password/>
                         <register:passwordCheck/>
                     </ul>
-                    <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
-                </div>
-                <div id="registerTab-2">
+                </fieldset>
+                <fieldset>
+                    <legend>
+                        <lift:loc locid="language">Language</lift:loc>
+                    </legend>
                     <ul>
-                        <register:firstName/>
-                        <register:lastName/>
-                        <register:email/>
-                        <register:phoneNumber/>
+                        <register:locale/>
                     </ul>
-                    <fieldset>
-                        <legend><lift:loc locid="language">Language</lift:loc></legend>
-                        <ul>
-                            <register:locale/>
-                        </ul>
-                    </fieldset>
-                    <h4 style="text-align:right;"><a class="next2" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
-                </div>
-                <div id="registerTab-3">
+                </fieldset>
+                <input class="btnSend next1" type="button" value="Next >" />
+            </div>
+            <div id="registerTab-2">
+                <fieldset>
+                    <legend>
+                        <lift:loc locid="contactInformation">Contact information</lift:loc>
+                    </legend>
+                <ul>
+                    <register:firstName/>
+                    <register:lastName/>
+                    <register:email/>
+                    <register:phoneNumber/>
+                </ul>
+                </fieldset>
+                <input class="btnSend next2" type="button" value="Next >" />
+            </div>
+            <div id="registerTab-3">
+                <fieldset>
+                    <legend><lift:loc locid="trialSite">Trial site</lift:loc></legend>
                     <ul>
                         <register:trialSite/>
                         <register:trialSitePassword/>
                     </ul>
-                    <br/>
-                    <br/>
-                    <hr/>
-                    <div style="text-align:center;"><register:submit/></div>
-                </div>
-            </fieldset>
+                </fieldset>
+                <register:cancel/>
+                <register:submit/>
+            </div>
         </div>
-
     </form>
 </lift:surround>

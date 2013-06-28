@@ -225,7 +225,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
         ajaxSelectObj(trialSites, Full(actualTrialSite), (trialSite: TrialSite) => {
           actualTrialSite = trialSite
           Replace("trialSiteInfo", trialSiteInfo)
-        })
+        }, "id" -> id)
       })
     }
 
@@ -264,33 +264,23 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
     def administratorField: Elem = {
       val id = "administrator"
       generateEntry(id, false, {
-        <div>
-          <span>{S.?("user.isUserAdministrator")}</span>{ajaxCheckbox(isAdministrator, status => {
-          isAdministrator = status
-        })}
-        </div>
+        ajaxCheckbox(isAdministrator, value => isAdministrator = value, "id" -> id)
       })
-    }
+      }
 
     def canCreateTrialsField: Elem = {
       val id = "canCreateTrials"
       generateEntry(id, false, {
-        <div>
-          <span>{S.?("user.canUserCreateTrials")}</span>{ajaxCheckbox(canCreateTrial, status => {
-          canCreateTrial = status
-        })}
-        </div>
+        ajaxCheckbox(canCreateTrial, value => canCreateTrial = value, "id" -> id)
       })
     }
 
     def isActiveField: Elem = {
-      val id = "isActive"
+      val id = "user.isActive"
       generateEntry(id, false, {
-        <div>
-          <span>{S.?("user.isActive")}</span>{ajaxCheckbox(isActive, status => {
+      ajaxCheckbox(isActive, status => {
           isActive = status
-        })}
-        </div>
+        })
       })
     }
 
@@ -386,7 +376,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
           {if(CurrentUser.isDefined && CurrentUser.get.get.lockedUntil.isDefined) CurrentUser.get.get.lockedUntil.get else <span>---</span>}
         </span>
       }),
-      "resetLock" -> button(S.?("resetLock"), () => {
+      "resetLock" -> submit(S.?("resetLock"), () => {
         val actUser = CurrentUser.get.get
         val dbUser = userService.get(actUser.id).toOption.get.get
         val changedUser = dbUser.copy(numberOfFailedLogins = 0, lockedUntil=None)
@@ -397,9 +387,13 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
 
        S.redirectTo("/user/edit")
       }
-      ),
+      , "class" -> "btnNormal"),
     "locale" -> selectObj(locales, Full(locale), (loc:Locale) => locale = loc),
-      "submit" -> submit(S.?("save"), code _)
+      "cancel" -> submit("cancel", () => {
+        clearFields()
+        redirectTo("/user/list")
+      }, "class" -> "btnCancel"),
+      "submit" -> submit(S.?("save"), code _, "class" -> "btnSend")
     )
 
   }

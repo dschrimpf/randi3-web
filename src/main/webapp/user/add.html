@@ -6,7 +6,7 @@
 
         $(".next1").click(function() {$("#userTabs").tabs("option", "active", 1);});
         $(".next2").click(function() {$("#userTabs").tabs("option", "active", 2);});
-        $(".next3").click(function() {$("#userTabs").tabs("option", "active", 2);});
+        $(".next3").click(function() {$("#userTabs").tabs("option", "active", 3);});
 
         });
     </script>
@@ -17,9 +17,8 @@
     <h1><lift:loc locid="user.create">Create a new user</lift:loc></h1>
     <hr/>
 
-
-
         <lift:msg id="userMsg" errorClass="err"/>
+
         <div id="userTabs" style="margin-bottom: 5px;">
             <ul>
                 <li><a href="#account"><lift:loc locid="account">Account</lift:loc> </a></li>
@@ -37,7 +36,13 @@
                         <user:passwordCheck/>
                     </ul>
                 </fieldset>
-                <h4 style="text-align:right;"><a class="next1" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
+                <fieldset>
+                    <legend><lift:loc locid="language">Language</lift:loc></legend>
+                    <ul>
+                        <user:locale/>
+                    </ul>
+                </fieldset>
+                <input class="btnSend next1" type="button" value="Next >" />
             </div>
 
 
@@ -54,43 +59,46 @@
                 </fieldset>
 
                 <fieldset>
-                    <legend><lift:loc locid="language">Language</lift:loc></legend>
-                    <ul>
-                        <user:locale/>
-                    </ul>
-                </fieldset>
-
-                <fieldset>
                     <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
                     <ul>
                         <user:email/>
                         <user:phoneNumber/>
                     </ul>
                 </fieldset>
-                <h4 style="text-align:right;"><a class="next2" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
+                <input class="btnSend next2" type="button" value="Next >" />
             </div>
             <div id="userTab-2">
-
+                <fieldset class="noBorder">
                 <ul>
                     <user:trialSite/>
                 </ul>
+                </fieldset>
                 <user:trialSiteInfo/>
-                <h4 style="text-align:right;"><a class="next3" href="#"><lift:loc locid="next">Next</lift:loc> -&gt;</a></h4>
+                <input class="btnSend next3" type="button" value="Next >" />
             </div>
             <div id="userTab-3">
+                <fieldset>
+                    <legend>General rights</legend>
                 <ul>
+
                     <user:administrator/>
                     <user:canCreateTrials/>
-                    <hr />
+                </ul>
+                   </fieldset>
+                <fieldset>
+                    <legend>Study depending rights</legend>
+                    <ul>
+
                     <user:trialsSelect />
                     <user:roleSelect />
                     <user:addRight />
-                    <br />
+
                     <user:rights/>
+
                 </ul>
-                <br/>
-                <br/>
-                <div style="text-align:center;"><user:submit/></div>
+                </fieldset>
+                <user:cancel/>
+                <user:submit/>
             </div>
 
         </div>

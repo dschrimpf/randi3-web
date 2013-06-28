@@ -62,10 +62,19 @@
             </div>
 
             <div id="tabs-2">
+                <fieldset class="noBorder">
+                    <ul>
                 <trial:isTrialOpen/>
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>: </span>
-                <trial:participatingSiteSelect/>
-                <trial:addParticipatingSite/>
+                        <li>
+                            <label for="addPartSite"><lift:loc locid="pleaseSelect">Please select</lift:loc>: </label>
+                            <span id="addPartSite">
+                            <trial:participatingSiteSelect/>
+                            <trial:addParticipatingSite/>
+                                </span>
+                        </li>
+                    </ul>
+                </fieldset>
+
                 <hr/>
                 <div id="participatedTrialSiteTable">
                     <trial:pSites>
@@ -88,18 +97,38 @@
                     <trial:addTreatmentArm/>
                 </div>
                 <hr/>
+                <div class="clearfix">
                 <trial:treatmentArms/>
+                    </div>
             </div>
 
             <div id="tabs-4">
-                <span><lift:loc locid="identificationCreationType">Identification creation type</lift:loc>:</span>
-                <trial:identificationCreationTypeSelect/>
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="identificationCreationType"><lift:loc locid="identificationCreationType">Identification creation type</lift:loc>:</label>
+                           <span id="identificationCreationType">
+                              <trial:identificationCreationTypeSelect/>
+                            </span>
+                        </li>
+                    </ul>
+                </fieldset>
                 <hr/>
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>:</span>
-                <trial:criterionSelect/>
-                <trial:addSelectedCriterion/>
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="criterionSelect"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                           <span id="criterionSelect">
+                                <trial:criterionSelect/>
+                                <trial:addSelectedCriterion/>
+                            </span>
+                        </li>
+                    </ul>
+                </fieldset>
                 <hr/>
+                <div class="clearfix">
                 <trial:criterions/>
+                    </div>
             </div>
 
     <!--        <div id="tabs-5">
@@ -110,8 +139,15 @@
             </div>-->
 
             <div id="tabs-6">
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>:</span>
-                <trial:randomizationMethodSelect/>
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="randomizationSelectionField"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                            <span id="randomizationSelectionField"><trial:randomizationMethodSelect/></span>
+                        </li>
+                    </ul>
+                </fieldset>
+
                 <trial:randomizationConfig/>
             </div>
 

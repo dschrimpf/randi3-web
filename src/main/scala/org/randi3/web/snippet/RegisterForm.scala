@@ -162,6 +162,15 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       })
     }
 
+
+    def localeField: Elem = {
+      val id = "locale"
+      generateEntry(id, false, {
+        selectObj(locales, Full(locale), (loc:Locale) => locale = loc)
+      })
+    }
+
+
     def register() {
       User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set(), locale = locale).either match {
         case Left(x) => S.error("registerMsg",x.toString)   //TODO set field failure
@@ -186,8 +195,12 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       "phoneNumber" -> phoneNumberField(),
       "trialSite" -> trialSiteField,
       "trialSitePassword" -> trialSitPasswordeField,
-      "locale" -> selectObj(locales, Full(locale), (loc:Locale) => locale = loc),
-      "submit" -> submit("register", register _)
+      "locale" -> localeField,
+    "cancel" -> submit("cancel", () => {
+      clearFields()
+      redirectTo("/login")
+    }, "class" -> "btnCancel"),
+      "submit" -> submit("register", register _ , "class" -> "btnSend")
     )
 
   }

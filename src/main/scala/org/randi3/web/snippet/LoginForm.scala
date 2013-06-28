@@ -18,7 +18,7 @@ import org.randi3.web.lib.DependencyFactory
 import org.randi3.web.util.CurrentLoggedInUser
 
 
-class LoginForm {
+class LoginForm extends GeneralFormSnippet{
 
   val userService = DependencyFactory.get.userService
 
@@ -38,8 +38,8 @@ class LoginForm {
       }
     }
     bind("login", xhtml,
-      "username" -> SHtml.text(username, username = _),
-      "password" -> SHtml.password(password, password = _),
-      "submit" -> SHtml.submit(S.?("login"), authentificate _))
+      "username" ->  generateEntry("username", false, SHtml.text(username, username = _)),
+      "password" -> generateEntry("password", false, SHtml.password(password, password = _)),
+      "submit" -> SHtml.submit(S.?("login"), authentificate _, "class" -> "btnSend"))
   }
 }

@@ -61,11 +61,27 @@
             </div>
 
             <div id="tabs-2">
-                <trial:isTrialOpen/>
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>: </span>
-                <trial:participatingSiteSelect/>
-                <trial:addParticipatingSite/>
+                <fieldset class="noBorder">
+                    <ul>
+                        <trial:isTrialOpen/>
+                    </ul>
+
+                </fieldset>
+
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="siteSelection"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                            <span id="siteSelection">
+                            <trial:participatingSiteSelect/>
+                            <trial:addParticipatingSite/>
+                              </span>
+                        </li>
+                    </ul>
+
+                </fieldset>
                 <hr/>
+
                 <div id="participatedTrialSiteTable">
                     <trial:pSites>
                         <table width="90%">
@@ -87,36 +103,61 @@
                     <trial:addTreatmentArm/>
                 </div>
                 <hr/>
-                <trial:treatmentArms/>
+                <div class="clearfix">
+                    <trial:treatmentArms/>
+                </div>
             </div>
 
             <div id="tabs-4">
-                <span><lift:loc locid="identificationCreationType">Identification creation type</lift:loc>:</span>
-                <trial:identificationCreationTypeSelect/>
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="identificationCreationType"><lift:loc locid="identificationCreationType">Identification creation type</lift:loc>:</label>
+                           <span id="identificationCreationType">
+                              <trial:identificationCreationTypeSelect/>
+                            </span>
+                        </li>
+                    </ul>
+                </fieldset>
+                 <hr/>
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="criterionSelect"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                           <span id="criterionSelect">
+                                <trial:criterionSelect/>
+                                <trial:addSelectedCriterion/>
+                            </span>
+                        </li>
+                    </ul>
+                </fieldset>
                 <hr/>
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>:</span>
-                <trial:criterionSelect/>
-                <trial:addSelectedCriterion/>
-                <hr/>
+                <div class="clearfix">
                 <trial:criterions/>
+                </div>
             </div>
 
-    <!--        <div id="tabs-5">
-                <trial:stageName/>
-                <trial:addStage/>
-                <hr/>
-                <trial:stages/>
-            </div>-->
 
             <div id="tabs-6">
-                <span><lift:loc locid="pleaseSelect">Please select</lift:loc>:</span>
-                <trial:randomizationMethodSelect/>
+
+                <fieldset class="noBorder">
+                  <ul>
+                      <li>
+                         <label for="randomizationSelectionField"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                          <span id="randomizationSelectionField"><trial:randomizationMethodSelect/></span>
+                      </li>
+                  </ul>
+                </fieldset>
+
                 <trial:randomizationConfig/>
+
+                <trial:cancel/>
+                <trial:submit/>
             </div>
 
 
         </div>
-        <trial:submit/>
+
     </form>
 
 </lift:surround>
