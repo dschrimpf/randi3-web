@@ -1,0 +1,32 @@
+<lift:surround with="default" at="content">
+
+   <form class="lift:InstallationSnippet.mailConfig?form=post">
+
+
+        <h1>Installation (3/6) - <lift:loc locid="mailServerConfiguration">Mail server configuration</lift:loc></h1>
+        <hr/>
+
+        <lift:msg id="errMsg" errorClass="err"/>
+
+
+        <fieldset>
+            <legend><lift:loc locid="mailServerConfiguration">Mail server configuration</lift:loc></legend>
+            <ul>
+               <mail:serverURL/>
+                <mail:serverPort/>
+                <mail:smtp_auth/>
+                <mail:username/>
+                <mail:password/>
+                <mail:ssl/>
+                <mail:from/>
+            </ul>
+        </fieldset>
+
+       <mail:back/>
+        <mail:next/>
+
+    </form>
+
+
+
+</lift:surround>

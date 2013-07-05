@@ -1,0 +1,24 @@
+<lift:surround with="default" at="content">
+
+     <form class="lift:InstallationSnippet.pluginPath?form=post">
+
+
+        <h1>Installation (4/6) - <lift:loc locid="pluginPath"> Plug-in path</lift:loc></h1>
+        <hr/>
+
+        <lift:msg id="errMsg" errorClass="err"/>
+
+
+        <fieldset>
+            <legend><lift:loc locid="pluginPath"> Plug-in path</lift:loc></legend>
+            <ul>
+                <pluginPath:path/>
+            </ul>
+        </fieldset>
+         <pluginPath:back/>
+        <pluginPath:next/>
+
+    </form>
+
+
+</lift:surround>

@@ -1,0 +1,23 @@
+<lift:surround with="default" at="content">
+
+       <form class="lift:InstallationSnippet.serverURL?form=post">
+
+
+        <h1>Installation (1/6) - <lift:loc locid="serverURL">Server URL</lift:loc></h1>
+        <hr/>
+
+        <lift:msg id="errMsg" errorClass="err"/>
+
+
+        <fieldset>
+            <legend><lift:loc locid="serverURL">Server URL</lift:loc></legend>
+            <ul>
+                <serverURL:serverURL/>
+            </ul>
+        </fieldset>
+
+        <serverURL:next/>
+
+    </form>
+
+</lift:surround>

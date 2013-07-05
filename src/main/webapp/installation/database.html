@@ -1,0 +1,28 @@
+<lift:surround with="default" at="content">
+
+    <form class="lift:InstallationSnippet.databaseConfig?form=post">
+
+
+        <h1>Installation (2/6) - <lift:loc locid="databaseConfiguration">Database configuration</lift:loc></h1>
+        <hr/>
+
+        <lift:msg id="errMsg" errorClass="err"/>
+
+
+        <fieldset>
+            <legend><lift:loc locid="databaseConfiguration">Database configuration</lift:loc></legend>
+            <ul>
+                <database:dbType/>
+                <database:dbAddress/>
+                <database:dbName/>
+                <database:dbUser/>
+                <database:dbPassword/>
+            </ul>
+        </fieldset>
+         <database:back/>
+        <database:next/>
+
+    </form>
+
+
+</lift:surround>

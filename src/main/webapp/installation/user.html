@@ -1,0 +1,52 @@
+<lift:surround with="default" at="content">
+
+    <form class="lift:InstallationSnippet.user?form=post">
+
+
+        <h1>Installation (6/6) - <lift:loc locid="user.create">Create a new user</lift:loc></h1>
+        <hr/>
+
+        <lift:msg id="errMsg" errorClass="err"/>
+
+
+                <fieldset>
+                    <legend><lift:loc locid="accountInformation">Account information</lift:loc></legend>
+                    <ul>
+                        <user:username/>
+                        <user:trialSite/>
+                        <user:password/>
+                        <user:passwordCheck/>
+                    </ul>
+                </fieldset>
+                <fieldset>
+                    <legend><lift:loc locid="language">Language</lift:loc></legend>
+                    <ul>
+                        <user:locale/>
+                    </ul>
+                </fieldset>
+
+                <fieldset>
+                    <legend><lift:loc locid="personalInformation">Personal information</lift:loc></legend>
+                    <ul>
+                        <user:firstName/>
+                        <user:lastName/>
+
+                    </ul>
+                </fieldset>
+
+                <fieldset>
+                    <legend><lift:loc locid="contactInformation">Contact information</lift:loc></legend>
+                    <ul>
+                        <user:email/>
+                        <user:phoneNumber/>
+                    </ul>
+                </fieldset>
+
+
+            <user:back/>
+            <user:next/>
+
+    </form>
+
+
+</lift:surround>

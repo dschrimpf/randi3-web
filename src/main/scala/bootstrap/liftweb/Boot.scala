@@ -104,6 +104,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       Menu(Loc("edcTrialView", List("edcTrial", "viewRemoteDetails"), "view EDC trial",  If(() => isAdministrator, ""))),
       Menu(Loc("edcTrialList", List("edcTrial", "list"), "list EDC trials", If(() => isAdministrator || isOwnUser, ""))))
 
+
     // Build SiteMap
     def sitemap() = SiteMap(
       Menu("Home") / "index", // Simple menu form
@@ -115,7 +116,14 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       trialSubjectMenu,
     //  edcMenu,
       trialSubjectRandomizationResultMenu,
-      Menu(S.?("menu.install")) / "install" >> If(() => !configurationService.isConfigurationComplete, ""),
+      Menu(Loc("installServerURL", List("installation", "serverURL"), "serverURL", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      Menu(Loc("installDatabase", List("installation", "database"), "database", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      Menu(Loc("installMail", List("installation", "mail"), "mail", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      Menu(Loc("installPluginPath", List("installation", "pluginPath"), "pluginPath", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      Menu(Loc("installTrialSite", List("installation", "trialSite"), "trialSite", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      Menu(Loc("installUser", List("installation", "user"), "user", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      Menu(Loc("installComplete", List("installation", "finish"), "complete", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
+      // Menu(S.?("menu.install")) / "install" >> If(() => !configurationService.isConfigurationComplete, ""),
       Menu(S.?("menu.support")) / "support" >> If(() => configurationService.isConfigurationComplete, ""),
       // Menu with special Link
       Menu(Loc("Static", Link(List("static"), true, "/static/index"),
@@ -265,6 +273,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
      val rightList = user.rights.filter(right => right.trial.id == trial.id)
     if (rightList.isEmpty) {
       false
+
     } else {
       rightList.map(right => right.role).contains(Role.principleInvestigator) || rightList.map(right => right.role).contains(Role.trialAdministrator)
     }
@@ -300,7 +309,6 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     pluginManager.getPluginNames.foreach(pluginName => {
       val plugin = pluginManager.getPlugin(pluginName).get
       plugin.updateDatabase()
-
     })
 
   }

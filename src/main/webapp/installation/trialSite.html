@@ -1,0 +1,37 @@
+<lift:surround with="default" at="content">
+
+
+
+
+    <form class="lift:InstallationSnippet.trialSite?form=post">
+        <h1>Installation (5/6) - <lift:loc locid="trialSite.add">Create a new trial site</lift:loc></h1>
+        <hr/>
+
+
+        <lift:msg id="errMsg" errorClass="err"/>
+
+        <fieldset>
+            <legend><lift:loc locid="generalInformation">General information</lift:loc></legend>
+            <ul>
+                <trialSite:name/>
+                <trialSite:street/>
+                <trialSite:postCode/>
+                <trialSite:city/>
+                <trialSite:country/>
+            </ul>
+        </fieldset>
+
+        <fieldset>
+            <legend><lift:loc locid="password">Password</lift:loc></legend>
+            <ul>
+                <trialSite:password/>
+                <trialSite:passwordCheck/>
+            </ul>
+        </fieldset>
+        <trialSite:back/>
+        <trialSite:skip/>
+        <trialSite:next />
+
+    </form>
+
+</lift:surround>

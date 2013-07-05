@@ -10,5 +10,5 @@ class ConfigurationSnippet {
     if (DependencyFactory.get.configurationService.isConfigurationComplete) html else NodeSeq.Empty
 
   def install(html: NodeSeq) =
-    if (!DependencyFactory.get.configurationService.isConfigurationComplete) redirectTo("install") else NodeSeq.Empty
+    if (!DependencyFactory.get.configurationService.isConfigurationComplete) redirectTo("/installation/serverURL") else NodeSeq.Empty
 }
