@@ -12,9 +12,9 @@ import org.randi3.web.util.{CurrentTrialSite, CurrentLoggedInUser, CurrentTrial,
 import org.randi3.model.{TrialStatus, Role}
 import net.liftweb.sitemap.Loc._
 import net.liftweb.sitemap._
-import net.liftweb.widgets.flot._
+
 import org.randi3.configuration.{ConfigurationServiceComponent, ConfigurationSchema}
-import org.scalaquery.meta.MTable
+
 import org.randi3.web.snippet.DownloadRandomizationData
 
 import org.randi3.utility.{Utility, Logging}
@@ -22,6 +22,8 @@ import org.randi3.utility.{Utility, Logging}
 import org.randi3.schema.LiquibaseUtil
 import java.sql.SQLSyntaxErrorException
 import java.util.Locale
+import net.liftmodules.widgets.flot.Flot
+import scala.slick.jdbc.meta.MTable
 
 
 /**

@@ -29,7 +29,7 @@ trait GeneralFormSnippet {
   private val userService = DependencyFactory.get.userService
 
   protected def updateCurrentUser = {
-    userService.get(CurrentLoggedInUser.get.get.id).either match {
+    userService.get(CurrentLoggedInUser.get.get.id).toEither match {
       case Left(x) => S.error(x)
       case Right(user) => {
         CurrentLoggedInUser(user)

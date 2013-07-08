@@ -3,9 +3,7 @@ package org.randi3.web {
 
 package lib {
 
-import org.scalaquery.session._
-import org.scalaquery.ql._
-import extended.ExtendedProfile
+
 import org.randi3.dao._
 
 import org.randi3.service._
@@ -20,7 +18,8 @@ import org.randi3.edc.service.OpenClinicaServiceComponent
 import org.randi3.edc.dao.OpenClinicaDaoComponent
 import org.randi3.edc.schema.OpenClinicaDatabaseSchema
 
-
+  import scala.slick.session.Database
+import scala.slick.driver.ExtendedProfile
 
 
 object DependencyFactory {
@@ -58,10 +57,10 @@ class DependencyFactory extends RandomizationPluginManagerComponent with DaoComp
   lazy val database = Database.forURL(ConfigurationService.generateJDBCURL(dbType, dbAddress, dbUser, dbPassword, dbName))
 
   lazy val driver: ExtendedProfile = if (dbType == SupportedDatabases.MySQL.toString){
-    org.scalaquery.ql.extended.MySQLDriver
+    scala.slick.driver.MySQLDriver
   }
   else {
-    org.scalaquery.ql.extended.PostgresDriver
+    scala.slick.driver.PostgresDriver
   }
 
   lazy val schema = new DatabaseSchema(driver)

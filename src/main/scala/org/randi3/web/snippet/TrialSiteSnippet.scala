@@ -73,9 +73,9 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
   private def create(xhtml: NodeSeq): NodeSeq = {
 
     def save() {
-      TrialSite(name = name, street = street, postCode = postCode, city = city, country = country, password = password, isActive = active).either match {
+      TrialSite(name = name, street = street, postCode = postCode, city = city, country = country, password = password, isActive = active).toEither match {
         case Left(x) => S.error("trialSiterMsg", x.toString) //TODO set field failure
-        case Right(site) => trialSiteService.create(site).either match {
+        case Right(site) => trialSiteService.create(site).toEither match {
           case Left(x) => S.error("trialSiteMsg", x)
           case Right(b) => {
             clearFields()
@@ -96,9 +96,9 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       setFields(selectedTrialSite)
 
       def update() {
-        TrialSite(id = selectedTrialSite.id, version = selectedTrialSite.version, name = name, street = street, postCode = postCode, city = city, country = country, password = password, isActive = selectedTrialSite.isActive).either match {
+        TrialSite(id = selectedTrialSite.id, version = selectedTrialSite.version, name = name, street = street, postCode = postCode, city = city, country = country, password = password, isActive = selectedTrialSite.isActive).toEither match {
           case Left(x) => S.error("trialSiterMsg", x.toString) //TODO set field failure
-          case Right(site) => trialSiteService.update(site).either match {
+          case Right(site) => trialSiteService.update(site).toEither match {
             case Left(x) => S.error("trialSiteMsg", x)
             case Right(b) => {
               clearFields()
@@ -119,7 +119,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
     if (CurrentTrialSite.isDefined) {
 
       def activate() {
-        trialSiteService.activate(CurrentTrialSite.get.get).either match {
+        trialSiteService.activate(CurrentTrialSite.get.get).toEither match {
           case Left(x) => S.error(x)
           case Right(b) => {
             clearFields()
@@ -140,7 +140,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
     if (CurrentTrialSite.isDefined) {
 
       def deactivate() {
-        trialSiteService.deactivate(CurrentTrialSite.get.get).either match {
+        trialSiteService.deactivate(CurrentTrialSite.get.get).toEither match {
           case Left(x) => S.error(x)
           case Right(b) => {
             clearFields()
@@ -165,7 +165,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(name, v => {
           name = v
-          TrialSite.check(name = v).either match {
+          TrialSite.check(name = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", nameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", nameField(false))
           }
@@ -179,7 +179,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(street, v => {
           street = v
-          TrialSite.check(street = v).either match {
+          TrialSite.check(street = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", streetField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", streetField(false))
           }
@@ -193,7 +193,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(postCode, v => {
           postCode = v
-          TrialSite.check(postCode = v).either match {
+          TrialSite.check(postCode = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", postCodeField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", postCodeField(false))
           }
@@ -207,7 +207,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(city, v => {
           city = v
-          TrialSite.check(city = v).either match {
+          TrialSite.check(city = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", cityField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", cityField(false))
           }
@@ -221,7 +221,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(country, v => {
           country = v
-          TrialSite.check(country = v).either match {
+          TrialSite.check(country = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", countryField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", countryField(false))
           }
@@ -235,7 +235,7 @@ class TrialSiteSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(password, v => {
           password = v
-          TrialSite.check(password = v).either match {
+          TrialSite.check(password = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", passwordField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", passwordField(false))
           }

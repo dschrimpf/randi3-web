@@ -11,7 +11,7 @@ import org.randi3.model.criterion.{DateCriterion, Criterion}
 import org.joda.time.{DateTime, LocalDate}
 import net.liftweb.common.{Box, Full}
 import net.liftweb.http.js.JE.JsObj
-import net.liftweb.widgets.flot._
+import net.liftmodules.widgets.flot._
 import net.liftweb.http.SHtml._
 import net.liftweb.http.S._
 import net.liftweb.http.js.JsCmds._

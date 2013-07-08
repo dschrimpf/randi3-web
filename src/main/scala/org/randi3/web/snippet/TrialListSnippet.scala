@@ -16,7 +16,7 @@ class TrialListSnippet {
   private val trialService = DependencyFactory.get.trialService
 
   def show(in: NodeSeq): NodeSeq = {
-    trialService.getAll.either match {
+    trialService.getAll.toEither match {
       case Left(x) => <tr>
         <td colspan="8">
           {x}

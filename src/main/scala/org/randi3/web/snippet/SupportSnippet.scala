@@ -21,7 +21,7 @@ class SupportSnippet {
   val userService = DependencyFactory.get.userService
 
   def supportUsers(xhtml: NodeSeq): NodeSeq = {
-    userService.getAllAdministrators.either match {
+    userService.getAllAdministrators.toEither match {
       case Left(x) => <tr>
         <td colspan="8">
           {x}

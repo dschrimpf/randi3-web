@@ -27,7 +27,7 @@ import org.apache.commons.math3.random.MersenneTwister
 
 import org.randi3.model._
 
-import scalaz.{Empty => _, Node => _, _}
+import scalaz.{Node => _, _}
 import Scalaz._
 import org.randi3.web.util.{Utility, CurrentTrial}
 import org.joda.time.LocalDate
@@ -130,7 +130,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       case "DoubleCriterion" => DoubleCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
       case "FreeTextCriterion" => FreeTextCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
       case "OrdinalCriterion" => OrdinalCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, values = criterionTmp.values.get.toSet, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
-    }).asInstanceOf[ValidationNEL[String, Criterion[Any, Constraint[Any]]]].either match {
+    }).asInstanceOf[ValidationNel[String, Criterion[Any, Constraint[Any]]]].toEither match {
       case Left(x) => S.error(x.toString()) //TODO error handling
       case Right(criterion) => result += criterion
     }
@@ -186,7 +186,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     val result = ListBuffer[TreatmentArm]()
 
     arms.foreach(arm =>
-      TreatmentArm(id = arm.id, version = arm.version, name = arm.name, description = arm.description, plannedSize = arm.plannedSize).either match {
+      TreatmentArm(id = arm.id, version = arm.version, name = arm.name, description = arm.description, plannedSize = arm.plannedSize).toEither match {
         case Left(x) => S.error(x.toString()) //TODO error handling
         case Right(treatmentArm) => result += treatmentArm
       }
@@ -223,15 +223,15 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),
         isTrialOpen = isTrialOpen,
         isStratifiedByTrialSite = isStratifiedByTrialSite
-      ).either match {
+      ).toEither match {
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(trial) => {
           //TODO Random Config
-          randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).either match {
+          randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), trial, randomizationMethodTmp.getConfigurationProperties).toEither match {
             case Left(failure) =>  S.error("trialMsg", failure)
             case Right(randomMethod) => {
               val trialWithMethod = trial.copy(randomizationMethod = Some(randomMethod))
-              trialService.create(trialWithMethod, principleInvestigator).either match {
+              trialService.create(trialWithMethod, principleInvestigator).toEither match {
                 case Left(x) => S.error("trialMsg", x)
                 case Right(b) => {
                   cleanVariables()
@@ -318,7 +318,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     def save() {
       val actTrial = trial.copy(participatingSites = participatingSites.toList)
-      trialService.saveParticipatingSites(actTrial).either match {
+      trialService.saveParticipatingSites(actTrial).toEither match {
         case Left(failure) => S.error("trialMsg", failure)
         case Right(trial) => {
           CurrentTrial.set(Some(trial))
@@ -346,7 +346,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       redirectTo("/trial/list")
     }
 
-    val allUsers = userService.getAllPossibleFromTrial(trial).either match {
+    val allUsers = userService.getAllPossibleFromTrial(trial).toEither match {
       case Left(failure) => return <div>
         {failure}
       </div>
@@ -356,7 +356,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     selectedUser = if (allUsers.isEmpty) null else allUsers.head
 
-    val allUsersTrial = DependencyFactory.get.userService.getAllFromTrial(trial).either match {
+    val allUsersTrial = DependencyFactory.get.userService.getAllFromTrial(trial).toEither match {
       case Left(failure) => return <div>
         {failure}
       </div>
@@ -391,11 +391,11 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       val newRights = actualRights.toList.filter(actRight => !rightsBefore.contains(actRight))
       val removedRights = rightsBefore.filter(right => !actualRights.contains(right))
 
-      newRights.foreach(userRight => userService.addTrialRight(userRight._1.id, userRight._2).either match {
+      newRights.foreach(userRight => userService.addTrialRight(userRight._1.id, userRight._2).toEither match {
         case Left(failure) =>  S.error("trialMsg", "Failure by adding a new right: "+ failure)
         case Right(x) =>
       })
-      removedRights.foreach(userRight => userService.removeTrialRight(userRight._1.id, userRight._2).either match {
+      removedRights.foreach(userRight => userService.removeTrialRight(userRight._1.id, userRight._2).toEither match {
         case Left(failure) =>  S.error("trialMsg","Failure by removeing right: "+failure)
         case Right(x) =>
       })
@@ -481,7 +481,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(name, v => {
           name = v
-          Trial.check(name = v).either match {
+          Trial.check(name = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", nameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", nameField(false))
           }
@@ -495,7 +495,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(abbreviation, v => {
           abbreviation = v
-          Trial.check(abbreviation = v).either match {
+          Trial.check(abbreviation = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", abbreviationField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", abbreviationField(false))
           }
@@ -509,7 +509,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxTextarea(description, v => {
           description = v
-          Trial.check(description = v).either match {
+          Trial.check(description = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", descriptionField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", descriptionField(false))
           }
@@ -524,7 +524,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
         text(Utility.slashDate.format(startDate.toDate).toString, v => {
           startDate = new LocalDate(Utility.slashDate.parse(v).getTime)
-          Trial.check(startDate = startDate).either match {
+          Trial.check(startDate = startDate).toEither match {
             case Left(x) => showErrorMessage(id, x)
             case Right(_) => clearErrorMessage(id)
           }
@@ -538,7 +538,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         text(Utility.slashDate.format(endDate.toDate).toString, v => {
           endDate = new LocalDate(Utility.slashDate.parse(v).getTime)
-          Trial.check(endDate = endDate).either match {
+          Trial.check(endDate = endDate).toEither match {
             case Left(x) => showErrorMessage(id, x)
             case Right(_) => clearErrorMessage(id)
           }
@@ -558,7 +558,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     }
 
     def principalInvestigatorField: Elem = {
-      val principleInvestigators = userService.getAll.either match {
+      val principleInvestigators = userService.getAll.toEither match {
         case Left(x) => S.error(x); return null //TODO error handling
         case Right(list) => if (actualTrialSite != null) list.filter(user => user.site.id == actualTrialSite.id) else Nil
       }
@@ -861,7 +861,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
   private def setPrincipleInvestigator(id: String) {
-    principleInvestigator = userService.get(id.toInt).either match {
+    principleInvestigator = userService.get(id.toInt).toEither match {
       case Left(failure) => S.error("trialMsg", failure); null
       case Right(user) => user.get
     }

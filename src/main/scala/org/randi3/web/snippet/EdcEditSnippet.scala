@@ -22,7 +22,6 @@ import org.randi3.randomization.RandomizationMethod
 import org.randi3.model._
 import org.apache.commons.math3.random.MersenneTwister
 import org.joda.time.LocalDate
-import scalaz.Scalaz._
 import scala.Left
 import org.randi3.randomization.configuration.OrdinalConfigurationType
 import org.randi3.randomization.configuration.IntegerConfigurationType
@@ -30,11 +29,13 @@ import org.randi3.randomization.configuration.BooleanConfigurationType
 import scala.Some
 import xml.Node
 
-import net.liftweb.common.Full
+import scalaz._
+import Scalaz._
 import scala.Right
 import org.randi3.randomization.configuration.DoubleConfigurationType
 
 import org.randi3.web.model._
+
 
 
 
@@ -74,7 +75,6 @@ class EdcEditSnippet extends StatefulSnippet {
     val selectedCriterions = new mutable.HashSet[Criterion[Any, Constraint[Any]]] ()
 
     def save() {
-      println(selectedCriterions)
       Trial(
         name = trial.identifier,
         abbreviation = trial.identifier,
@@ -90,7 +90,7 @@ class EdcEditSnippet extends StatefulSnippet {
         identificationCreationType = TrialSubjectIdentificationCreationType.EXTERNAL,
         isTrialOpen = false,
         isStratifiedByTrialSite = false
-      ).either match {
+      ).toEither match {
         case Left(x) => S.error("trialMsg", x.toString)
         case Right(newTrial) => {
           //TODO Random Config
@@ -100,7 +100,6 @@ class EdcEditSnippet extends StatefulSnippet {
           DependencyFactory.get.openClinicaService.createNewLocalTrial(trial.copy(trial = Some(newTrial)))
         }
       }
-      println("save !!!!!!!!!")
     }
 
     bind("edcTrial", nodeSeq,
@@ -529,7 +528,7 @@ class EdcEditSnippet extends StatefulSnippet {
     val result = ListBuffer[TreatmentArm]()
 
     arms.foreach(arm =>
-      TreatmentArm(id = arm.id, version = arm.version, name = arm.name, description = arm.description, plannedSize = arm.plannedSize).either match {
+      TreatmentArm(id = arm.id, version = arm.version, name = arm.name, description = arm.description, plannedSize = arm.plannedSize).toEither match {
         case Left(x) => S.error(x.toString()) //TODO error handling
         case Right(treatmentArm) => result += treatmentArm
       }
@@ -556,7 +555,7 @@ class EdcEditSnippet extends StatefulSnippet {
       case "DoubleCriterion" => DoubleCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
       case "FreeTextCriterion" => FreeTextCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
       case "OrdinalCriterion" => OrdinalCriterion(id = criterionTmp.id, version = criterionTmp.version, name = criterionTmp.name, description = criterionTmp.description, values = criterionTmp.values.get.toSet, inclusionConstraint = createInclusionConstraint(criterionTmp), strata = createStrata(criterionTmp))
-    }).asInstanceOf[ValidationNEL[String, Criterion[Any, Constraint[Any]]]].either match {
+    }).asInstanceOf[ValidationNel[String, Criterion[Any, Constraint[Any]]]].toEither match {
       case Left(x) => S.error(x.toString()) //TODO error handling
       case Right(criterion) => result += criterion
     }

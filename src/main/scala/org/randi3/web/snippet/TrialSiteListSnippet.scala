@@ -18,7 +18,7 @@ class TrialSiteListSnippet {
     val currentUser = CurrentLoggedInUser.getOrElse(
       redirectTo("/index")
     )
-    trialSiteService.getAll.either match {
+    trialSiteService.getAll.toEither match {
       case Left(x) => <tr>
         <td colspan="7">
           {x}

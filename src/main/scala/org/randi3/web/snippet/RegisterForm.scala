@@ -52,7 +52,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(username, v => {
           username = v
-          User.check(username = v).either match {
+          User.check(username = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", usernameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", usernameField(false))
           }
@@ -66,7 +66,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(password, v => {
           password = v
-          User.check(password = v).either match {
+          User.check(password = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", passwordField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", passwordField(false))
           }
@@ -97,7 +97,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(firstName, v => {
           firstName = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", firstNameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", firstNameField(false))
           }
@@ -111,7 +111,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(lastName, v => {
           lastName = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", lastNameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", lastNameField(false))
           }
@@ -125,7 +125,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(email, v => {
           email = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", emailField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", emailField(false))
           }
@@ -139,7 +139,7 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(phoneNumber, v => {
           phoneNumber = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", phoneNumberField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", phoneNumberField(false))
           }
@@ -172,9 +172,9 @@ class RegisterForm extends StatefulSnippet with GeneralFormSnippet{
 
 
     def register() {
-      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set(), locale = locale).either match {
+      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set(), locale = locale).toEither match {
         case Left(x) => S.error("registerMsg",x.toString)   //TODO set field failure
-        case Right(user) =>userService.register(user, trialSitePassword).either match {
+        case Right(user) =>userService.register(user, trialSitePassword).toEither match {
           case Left(x) => S.error("registerMsg",x)
           case Right(b) => {
             clearFields

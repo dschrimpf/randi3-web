@@ -75,7 +75,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
                     if (!subjectData.criterion.isValueCorrect(value))
                       S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
                   } catch {
-                    case _ => S.error("randomizeMsg", subjectData.criterion.name + ": unknown failure")
+                    case _: Throwable  => S.error("randomizeMsg", subjectData.criterion.name + ": unknown failure")
                   }
                 } else {
                   S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
@@ -93,7 +93,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
                       S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
                   } catch {
                     case nfe: NumberFormatException => S.error("randomizeMsg", subjectData.criterion.name + ": not a number")
-                    case _ => S.error("randomizeMsg", "unknown failure")
+                    case _ : Throwable => S.error("randomizeMsg", "unknown failure")
                   }
                 } else {
                   S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
@@ -111,7 +111,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
                       S.error("randomizeMsg", subjectData.criterion.name + ": inclusion constraint not fulfilled")
                   } catch {
                     case nfe: NumberFormatException => S.error("randomizeMsg", subjectData.criterion.name + ": not a number")
-                    case _ => S.error("randomizeMsg", "unknown failure")
+                    case _ : Throwable => S.error("randomizeMsg", "unknown failure")
                   }
                 } else {
                   S.error("randomizeMsg", subjectData.criterion.name + ": value not set")
@@ -149,16 +149,16 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
 
 
     def randomizeSubject() {
-      val properties: List[SubjectProperty[Any]] = subjectDataList.toList.map(subjectData => SubjectProperty(criterion = subjectData.criterion, value = subjectData.value).either match {
+      val properties: List[SubjectProperty[Any]] = subjectDataList.toList.map(subjectData => SubjectProperty(criterion = subjectData.criterion, value = subjectData.value).toEither match {
         case Left(x) => null
         case Right(prop) => prop
       })
       if (trial.criterions.isEmpty || subjectDataList.toList.map(subjectData => subjectData.criterion.isValueCorrect(subjectData.value)).reduce((acc, elem) => acc && elem)) {
         if (trial.identificationCreationType != TrialSubjectIdentificationCreationType.EXTERNAL) subjectIdentifier = "system"
-        TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentLoggedInUser.get.get.username, trialSite = CurrentLoggedInUser.get.get.site, properties = properties).either match {
+        TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentLoggedInUser.get.get.username, trialSite = CurrentLoggedInUser.get.get.site, properties = properties).toEither match {
           case Left(x) => S.error("randomizeMsg", x.toString())
           case Right(subject) => {
-            trialService.randomize(trial, subject).either match {
+            trialService.randomize(trial, subject).toEither match {
               case Left(x) => S.error("randomizeMsg", x)
               case Right(result) => {
                 RandomizationResult.set(Some((result._1, result._2, subject)))

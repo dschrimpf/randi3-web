@@ -13,14 +13,9 @@ import net.liftweb.http.js.JsCmds.Replace
 import scala.Right
 import net.liftweb.common.Full
 import java.util.Locale
-import org.randi3.schema.{LiquibaseUtil, DatabaseSchema, SupportedDatabases}
+import org.randi3.schema.{LiquibaseUtil, SupportedDatabases}
 import scalaz.NonEmptyList
-import org.scalaquery.session.Database
-import org.scalaquery.meta.MTable
-import org.scalaquery.ql.extended.ExtendedProfile
-import org.scalaquery.ql.Query
-import org.scalaquery.session.Database.threadLocalSession
-import net.liftweb.http.js.JsCommands
+import scala.slick.session.Database
 
 
 class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with Utility with Logging with ConfigurationServiceComponent {
@@ -488,12 +483,12 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
           DependencyFactory.get.trialSiteDao
         }
 
-        TrialSite(name = trialSiteName, street = street, postCode = postCode, city = city, country = country, password = passwordTrialSite, isActive = true).either match {
+        TrialSite(name = trialSiteName, street = street, postCode = postCode, city = city, country = country, password = passwordTrialSite, isActive = true).toEither match {
           case Left(x) => S.error("errMsg", x.toString)
-          case Right(site) => trialSiteDao.create(site).either match {
+          case Right(site) => trialSiteDao.create(site).toEither match {
             case Left(failureCreate) => S.error("errMsg", "Error: " + failureCreate)
             case Right(id) => {
-              trialSiteDao.get(id).either match {
+              trialSiteDao.get(id).toEither match {
                 case Left(failure) => S.error("errMsg", "Error: " + failure)
                 case Right(trialSiteDB) => {
                   trialSiteDatabase = trialSiteDB.get
@@ -511,7 +506,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(trialSiteName, v => {
             trialSiteName = v
-            TrialSite.check(name = v).either match {
+            TrialSite.check(name = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", nameField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", nameField(false))
             }
@@ -525,7 +520,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(street, v => {
             street = v
-            TrialSite.check(street = v).either match {
+            TrialSite.check(street = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", streetField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", streetField(false))
             }
@@ -539,7 +534,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(postCode, v => {
             postCode = v
-            TrialSite.check(postCode = v).either match {
+            TrialSite.check(postCode = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", postCodeField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", postCodeField(false))
             }
@@ -553,7 +548,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(city, v => {
             city = v
-            TrialSite.check(city = v).either match {
+            TrialSite.check(city = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", cityField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", cityField(false))
             }
@@ -567,7 +562,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(country, v => {
             country = v
-            TrialSite.check(country = v).either match {
+            TrialSite.check(country = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", countryField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", countryField(false))
             }
@@ -581,7 +576,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(passwordTrialSite, v => {
             passwordTrialSite = v
-            TrialSite.check(password = v).either match {
+            TrialSite.check(password = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", passwordField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", passwordField(false))
             }
@@ -636,10 +631,10 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
           DependencyFactory.reInitializeDependencies
           DependencyFactory.get.userDao
         }
-         User(username = username, password = passwordUser, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set(), administrator = true, canCreateTrial = false, locale = locale).either match {
+         User(username = username, password = passwordUser, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = Set(), administrator = true, canCreateTrial = false, locale = locale).toEither match {
           case Left(x) => S.error("errMsg", x.toString())
           case Right(user) =>
-            userDao.create(user).either match {
+            userDao.create(user).toEither match {
               case Left(failureCreate) => S.error("errMsg", "Error: " + failureCreate)
               case Right(id) => S.redirectTo("/installation/finish")
             }
@@ -653,7 +648,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(username, v => {
             username = v
-            User.check(username = v).either match {
+            User.check(username = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", usernameField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", usernameField(false))
             }
@@ -667,7 +662,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(passwordUser, v => {
             passwordUser = v
-            User.check(password = v).either match {
+            User.check(password = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", passwordField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", passwordField(false))
             }
@@ -698,7 +693,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(firstName, v => {
             firstName = v
-            User.check(firstName = v).either match {
+            User.check(firstName = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", firstNameField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", firstNameField(false))
             }
@@ -712,7 +707,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(lastName, v => {
             lastName = v
-            User.check(firstName = v).either match {
+            User.check(firstName = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", lastNameField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", lastNameField(false))
             }
@@ -726,7 +721,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(email, v => {
             email = v
-            User.check(firstName = v).either match {
+            User.check(firstName = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", emailField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", emailField(false))
             }
@@ -740,7 +735,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
         generateEntry(id, failure, {
           ajaxText(phoneNumber, v => {
             phoneNumber = v
-            User.check(firstName = v).either match {
+            User.check(firstName = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", phoneNumberField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", phoneNumberField(false))
             }

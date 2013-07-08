@@ -69,9 +69,9 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
 
     def save() {
       //TODO validate
-      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, locale = locale).either match {
+      User(username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, locale = locale).toEither match {
         case Left(x) => S.error(x.toString())
-        case Right(user) => userService.create(user).either match {
+        case Right(user) => userService.create(user).toEither match {
           case Left(x) => S.error("userMsg", x)
           case Right(b) => {
             clearFields()
@@ -95,9 +95,9 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       setFields(user)
 
       def update() {
-        User(id = user.id, version = user.version, username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, isActive = isActive, locale = locale).either match {
+        User(id = user.id, version = user.version, username = username, password = password, email = email, firstName = firstName, lastName = lastName, phoneNumber = phoneNumber, site = actualTrialSite, rights = actualRights.toSet, administrator = isAdministrator, canCreateTrial = canCreateTrial, isActive = isActive, locale = locale).toEither match {
           case Left(x) => S.error("userMsg", x.toString())
-          case Right(actUser) => userService.update(actUser).either match {
+          case Right(actUser) => userService.update(actUser).toEither match {
             case Left(x) => S.error("userMsg", x)
             case Right(upUser) => {
               clearFields()
@@ -120,7 +120,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
         if (!editForm) {
           ajaxText(username, v => {
             username = v
-            User.check(username = v).either match {
+            User.check(username = v).toEither match {
               case Left(x) => showErrorMessage(id, x); Replace(id + "Li", usernameField(true))
               case Right(_) => clearErrorMessage(id); Replace(id + "Li", usernameField(false))
             }
@@ -137,7 +137,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(password, v => {
           password = v
-          User.check(password = v).either match {
+          User.check(password = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", passwordField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", passwordField(false))
           }
@@ -168,7 +168,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(firstName, v => {
           firstName = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", firstNameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", firstNameField(false))
           }
@@ -182,7 +182,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(lastName, v => {
           lastName = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", lastNameField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", lastNameField(false))
           }
@@ -196,7 +196,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(email, v => {
           email = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", emailField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", emailField(false))
           }
@@ -210,7 +210,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
       generateEntry(id, failure, {
         ajaxText(phoneNumber, v => {
           phoneNumber = v
-          User.check(firstName = v).either match {
+          User.check(firstName = v).toEither match {
             case Left(x) => showErrorMessage(id, x); Replace(id + "Li", phoneNumberField(true))
             case Right(_) => clearErrorMessage(id); Replace(id + "Li", phoneNumberField(false))
           }
@@ -380,7 +380,7 @@ class UserCreateUpdateSnippet extends StatefulSnippet with GeneralFormSnippet{
         val actUser = CurrentUser.get.get
         val dbUser = userService.get(actUser.id).toOption.get.get
         val changedUser = dbUser.copy(numberOfFailedLogins = 0, lockedUntil=None)
-         userService.update(changedUser).either match {
+         userService.update(changedUser).toEither match {
           case Left(failure) => S.error(failure)
           case Right(user) => CurrentUser.set(Some(user))
         }

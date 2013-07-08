@@ -26,7 +26,7 @@ class LoginForm extends GeneralFormSnippet{
     var username = ""
     var password = ""
     def authentificate() {
-      userService.login(username, password).either match {
+      userService.login(username, password).toEither match {
         case Left(x) => {
           if (x != null) S.error(x)
           redirectTo("/index")

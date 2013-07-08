@@ -14,7 +14,7 @@ class UserListSnippet {
 
   def list(nodeSeq: NodeSeq): NodeSeq  = {
       val currentUser = CurrentLoggedInUser.get.get
-      userService.getAll.either match {
+      userService.getAll.toEither match {
         case Left(x) => <tr>
           <td colspan="9">
             {x}

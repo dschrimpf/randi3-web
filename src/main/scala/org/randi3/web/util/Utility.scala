@@ -24,7 +24,7 @@ object Utility {
       S.param(name).map(_.toInt) openOr default
     }
     catch { 
-      case e => default // Should log something in this case
+      case e: Throwable => default // Should log something in this case
     } 
   }
 
@@ -34,7 +34,7 @@ object Utility {
     try {
       Full(converter(value))
     } catch {
-      case e => Empty
+      case e: Throwable => Empty
     }  
 
   def getDateParam(name : String, converter : LocalDateConverter) : Box[LocalDate] = {
