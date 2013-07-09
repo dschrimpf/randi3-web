@@ -456,8 +456,9 @@ width: 16em;
 }
 
 .inclustionConstraintLegendCheckbox{
- position:absolute;
- left:6em;
+      position:absolute;
+      margin-left: 1em !important;
+      width:auto !important;
 }
 
 .inclusionConstraint fieldset {
@@ -473,7 +474,7 @@ width: 16em;
 
 .inclusionConstraint fieldset ul input[type="checkbox"]{
   position:absolute;
-  left:3em;
+        width:auto !important;
 
 }
 
@@ -494,6 +495,16 @@ width: 16em;
   position:absolute;
   left:8em;
 
+}
+
+.stagesList {
+  list-style-type: disc;
+  margin-left:13em;
+}
+
+.stagesList ul {
+   list-style-type: circle;
+    margin-left:2em;
 }
 
 .tooltip span.info

@@ -232,6 +232,7 @@ class EdcEditSnippet extends StatefulSnippet {
 
   private def generateEmptyRandomizationMethodConfig(randomizationMethodName: String): RandomizationMethodConfigTmp = {
     val plugin = randomizationPluginManager.getPlugin(randomizationMethodName).get
+    val stages = plugin.randomizationConfigurationOptions()._2
     val configurations = plugin.randomizationConfigurationOptions()._1
     val methodConfigsTmp = configurations.map(config => {
       if (config.getClass == classOf[BooleanConfigurationType]) {
@@ -245,7 +246,7 @@ class EdcEditSnippet extends StatefulSnippet {
       }
 
     })
-    new RandomizationMethodConfigTmp(name = plugin.name, i18nName = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+    new RandomizationMethodConfigTmp(name = plugin.name, i18nName = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]], stages = stages)
   }
 
   private def generateRandomizationMethodConfig(randomizationMethod: Option[RandomizationMethod]): RandomizationMethodConfigTmp = {
@@ -254,6 +255,7 @@ class EdcEditSnippet extends StatefulSnippet {
       val method = randomizationMethod.get
 
       val plugin = randomizationPluginManager.getPluginForMethod(method).get
+      val stages = plugin.randomizationConfigurationOptions()._2
       val configurations = plugin.getRandomizationConfigurations(method.id)
       val methodConfigsTmp = configurations.map(configProp => {
         val config = configProp.configurationType
@@ -268,7 +270,7 @@ class EdcEditSnippet extends StatefulSnippet {
         }
 
       })
-      new RandomizationMethodConfigTmp(name = plugin.name, i18nName = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]])
+      new RandomizationMethodConfigTmp(name = plugin.name, i18nName = plugin.i18nName, description = plugin.description, canBeUsedWithStratification = plugin.canBeUsedWithStratification, configurationEntries = methodConfigsTmp.asInstanceOf[List[RandomizationMethodConfigEntryTmp[Any]]], stages = stages)
     }
   }
 
