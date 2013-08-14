@@ -558,7 +558,7 @@ width: 16em;
 
 .scrollFrame
 {
-	width:600px;
+	width:100%;
 	max-height:600px;
 	overflow:auto;
 }

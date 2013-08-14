@@ -167,7 +167,7 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
 
       } catch {
         case (rse: ResponseShortcutException) => throw rse
-        case e: Exception => println(e); S.error("errMsg", "Error: " + e.getMessage)
+        case e: Exception => S.error("errMsg", "Error: " + e.getMessage)
       }
       }else {
         S.error("errMsg", errorMessage.toString)

@@ -99,6 +99,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
 
     val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), S.?("Randomize"), If(() => canRandomize, "")))
     val trialSubjectRandomizationResultMenu = Menu(Loc("trialSubjectRandomizationResult", List("trialSubject", "randomizationResult"), "Randomization result", Hidden ,If(() => canRandomize, "")))
+    val trialSubjectStageMenu = Menu(Loc("trialSubjectStage", List("trialSubject", "addResponse"), S.?("AddResponse"), If(() => canRandomize, "")))
 
    val edcMenu = Menu("EDC") / "edcInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
       Menu(Loc("edcTrialAdd", List("edcTrial", "listRemote"), "list remote EDC trials", If(() => isAdministrator, ""))),
@@ -118,6 +119,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       trialSubjectMenu,
     //  edcMenu,
       trialSubjectRandomizationResultMenu,
+      trialSubjectStageMenu,
       Menu(Loc("installServerURL", List("installation", "serverURL"), "serverURL", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
       Menu(Loc("installDatabase", List("installation", "database"), "database", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
       Menu(Loc("installMail", List("installation", "mail"), "mail", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),

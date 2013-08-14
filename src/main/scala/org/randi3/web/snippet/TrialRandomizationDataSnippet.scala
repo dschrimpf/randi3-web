@@ -209,7 +209,9 @@ class TrialRandomizationDataSnippet {
           <th>{S.?("identifier")}</th>
           <th>{S.?("treatmentArm")}</th>
           <th>{S.?("trialSite")}</th>
-          <th>{S.?("investigator")}</th>{propertiesHeader(criterions)}
+          <th>{S.?("investigator")}</th>
+          {propertiesHeader(criterions)}
+          {stagesHeader(trial.stages)}
         </tr>
       </thead>{if (trial.getSubjects.isEmpty)
       <tfoot>no subjects available</tfoot>}<tbody>
@@ -233,7 +235,9 @@ class TrialRandomizationDataSnippet {
           </td>
           <td>
             {pair._2.investigatorUserName}
-          </td>{propertiesEntry(pair._2.properties, criterions)}
+          </td>
+          {propertiesEntry(pair._2.properties, criterions)}
+          {stagesEntry(trial.stages, pair._2)}
         </tr>
       })}
     </tbody>
@@ -331,6 +335,45 @@ class TrialRandomizationDataSnippet {
     })
   }
 
+  private def stagesHeader(stages: Map[String, List[Criterion[_, Constraint[_]]]]): NodeSeq = {
+    stages.map(stage => stage).toList.sortBy(_._1).flatMap(stage => {
+     stage._2.flatMap(criterion => {
+       <th>
+         {stage._1 + "_" + criterion.name}
+       </th>
+     })
+    })
+  }
+
+  private def stagesEntry(stages: Map[String, List[Criterion[_, Constraint[_]]]], trialSubject: TrialSubject): NodeSeq = {
+    stages.map(stage => stage).toList.sortBy(_._1).flatMap(stage => {
+       stage._2.flatMap(criterion => {
+         <td>
+           {
+           val subjectStage = trialSubject.stages.get(stage._1)
+
+          val properties = subjectStage.getOrElse(List())
+
+           val prop = properties.find(property => property.criterion.name == criterion.name)
+           if (prop.isDefined) {
+
+             if (prop.get.value.isInstanceOf[Date]) {
+               val value = new DateTime(prop.get.value.asInstanceOf[Date].getTime)
+               value.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
+             } else {
+               prop.get.value
+             }
+
+           } else {
+             "NA"
+           }
+           }
+         </td>
+       })
+    })
+
+  }
+
 
 }
 
@@ -366,6 +409,11 @@ object DownloadRandomizationData extends RestHelper {
           criterions(0).name + "; "
         } else "")
 
+      trial.stages.map(stage => stage).toList.sortBy(_._1).foreach(stage => {
+        stage._2.foreach(criterion => {
+          result.append(stage._1 + "_" + criterion.name +"; ")
+        })
+      })
       result.append("\n")
 
       val subjectList = new ListBuffer[(TreatmentArm, TrialSubject)]()
@@ -379,6 +427,7 @@ object DownloadRandomizationData extends RestHelper {
           result.append(element._2.trialSite.name + "; ")
           result.append(element._2.investigatorUserName + "; ")
           result.append(propertiesEntryCSV(element._2.properties, criterions))
+          result.append(stagePropertiesEntryCSV(trial.stages, element._2))
           result.append("\n")
 
         })
@@ -411,12 +460,42 @@ object DownloadRandomizationData extends RestHelper {
         }
 
       } else {
-        result.append("-")
+        result.append("NA")
       }
       result.append("; ")
     })
 
     result.toString()
+  }
+
+  private def stagePropertiesEntryCSV(stages: Map[String, List[Criterion[_, Constraint[_]]]], trialSubject: TrialSubject): String = {
+    val resultLine = new mutable.StringBuilder()
+
+    stages.map(stage => stage).toList.sortBy(_._1).foreach(stage => {
+    stage._2.foreach(criterion => {
+     resultLine.append ( {
+        val subjectStage = trialSubject.stages.get(stage._1)
+
+        val properties = subjectStage.getOrElse(List())
+
+        val prop = properties.find(property => property.criterion.name == criterion.name)
+        if (prop.isDefined) {
+
+          if (prop.get.value.isInstanceOf[Date]) {
+            val value = new DateTime(prop.get.value.asInstanceOf[Date].getTime)
+            value.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
+          } else {
+            prop.get.value
+          }
+
+        } else {
+          "NA"
+        }
+        } + "; " )
+
+    })
+  })
+     resultLine.toString()
   }
 
   serve {

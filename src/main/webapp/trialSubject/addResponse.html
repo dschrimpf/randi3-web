@@ -1,0 +1,24 @@
+<lift:surround with="default" at="content">
+    <h1>Randomize</h1>
+    <hr/>
+
+    <form class="lift:ResponseSnippet.addResponse?form=post">
+        <lift:msg id="responseMsg" errorClass="err"/>
+        <fieldset>
+            <legend>Trial Subject</legend>
+            <ul>
+
+                <form:identifier/>
+                <form:stageAndData/>
+
+            </ul>
+
+        </fieldset>
+
+
+        <form:submit/>
+        <form:cancel/>
+
+
+    </form>
+</lift:surround>

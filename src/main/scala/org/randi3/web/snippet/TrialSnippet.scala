@@ -195,13 +195,6 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     result.toList
   }
 
-  private def createStages(actStages: HashMap[String, ListBuffer[CriterionTmp]]): Map[String, List[Criterion[Any, Constraint[Any]]]] = {
-    val result = new HashMap[String, List[Criterion[Any, Constraint[Any]]]]()
-
-    actStages.foreach(entry => result.put(entry._1, createCriterionsList(entry._2)))
-
-    result.toMap
-  }
 
   private def create(xhtml: NodeSeq): NodeSeq = {
 
@@ -219,7 +212,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         criterions = createCriterionsList(criterionsTmp),
         participatingSites = participatingSites.toList,
         randomizationMethod = None,
-        stages = createStages(stages),
+        stages = Map(),
         identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),
         isTrialOpen = isTrialOpen,
         isStratifiedByTrialSite = isStratifiedByTrialSite
@@ -269,7 +262,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         treatmentArms = createTreatmentArms(armsTmp),
         criterions = createCriterionsList(criterionsTmp),
         participatingSites = participatingSites.toList,
-        stages = createStages(stages),
+        stages = Map(),
         status = TrialStatus.withName(trialStatusTmp),
         identificationCreationType = TrialSubjectIdentificationCreationType.withName(identificationCreationTypeTmp),
         randomizationMethod = Some(randomMethod),
@@ -1272,7 +1265,9 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     }
   }
 
-  private def generateStages(xhtml: NodeSeq): NodeSeq = {
+ /*
+ //only for free stage configurations, now the stages depend on the randomization method
+ private def generateStages(xhtml: NodeSeq): NodeSeq = {
     <div id="stagesTabs">
       {val result = new ListBuffer[Node]()
     for (key <- stages.keySet.toList.sortWith((first, second) => first.compareTo(second) < 0)) {
@@ -1303,7 +1298,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
     }
     NodeSeq fromSeq result}
     </div>
-  }
+  }*/
 
   private def confirmDelete(in: NodeSeq): NodeSeq = {
     val trial = CurrentTrial.get.getOrElse {
