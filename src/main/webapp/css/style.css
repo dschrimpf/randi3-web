@@ -306,16 +306,13 @@ input, select, textarea {
 }
 
 
-.radio {
-  position: absolute;
-}
+.radio {}
 
 .radio span {
       float:left;
         clear:left;
      display:block;
      padding-left: 13em;
-
 }
 
 textarea {
