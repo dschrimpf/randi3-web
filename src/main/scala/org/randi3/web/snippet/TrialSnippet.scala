@@ -752,7 +752,7 @@ class TrialSnippet extends StatefulSnippet with GeneralFormSnippet{
         {val result = new ListBuffer[Node]()
       for (i <- criterionList.indices) {
         val criterion = criterionList(i)
-        result += generateStratumConfig("stratum-" + criterion.name, criterion)
+        result += generateStratumConfig("stratum-" + criterion.name.replace(' ', '_'), criterion)
       }
       NodeSeq fromSeq result}
         </ul>
