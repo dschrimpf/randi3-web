@@ -3,7 +3,7 @@ package org.randi3.web.snippet
 import net.liftweb.http.{S, StatefulSnippet}
 import collection.mutable.ListBuffer
 import xml.{Node, NodeSeq}
-import org.randi3.web.util.{RandomizationResult, CurrentLoggedInUser, Utility, CurrentTrial}
+import org.randi3.web.util._
 import net.liftweb.http.S._
 import org.randi3.model.criterion._
 import org.randi3.model.criterion.constraint.Constraint
@@ -16,7 +16,11 @@ import scala.Right
 import scala.Some
 import org.randi3.web.model.SubjectDataTmp
 import org.randi3.web.lib.DependencyFactory
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
+import scala.Some
+import org.randi3.web.model.SubjectDataTmp
+import java.util.Date
+import org.joda.time.format.DateTimeFormat
 
 
 class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
@@ -27,6 +31,7 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
 
   def dispatch = {
     case "randomize" => randomize _
+    case "randomizationConfirmation" => randomizationConfirmation _
     case "randomizationResult" => showRandomizationResult _
   }
 
@@ -158,18 +163,14 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
         TrialSubject(identifier = subjectIdentifier, investigatorUserName = CurrentLoggedInUser.get.get.username, trialSite = CurrentLoggedInUser.get.get.site, properties = properties).toEither match {
           case Left(x) => S.error("randomizeMsg", x.toString())
           case Right(subject) => {
-            trialService.randomize(trial, subject).toEither match {
+            trialService.checkSubjectPropertiesEqualityBeforeRandomization(trial, subject).toEither match {
               case Left(x) => S.error("randomizeMsg", x)
-              case Right(result) => {
-                RandomizationResult.set(Some((result._1, result._2, subject)))
-
-                CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get))
-                subjectDataList.clear()
-                subjectIdentifier = ""
-                S.notice("Thanks patient (" + result._2 + ") randomized to treatment arm: " + result._1.name + "!")
-                S.redirectTo("/trialSubject/randomizationResult")
+              case Right(duplicatedPropertySignature) => {
+                CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties(Some(subject, duplicatedPropertySignature))
+                S.redirectTo("/trialSubject/randomizationConfirmation")
               }
             }
+
           }
         }
       } else S.error("randomizeMsg", "Inclusion constraints not fulfilled")
@@ -197,6 +198,72 @@ class RandomizationSnippet extends StatefulSnippet with GeneralFormSnippet{
       "submit" -> submit("Randomize", randomizeSubject _, "class" -> "btnSend"))
   }
 
+
+  private def randomizationConfirmation(in: NodeSeq): NodeSeq = {
+    val trial = CurrentTrial.get.getOrElse {
+      error("Trial not found")
+      redirectTo("/trial/list")
+    }
+
+    if (CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties.isDefined
+         && CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties.get.isDefined) {
+
+     val subject = CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties.get.get._1
+      val duplicatedSignature =  CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties.get.get._2
+
+
+      bind("trialSubject", in,
+      "propertiesTable" -> {
+        <table class="randi2Table">
+          <thead>
+            <tr>
+              <th>{S.?("subjectProperties")}</th>
+              <th>{S.?("values")}</th>
+            </tr>
+          </thead>{if (subject.properties.isEmpty)
+          <tfoot>{S.?("trial.noCriterionsDefined")}</tfoot>}<tbody>
+          {subject.properties.flatMap(property => {
+            <tr>
+              <td>
+                {property.criterion.name}
+              </td>
+              <td>
+                {  if (property.value.isInstanceOf[Date]) {
+                val value = new DateTime(property.value.asInstanceOf[Date].getTime)
+                value.toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
+              } else {
+                property.value
+              }}
+              </td>
+            </tr>
+          })}
+        </tbody>
+        </table>
+       },
+       "warning"  -> {
+         if(duplicatedSignature)
+           <span class="err">The trial contains a patient with equal propeties. Continue process?</span>
+         else
+           <span></span>
+       },
+      "cancel" -> submit(S.?("cancel"), () => {S.redirectTo("/trial/randomizationData")}, "class" -> "btnCancel"),
+        "ok" -> submit(S.?("randomize"), () => {
+          trialService.randomize(trial, subject).toEither match {
+            case Left(x) => S.error("randomizeMsg", x)
+            case Right(result) => {
+              RandomizationResult.set(Some((result._1, result._2, subject)))
+
+              CurrentTrial.set(Some(trialService.get(trial.id).toOption.get.get))
+              subjectDataList.clear()
+              subjectIdentifier = ""
+              S.notice("Thanks patient (" + result._2 + ") randomized to treatment arm: " + result._1.name + "!")
+              S.redirectTo("/trialSubject/randomizationResult")
+            }
+          }
+        }, "class" -> "btnSend")
+      )
+    } else S.redirectTo("/trial/list")
+  }
 
   private def showRandomizationResult(in: NodeSeq): NodeSeq = {
     if (RandomizationResult.isDefined && RandomizationResult.get.isDefined) {
