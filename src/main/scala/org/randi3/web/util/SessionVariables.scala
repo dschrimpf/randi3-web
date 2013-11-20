@@ -15,6 +15,8 @@ object CurrentTrialSite extends SessionVar[Option[TrialSite]](None)
 
 object CurrentEDCTrial extends SessionVar[Option[TrialOC]](None)
 
+object CurrentLocalEDCTrial extends SessionVar[Option[TrialOC]](None)
+
 object RandomizationResult extends SessionVar[Option[(TreatmentArm, String, TrialSubject)]](None)
 
 object CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties extends SessionVar[Option[(TrialSubject, Boolean)]](None)

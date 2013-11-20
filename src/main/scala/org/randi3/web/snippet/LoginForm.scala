@@ -28,7 +28,7 @@ class LoginForm extends GeneralFormSnippet{
     def authentificate() {
       userService.login(username, password).toEither match {
         case Left(x) => {
-          if (x != null) S.error(x)
+          if (x != null) S.error("Authentication error: " + x)
           redirectTo("/index")
         }
         case Right(user) => {

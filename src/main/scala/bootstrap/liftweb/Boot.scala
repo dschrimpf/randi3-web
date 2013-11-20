@@ -1,30 +1,23 @@
 package bootstrap.liftweb
 
-
 import net.liftweb.common._
 import net.liftweb.http.provider._
 import net.liftweb.http._
-
-
 import net.liftweb.util._
-
-import org.randi3.web.util.{CurrentTrialSite, CurrentLoggedInUser, CurrentTrial, CurrentUser}
-import org.randi3.model.{TrialStatus, Role}
+import org.randi3.web.util.{ CurrentTrialSite, CurrentLoggedInUser, CurrentTrial, CurrentUser, CurrentEDCTrial, CurrentLocalEDCTrial }
+import org.randi3.model.{ TrialStatus, Role }
 import net.liftweb.sitemap.Loc._
 import net.liftweb.sitemap._
-
-import org.randi3.configuration.{ConfigurationServiceComponent, ConfigurationSchema}
-
+import org.randi3.configuration.{ ConfigurationServiceComponent, ConfigurationSchema }
 import org.randi3.web.snippet.DownloadRandomizationData
-
-import org.randi3.utility.{Utility, Logging}
-
+import org.randi3.utility.{ Utility, Logging }
 import org.randi3.schema.LiquibaseUtil
 import java.sql.SQLSyntaxErrorException
 import java.util.Locale
 import net.liftmodules.widgets.flot.Flot
 import scala.slick.jdbc.meta.MTable
-
+import org.randi3.web.lib.DependencyFactory
+import org.randi3.web.service.EDCRandomizationService
 
 /**
  * A class that's instantiated early and run.  It allows the application
@@ -38,22 +31,20 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
 
     Locale.setDefault(Locale.ENGLISH)
 
-
     initializeJDBCDriver()
 
     checkAndGenerateConfigDatabase()
 
-
-    if(configurationService.isConfigurationComplete) {
+    if (configurationService.isConfigurationComplete) {
       LiquibaseUtil.updateDatabase(org.randi3.web.lib.DependencyFactory.get.database)
-        //TODO use properties from sub project
-    //   LiquibaseUtil.updateDatabase(DependencyFactory.get.database, "db/db.changelog-master-edc.xml")
-       checkAndGenerateRandomizationTables()
-     }
+      //TODO use properties from sub project
+      LiquibaseUtil.updateDatabase(DependencyFactory.get.database, "db/db.changelog-master-edc.xml")
+      checkAndGenerateRandomizationTables()
+    }
 
-    LiftRules.resourceNames =  "i18n/Messages" :: LiftRules.resourceNames
+    LiftRules.resourceNames = "i18n/Messages" :: LiftRules.resourceNames
 
-    LiftRules.localeCalculator =  calcLocale _
+    LiftRules.localeCalculator = calcLocale _
 
     // where to search snippet
     LiftRules.addToPackages("org.randi3.web")
@@ -63,7 +54,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
 
     lazy val noGAE = Unless(() => Props.inGAE, "Disabled for GAE")
 
-    val trialSiteMenu = Menu(S.?("menu.trialSite")) / "trialSiteInfo" submenus(
+    val trialSiteMenu = Menu(S.?("menu.trialSite")) / "trialSiteInfo" submenus (
       Menu(Loc("trialSiteList", List("trialSite", "list"), S.?("menu.list"))),
       Menu(Loc("trialSiteAdd", List("trialSite", "add"), S.?("menu.add"), If(() => isAdministrator, ""))),
       Menu(Loc("trialSiteEdit", List("trialSite", "edit"), S.?("menu.edit"), If(() => isAdministrator, ""), Hidden)),
@@ -71,43 +62,47 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       Menu(Loc("trialSiteDeactivated", List("trialSite", "deactivate"), S.?("menu.trialSiteDeactivate"), If(() => isAdministrator && CurrentTrialSite.isDefined && CurrentTrialSite.get.get.isActive, ""), Hidden)),
       Menu(Loc("trialSiteDelete", List("trialSite", "delete"), "delete", Hidden, If(() => isAdministrator, ""))))
 
-    val userMenu = Menu(S.?("menu.user")) / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
+    val userMenu = Menu(S.?("menu.user")) / "userInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus (
       Menu(Loc("userList", List("user", "list"), S.?("menu.list"))),
       Menu(Loc("userAdd", List("user", "add"), S.?("menu.add"), If(() => isAdministrator, ""))),
       Menu(Loc("userShow", List("user", "show"), "show", If(() => isAdministrator || isOwnUser, ""), Hidden)),
-      Menu(Loc("userEdit", List("user", "edit"),  S.?("menu.edit"), If(() => isAdministrator || isOwnUser, ""), Hidden)),
+      Menu(Loc("userEdit", List("user", "edit"), S.?("menu.edit"), If(() => isAdministrator || isOwnUser, ""), Hidden)),
       Menu(Loc("userDelete", List("user", "delete"), "delete", Hidden)))
 
-    val trialMenu = Menu(S.?("menu.trial")) / "trialInfo" submenus(
+    val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), S.?("Randomize"), If(() => canRandomize, "")))
+    val trialSubjectRandomizationConfirmation = Menu(Loc("trialSubjectRandomizationConfirmation", List("trialSubject", "randomizationConfirmation"), "Randomization confirmation", Hidden, If(() => canRandomize, "")))
+    val trialSubjectRandomizationResultMenu = Menu(Loc("trialSubjectRandomizationResult", List("trialSubject", "randomizationResult"), "Randomization result", Hidden, If(() => canRandomize, "")))
+    val trialSubjectStageMenu = Menu(Loc("trialSubjectStage", List("trialSubject", "addResponse"), S.?("AddResponse"), If(() => canRandomize && isAdaptive, "")))
+
+    val trialMenu = Menu(S.?("menu.trial")) / "trialInfo" submenus (
       Menu(Loc("trialList", List("trial", "list"), S.?("menu.list"))),
       Menu(Loc("trialAdd", List("trial", "add"), S.?("menu.add"), If(() => canCreateTrial, ""))),
-      Menu(S.?("trial.show")) / "trialShow" >> If(() => isTrialSelected, "") submenus(
+      Menu(S.?("trial.show")) / "trialShow" >> If(() => isTrialSelected, "") submenus (
         Menu(Loc("trialShowGeneral", List("trial", "generalInformation"), S.?("menu.generalInformation"), If(() => isTrialSelected, ""))),
         Menu(Loc("trialShowRadomizationData", List("trial", "randomizationData"), S.?("menu.randomizationData"), If(() => canViewTrialInformation, ""))),
-        Menu(Loc("trialShowRadomizationDataInvestigator", List("trial", "randomizationDataInvestigator"),  S.?("menu.ownRandomizationData"), If(() => (isInvestigator && !canViewTrialInformation), ""))),
-        Menu(Loc("trialShowAudit", List("trial", "audit"),  S.?("audit"), If(() => canViewTrialInformation, ""))),
-        Menu(Loc("trialShowUsers", List("trial", "users"),  S.?("menu.users"), If(() => canViewTrialInformation, "")))
-        ),
-      Menu(S.?("menu.edit")) / "trialEdit" >> If(() => canViewTrialEdit, "") submenus(
+        Menu(Loc("trialShowRadomizationDataInvestigator", List("trial", "randomizationDataInvestigator"), S.?("menu.ownRandomizationData"), If(() => (isInvestigator && !canViewTrialInformation), ""))),
+        Menu(Loc("trialShowAudit", List("trial", "audit"), S.?("audit"), If(() => canViewTrialInformation, ""))),
+        Menu(Loc("trialShowUsers", List("trial", "users"), S.?("menu.users"), If(() => canViewTrialInformation, "")))),
+      Menu(S.?("menu.edit")) / "trialEdit" >> If(() => canViewTrialEdit, "") submenus (
         Menu(Loc("trialEditGeneral", List("trial", "editGeneralData"), S.?("menu.generalInformation"), If(() => canChangeTrial, ""))),
         Menu(Loc("trialEditStatus", List("trial", "editTrialStatus"), S.?("trial.status"), If(() => canChangeTrialStatus, ""))),
         Menu(Loc("trialEditSites", List("trial", "editParticipatingTrialSites"), S.?("trialSites"), If(() => canChangeParticipatingTrialSites, ""))),
-        Menu(Loc("trialEditUsers", List("trial", "editUsers"), S.?("menu.users"), If(() => isTrialSelected, "")))
-        ),
-      Menu(Loc("trialDelete", List("trial", "delete"), "delete", Hidden, If(() => canChangeTrial, "")))
-      )
+        Menu(Loc("trialEditUsers", List("trial", "editUsers"), S.?("menu.users"), If(() => isTrialSelected, "")))),
+      Menu(Loc("trialDelete", List("trial", "delete"), "delete", Hidden, If(() => canChangeTrial, ""))),
+      trialSubjectMenu,
+      trialSubjectRandomizationConfirmation,
+      trialSubjectRandomizationResultMenu,
+      trialSubjectStageMenu)
 
-    val trialSubjectMenu = Menu(Loc("trialSubjectRandomize", List("trialSubject", "randomize"), S.?("Randomize"), If(() => canRandomize, "")))
-    val trialSubjectRandomizationConfirmation = Menu(Loc("trialSubjectRandomizationConfirmation", List("trialSubject", "randomizationConfirmation"), "Randomization confirmation", Hidden ,If(() => canRandomize, "")))
-    val trialSubjectRandomizationResultMenu = Menu(Loc("trialSubjectRandomizationResult", List("trialSubject", "randomizationResult"), "Randomization result", Hidden ,If(() => canRandomize, "")))
-    val trialSubjectStageMenu = Menu(Loc("trialSubjectStage", List("trialSubject", "addResponse"), S.?("AddResponse"), If(() => canRandomize, "")))
-
-   val edcMenu = Menu("EDC") / "edcInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus(
-      Menu(Loc("edcTrialAdd", List("edcTrial", "listRemote"), "list remote EDC trials", If(() => isAdministrator, ""))),
-      Menu(Loc("edcTrialEdit", List("edcTrial", "addOrEdit"), "edit EDC trial",  If(() => isAdministrator, ""))),
-      Menu(Loc("edcTrialView", List("edcTrial", "viewRemoteDetails"), "view EDC trial",  If(() => isAdministrator, ""))),
-      Menu(Loc("edcTrialList", List("edcTrial", "list"), "list EDC trials", If(() => isAdministrator || isOwnUser, ""))))
-
+    val edcMenu = Menu("EDC") / "edcInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus (
+      Menu(Loc("edcTrialAdd", List("edcTrial", "listRemote"), "list remote EDC trials", If(() => canCreateTrial, ""))),
+      //  Menu(Loc("edcTrialView", List("edcTrial", "viewRemoteDetails"), "view remote EDC trial", If(() => (canCreateTrial) && isEDCTrialSelected, ""))),
+      Menu(Loc("edcTrialEdit", List("edcTrial", "addOrEdit"), "add remote EDC trial", If(() => (canCreateTrial) && isEDCTrialSelected, ""))),
+      Menu(Loc("edcTrialList", List("edcTrial", "list"), "list EDC trials", If(() => CurrentLoggedInUser.isDefined, ""))),
+      Menu(Loc("edcTrialShow", List("edcTrial", "viewLocalDetails"), "show local EDC trial", If(() => isParticipantOfTheEDCTrial, ""))),
+      Menu(Loc("edcTrialUserShow", List("edcTrial", "users"), "show EDC trial Users", If(() => isParticipantOfTheEDCTrial, ""))),
+      Menu(Loc("edcTrialUserEdit", List("edcTrial", "editUsers"), "edit EDC trial Users", If(() => canChangeEdcTrialUsers, ""))),
+      Menu(Loc("edcTrialRandomize", List("edcTrial", "randomize"), "randomize local EDC trial", If(() => canRandomizeEDCTrial, ""))))
 
     // Build SiteMap
     def sitemap() = SiteMap(
@@ -117,11 +112,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       trialSiteMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
-      trialSubjectMenu,
-    //  edcMenu,
-    trialSubjectRandomizationConfirmation,
-      trialSubjectRandomizationResultMenu,
-      trialSubjectStageMenu,
+      edcMenu,
       Menu(Loc("installServerURL", List("installation", "serverURL"), "serverURL", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
       Menu(Loc("installDatabase", List("installation", "database"), "database", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
       Menu(Loc("installMail", List("installation", "mail"), "mail", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
@@ -139,6 +130,9 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
 
     LiftRules.dispatch.append(DownloadRandomizationData)
 
+    LiftRules.dispatch.append(EDCRandomizationService) // stateful — associated with a servlet container session
+    //   LiftRules.statelessDispatchTable.append(EDCRandomizationService) // stateless — no session created
+
     /*
      * Show the spinny image when an Ajax call starts
      */
@@ -148,7 +142,6 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
 
     }
 
-
     /*
      * Make the spinny image go away when it ends
      */
@@ -157,14 +150,12 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       Full(() => LiftRules.jsArtifacts.show("ajax-loader-fix").cmd)
     }
 
-
     LiftRules.early.append(makeUtf8)
-
 
   }
 
   private def calcLocale(in: Box[HTTPRequest]): Locale = {
-   val loc = if (CurrentLoggedInUser.isEmpty) Locale.getDefault
+    val loc = if (CurrentLoggedInUser.isEmpty) Locale.getDefault
     else CurrentLoggedInUser.get.get.locale
     loc
   }
@@ -176,7 +167,6 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     req.setCharacterEncoding("UTF-8")
   }
 
-
   private def isAdministrator: Boolean = {
     CurrentLoggedInUser.getOrElse(return false).administrator
   }
@@ -187,7 +177,6 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     user.id == selectedUser.id && user.username == selectedUser.username
   }
 
-
   private def canCreateTrial: Boolean = {
     CurrentLoggedInUser.getOrElse(return false).canCreateTrial
   }
@@ -195,6 +184,43 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
   private def isTrialSelected: Boolean = {
     if (CurrentLoggedInUser.isEmpty) (return false)
     CurrentTrial.isDefined
+  }
+
+  private def isEDCTrialSelected: Boolean = {
+    if (CurrentLoggedInUser.isEmpty) (return false)
+    CurrentEDCTrial.isDefined
+  }
+
+  private def isParticipantOfTheEDCTrial: Boolean = {
+    if (CurrentLocalEDCTrial.isDefined) {
+      if (CurrentLoggedInUser.isDefined) {
+        val user = CurrentLoggedInUser.get.getOrElse(return false)
+        val trial = CurrentLocalEDCTrial.getOrElse(return false).trial.getOrElse(return false)
+        !user.rights.filter(right => right.trial.id == trial.id).isEmpty
+      } else false
+    } else false
+  }
+
+  private def canChangeEdcTrialUsers: Boolean = {
+    if (CurrentLocalEDCTrial.isDefined) {
+      if (CurrentLoggedInUser.isDefined) {
+        val user = CurrentLoggedInUser.get.getOrElse(return false)
+        val trial = CurrentLocalEDCTrial.getOrElse(return false).trial.getOrElse(return false)
+        val possibleRoles = List(Role.principleInvestigator, Role.trialAdministrator)
+        !user.rights.filter(right => right.trial.id == trial.id && possibleRoles.contains(right.role)).isEmpty
+      } else false
+    } else false
+  }
+
+  private def canRandomizeEDCTrial: Boolean = {
+    if (CurrentLocalEDCTrial.isDefined) {
+      if (CurrentLoggedInUser.isDefined) {
+        val user = CurrentLoggedInUser.get.getOrElse(return false)
+        val trial = CurrentLocalEDCTrial.getOrElse(return false).trial.getOrElse(return false)
+        val possibleRoles = List(Role.principleInvestigator, Role.trialAdministrator, Role.investigator)
+        !user.rights.filter(right => right.trial.id == trial.id && possibleRoles.contains(right.role)).isEmpty
+      } else false
+    } else false
   }
 
   private def canViewTrialInformation: Boolean = {
@@ -209,12 +235,11 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     }
   }
 
-
   private def canViewTrialEdit: Boolean = {
     val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
     val rightList = user.rights.filter(right => right.trial.id == trial.id)
-    if(trial.status == TrialStatus.FINISHED){
+    if (trial.status == TrialStatus.FINISHED) {
       false
     } else if (rightList.isEmpty) {
       false
@@ -247,6 +272,13 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     }
   }
 
+    private def isAdaptive: Boolean = {
+    val user = CurrentLoggedInUser.getOrElse(return false)
+    val trial = CurrentTrial.getOrElse(return false)
+    if (trial.status != TrialStatus.ACTIVE) return false
+    !trial.stages.isEmpty
+  }
+  
   private def canChangeTrial: Boolean = {
     val user = CurrentLoggedInUser.getOrElse(return false)
     val trial = CurrentTrial.getOrElse(return false)
@@ -276,7 +308,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     val trial = CurrentTrial.getOrElse(return false)
     if (!trial.isTrialOpen) return false
     if (trial.status != TrialStatus.ACTIVE && trial.status != TrialStatus.PAUSED) return false
-     val rightList = user.rights.filter(right => right.trial.id == trial.id)
+    val rightList = user.rights.filter(right => right.trial.id == trial.id)
     if (rightList.isEmpty) {
       false
 
@@ -285,8 +317,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     }
   }
 
-
-  private def initializeJDBCDriver(){
+  private def initializeJDBCDriver() {
     java.lang.Class.forName("org.hsqldb.jdbc.JDBCDriver")
     java.lang.Class.forName("com.mysql.jdbc.Driver")
     java.lang.Class.forName("org.postgresql.Driver")
@@ -300,8 +331,8 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
     if (tableList.isEmpty) {
       logger.info("Start of installation ...")
       try {
-      ConfigurationSchema.createDatabase
-      }catch {
+        ConfigurationSchema.createDatabase
+      } catch {
         case e: SQLSyntaxErrorException => //HsqlDB   MTable.getTables doesn't work
       }
     }
@@ -310,15 +341,11 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
   private def checkAndGenerateRandomizationTables() {
     import org.randi3.web.lib.DependencyFactory
 
-    val  pluginManager = DependencyFactory.get.randomizationPluginManager
+    val pluginManager = DependencyFactory.get.randomizationPluginManager
 
     pluginManager.getPluginNames.foreach(pluginName => {
       val plugin = pluginManager.getPlugin(pluginName).get
       plugin.updateDatabase()
     })
-
   }
-
-
 }
-

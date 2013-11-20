@@ -3,10 +3,13 @@ package org.randi3.web.snippet
 
 import net.liftweb.util.Helpers._
 import xml.{Text, NodeSeq, Group}
-
 import net.liftweb.http.SHtml._
 import net.liftweb.http._
 import org.randi3.web.util.{CurrentTrialSite, CurrentUser, CurrentTrial, CurrentLoggedInUser}
+import org.randi3.web.util.CurrentEDCTrial
+import org.randi3.web.util.CurrentLocalEDCTrial
+import org.randi3.web.util.RandomizationResult
+import org.randi3.web.util.CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties
 
 
 class UserLoggedInForm {
@@ -25,6 +28,10 @@ class UserLoggedInForm {
           CurrentTrial(None)
           CurrentTrialSite(None)
           CurrentUser(None)
+          CurrentEDCTrial(None)
+          CurrentLocalEDCTrial(None)
+          RandomizationResult(None)
+          CurrentSubjectToRandomizeAndSuspicionOfDuplicatedProperties(None)
         }, Text(S.?("logout")) ++ <img src="/images/arrowleft16.png" alt=" "/>)
       )
     } else {

@@ -1,9 +1,7 @@
 package org.randi3.web.snippet
 
 import org.randi3.web.lib.DependencyFactory
-import org.randi3.web.util.CurrentTrial
 import net.liftweb.http.S._
-
 import org.randi3.web.util.CurrentTrial
 import scala.xml._
 import scala.xml.Group
@@ -20,16 +18,19 @@ import net.liftweb.http.S._
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http._
 import js.JE
-
 import org.randi3.model.{Role, User}
+import org.randi3.model.Trial
+import org.randi3.web.util.CurrentLocalEDCTrial
 
 
-class TrialUserSnippet {
+class TrialUserShow {
+  
+  def render(xhtml: NodeSeq): NodeSeq = generateUserTable(CurrentTrial.get.getOrElse(redirectTo("/trial/list")), xhtml)
+    
+  def renderEDC(xhtml: NodeSeq): NodeSeq = generateUserTable(CurrentLocalEDCTrial.get.getOrElse{println("a");redirectTo("/edcTrial/list")}.trial.getOrElse{println("b");redirectTo("/edcTrial/list")}, xhtml)
+  
+  private def generateUserTable(trial: Trial, xhtml: NodeSeq): NodeSeq = {
 
-  def render(xhtml: NodeSeq): NodeSeq = {
-    val trial = CurrentTrial.get.getOrElse {
-      redirectTo("/trial/list")
-    }
     val allUsers = DependencyFactory.get.userService.getAllFromTrial(trial).toEither match {
       case Left(failure) => return <div>
         {failure}

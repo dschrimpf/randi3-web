@@ -8,7 +8,7 @@
     </script>
 
 
-    <h1>Import edit remote EDC trial</h1><hr />
+    <h1>Import EDC trial</h1><hr />
 
     <form class="lift:EdcEditSnippet.add?form=post">
         <lift:msg id="edcTrialMsg" errorClass="err"/>
@@ -25,37 +25,64 @@
             <fieldset>
 
                 <div id="edcTrialTab-1">
+                    <fieldset>
+                        <legend><lift:loc locid="generalInformation">General information</lift:loc></legend>
                     <ul>
                         <edcTrial:identifier/>
                         <edcTrial:name/>
                         <edcTrial:description/>
                     </ul>
+                        </fieldset>
                 </div>
 
+
                 <div id="edcTrialTab-2">
+                    <fieldset>
+                        <legend><lift:loc locid="selectTreatment">Select treatment</lift:loc></legend>
                     <ul>
                         <edcTrial:treatmentItem/>
                         <edcTrial:treatmentArms/>
                     </ul>
+                    </fieldset>
                 </div>
 
                 <div id="edcTrialTab-3">
+                   <fieldset>
+                        <legend><lift:loc locid="dataSetId">OpenClinica data set identifier</lift:loc></legend>
+                    <ul>
+                       <li>Please, add the OpenClinica data set identifier for the data import.</li> 
+                       <edcTrial:dataSetId/>                    
+                    </ul>
+                        </fieldset>
+                
+                    <fieldset>
+                        <legend><lift:loc locid="subjectProperties">Subject properties</lift:loc></legend>
                     <ul>
                         <div class="scrollFrame">
                             <edcTrial:items/>
                         </div>
                     </ul>
+                        </fieldset>
                 </div>
 
                 <div id="edcTrialTab-4">
-                    <ul>
-                        <span>Please Select:</span>
-                        <edcTrial:randomizationMethodSelect/>
-                        <edcTrial:randomizationConfig/>
-                    </ul>
+
+                    <fieldset class="noBorder">
+                        <ul>
+                            <li>
+                                <label for="randomizationSelectionField"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                                <span id="randomizationSelectionField"><edcTrial:randomizationMethodSelect/></span>
+                            </li>
+                        </ul>
+                    </fieldset>
+
+                    <edcTrial:randomizationConfig/>
+
+                    <edcTrial:cancel/>
+                    <edcTrial:save/>
                 </div>
 
-                <edcTrial:save/>
+
 
             </fieldset>
         </div>

@@ -161,6 +161,8 @@ class InstallationSnippet extends StatefulSnippet with GeneralFormSnippet with U
 
         LiquibaseUtil.updateDatabase(database)
 
+        LiquibaseUtil.updateDatabase(database, "db/db.changelog-master-edc.xml")
+
         logger.info("Installation: Database created!")
 
         S.redirectTo("/installation/mail")

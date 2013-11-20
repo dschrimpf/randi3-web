@@ -35,8 +35,7 @@ import scala.Right
 import org.randi3.randomization.configuration.DoubleConfigurationType
 
 import org.randi3.web.model._
-
-
+import org.randi3.edc.model.openClinica._
 
 
 class EdcEditSnippet extends StatefulSnippet {
@@ -63,13 +62,19 @@ class EdcEditSnippet extends StatefulSnippet {
 
   private val criterionsTmp = new ListBuffer[CriterionTmp]()
 
+  private var isStratifiedByTrialSite = false
 
+  private var treatmentCriterion: Option[Criterion[Any, Constraint[Any]]] = None
+
+  private var dataSetId = -1
 
   private def add(nodeSeq: NodeSeq): NodeSeq = {
     if (CurrentEDCTrial.isEmpty) S.redirectTo("/edcTrial/listRemote")
 
     val trial = CurrentEDCTrial.get.get
-
+     
+    CurrentEDCTrial.set(None)
+     
     clearFields
 
     val selectedCriterions = new mutable.HashSet[Criterion[Any, Constraint[Any]]] ()
@@ -88,25 +93,58 @@ class EdcEditSnippet extends StatefulSnippet {
         randomizationMethod = None,
         stages = Map(),
         identificationCreationType = TrialSubjectIdentificationCreationType.EXTERNAL,
-        isTrialOpen = false,
-        isStratifiedByTrialSite = false
+        isTrialOpen = true,
+        isStratifiedByTrialSite = isStratifiedByTrialSite
       ).toEither match {
-        case Left(x) => S.error("trialMsg", x.toString)
+        case Left(x) =>S.error("edcTrialMsg", x.toString)
         case Right(newTrial) => {
           //TODO Random Config
           val randomMethod = randomizationPluginManager.getPlugin(randomizationMethodTmp.name).get.randomizationMethod(new MersenneTwister(), newTrial, randomizationMethodTmp.getConfigurationProperties).toOption.get
           val trialWithMethod = newTrial.copy(randomizationMethod = Some(randomMethod))
-
-          DependencyFactory.get.openClinicaService.createNewLocalTrial(trial.copy(trial = Some(newTrial)))
+          val treatmentItem = if (treatmentCriterion.isDefined) trial.getMappedElementsFromCriteria(treatmentCriterion.get) else None
+          DependencyFactory.get.openClinicaService.createNewLocalTrial(trial.copy(trial = Some(trialWithMethod), treatmentItem = treatmentItem, connection = trial.connection.copy(dataSetId = dataSetId))).toEither match {
+            case Left(x) => S.error("edcTrialMsg", x)
+            case Right(trialOC) => S.redirectTo("/edcTrial/list")
+          }
         }
       }
     }
 
+    def identifierField(failure: Boolean = false): Elem = {
+      val id = "identifier"
+      generateEntry(id, failure, {
+        <span id={id}>{trial.identifier}</span>
+      })
+    }
+
+    def nameField(failure: Boolean = false): Elem = {
+      val id = "name"
+      generateEntry(id, failure, {
+        <span id={id}>{trial.name}</span>
+      })
+    }
+
+    def descriptionField(failure: Boolean = false): Elem = {
+      val id = "description"
+      generateEntry(id, failure, {
+        <div id={id}>{trial.description}</div>
+      })
+    }
+
+    def dataSetIdField(failure: Boolean = false): Elem = {
+      val id = "dataSetId"
+      generateEntry(id, failure, {
+        ajaxText(dataSetId.toString, v => {
+          dataSetId = v.toInt
+        }, "id" -> id)
+      })
+    }
+
     bind("edcTrial", nodeSeq,
-      "identifier" -> <div>{trial.identifier}</div>,
-      "name" -> <div>{trial.name}</div>,
-      "description" -> <div>{trial.description}</div>,
-      "treatmentItem" -> generateTreatmentArmsSelect(nodeSeq),
+      "identifier" -> identifierField(),
+      "name" -> nameField(),
+      "description" -> descriptionField(),
+      "treatmentItem" -> generateTreatmentArmsSelect(nodeSeq, trial),
     "treatmentArms" -> generateTreatmentArms(nodeSeq),
       "items" ->  <table class="randi2Table">
         <thead>
@@ -142,28 +180,30 @@ class EdcEditSnippet extends StatefulSnippet {
         </tbody>
       </table>
       ,
+       "dataSetId" -> dataSetIdField(),
       "randomizationMethodSelect" -> randomizationMethodSelectField,
       "randomizationConfig" -> generateRandomizationConfigField,
-      "save" -> button("save", save _)
+      "cancel" -> submit(S.?("cancel"), () => S.redirectTo("/"), "class" -> "btnCancel"),
+      "save" -> submit(S.?("save"), save _, "class" -> "btnSend")
     )
   }
 
 
-  private def generateTreatmentArmsSelect(nodeSeq: NodeSeq): NodeSeq = {
-    val trial = CurrentEDCTrial.get.get
+  private def generateTreatmentArmsSelect(nodeSeq: NodeSeq, trial: TrialOC): NodeSeq = {
     val criterionSeq = trial.getAllCriteria().filter(criterion => criterion.isInstanceOf[OrdinalCriterion]).map(criteria => (criteria, criteria.name))
-   <div> {
+ generateEntry("treatmentArmItem", false, {
     ajaxSelectObj(criterionSeq, Empty, (criterion: Criterion[Any, Constraint[Any]]) => {
       if (criterion.isInstanceOf[OrdinalCriterion]){
+        treatmentCriterion = Some(criterion)
         armsTmp.clear()
         criterion.asInstanceOf[OrdinalCriterion].values.foreach(
           value => {
-            armsTmp.append(new TreatmentArmTmp(id = Int.MinValue, version = 0, name = value, description = "", plannedSize = 0))
+            armsTmp.append(new TreatmentArmTmp(id = Int.MinValue, version = 0, name = value, description = criterion.description + ": " + value, plannedSize = 0))
           })
       }
       Replace("treatmentArms", generateTreatmentArms(nodeSeq))
     })
-     }</div>
+     })
   }
 
   private def generateTreatmentArms(xhtml: NodeSeq): NodeSeq = {
@@ -318,16 +358,21 @@ class EdcEditSnippet extends StatefulSnippet {
       </fieldset>
     } else <div></div>}{if (randomizationMethodTmp.canBeUsedWithStratification) {
       val criterionList = criterionsTmp
-      <div>
-        <h3>Stratification:</h3>
-        Trial site stratification: {<span>TODO</span>}
-        {val result = new ListBuffer[Node]()
-      for (i <- criterionList.indices) {
-        val criterion = criterionList(i)
-        result += generateStratumConfig("stratum-" + criterion.name, criterion)
-      }
-      NodeSeq fromSeq result}
-      </div>
+      <fieldset>
+        <legend>{S.?("trial.stratification")}</legend>
+        <ul>
+         <li>
+            <label for="trialSiteStratification" >{S.?("trial.trialSiteStratification")}:</label>
+            { checkbox(isStratifiedByTrialSite, value => isStratifiedByTrialSite = value, "id" -> "trialSiteStratification")}
+          </li>
+          {val result = new ListBuffer[Node]()
+        for (i <- criterionList.indices) {
+          val criterion = criterionList(i)
+          result += generateStratumConfig("stratum-" + criterion.name.replace(' ', '_'), criterion)
+        }
+        NodeSeq fromSeq result}
+        </ul>
+      </fieldset>
 
     } else <div></div>}
 
@@ -537,15 +582,6 @@ class EdcEditSnippet extends StatefulSnippet {
     )
 
     result.toList
-  }
-
-
-  private def createStages(actStages: HashMap[String, ListBuffer[CriterionTmp]]): Map[String, List[Criterion[Any, Constraint[Any]]]] = {
-    val result = new HashMap[String, List[Criterion[Any, Constraint[Any]]]]()
-
-    actStages.foreach(entry => result.put(entry._1, createCriterionsList(entry._2)))
-
-    result.toMap
   }
 
   private def createCriterionsList(criterions: ListBuffer[CriterionTmp]): List[Criterion[Any, Constraint[Any]]] = {

@@ -1,0 +1,104 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialShowTabs').tabs();
+        });
+
+
+    </script>
+
+
+    <h1><lift:loc locid="EDCInformation">EDC trial Information</lift:loc></h1><hr />
+
+    <lift:EdcViewSnippet.viewLocal>
+
+        <div id="trialShowTabs">
+            <ul>
+                <li><a href="#generalInformation"><lift:loc locid="general">General</lift:loc></a></li>
+                <li><a href="#trialSites"><lift:loc locid="trialSites">Trial sites</lift:loc></a></li>
+                <li><a href="#treatmentArms"><lift:loc locid="treatmentArms">Treatment arms</lift:loc></a></li>
+                <li><a href="#properties"><lift:loc locid="subjectProperties">Subject properties</lift:loc></a></li>
+                <li><a href="#stages">Stages</a></li>
+                <li><a href="#algorithm"><lift:loc locid="randomizationMethod">Randomization method</lift:loc></a></li>
+                <li><a href="#randomizations"><lift:loc locid="patients">Patients</lift:loc></a></li>
+            </ul>
+
+            <div id="generalInformation">
+
+                <table>
+                    <tbody>
+                    <tr>
+                        <td style="text-align: right;" width="50em"><lift:loc locid="abbreviation">Abbreviation</lift:loc>:</td>
+                        <td style="font-weight:bold;"><trial:abbreviation /></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;"><lift:loc locid="name">Name</lift:loc>:</td>
+                        <td style="font-weight:bold;"><trial:name /></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;"><lift:loc locid="description">Description</lift:loc>:</td>
+                        <td style="font-weight:bold;"><trial:description /></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;"><lift:loc locid="startDate">Start date</lift:loc>:</td>
+                        <td style="font-weight:bold;"><trial:startDate /></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;"><lift:loc locid="endDate">End date</lift:loc>:</td>
+                        <td style="font-weight:bold;"><trial:endDate /></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right;"><lift:loc locid="status">Status</lift:loc>:</td>
+                        <td style="font-weight:bold;"><trial:status /></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div id="trialSites" class="scrollFrame">
+
+                <trial:sites />
+
+            </div>
+
+            <div id="treatmentArms" class="scrollFrame">
+
+                <trial:treatmentArms />
+
+            </div>
+
+            <div id="properties" class="scrollFrame">
+
+                <trial:properties />
+
+            </div>
+
+            <div id="stages">
+
+                <h3>Stages:</h3><hr />
+
+                <trial:stages />
+            </div>
+
+            <div id="algorithm">
+
+                <trial:algorithm />
+            </div>
+
+            <div id="randomizations">
+
+                <div class="scrollFrame">
+                    <trial:randomizationDataTable/>
+                </div>
+
+                <div>
+                    <a href="/downloadRandomizationDataEDCTrial"><img src="/images/icons/saved30.png"/> Download</a>
+                </div>
+            </div>
+        </div>
+
+    </lift:EdcViewSnippet.viewLocal>
+
+</lift:surround>

@@ -9,7 +9,7 @@
 
 	<h1>List remote EDC trials</h1><hr />
 
-    <form class="lift:EdcListSnippet.listRemoteTrials?form=post">
+    <form class="lift:EdcListSnippet.listRemote?form=post">
         <lift:msg id="edcTrialMsg" errorClass="err"/>
 
 
@@ -24,9 +24,11 @@
                     <ul>
                         <edcTrial:location/>
                         <edcTrial:username/>
-                        <edcTrial:passwordHash/>
+                        <edcTrial:passwordHash/>                        
                         <edcTrial:refreshList/>
+                        <br />                        
                         <edcTrial:edcTrials/>
+                        <div style="text-align:center">Only trials which are not locally stored are listed.</div>
                     </ul>
                 </div>
 

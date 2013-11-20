@@ -324,6 +324,25 @@ height: 10em;
        margin: 0 16em 0 0;
     }
 
+input.btnNormalInPlace {
+	background:#175ba2;
+	float:none;
+   margin: 25px 0 10px 0;
+	width:85px;
+	height:30px;
+	font-weight:bold;
+	color: #FFF;
+	text-align: center;
+	padding:0 0 2px 0;
+	text-indent:0px;
+	border:1px solid #8eb0d9;
+	-moz-border-radius:2px;
+	-webkit-border-radius:2px;
+	cursor:pointer;
+  	-webkit-box-shadow: inset 0px 0px 0px;
+  	-moz-box-shadow: inset 0px 0px 0px;
+  	box-shadow: inset 0px 0px 0px;
+}
 
 input.btnCancel,
 input.btnSend,
@@ -555,7 +574,7 @@ width: 16em;
 
 .scrollFrame
 {
-	width:100%;
+	width: 750px;
 	max-height:600px;
 	overflow:auto;
 }

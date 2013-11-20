@@ -23,7 +23,7 @@ class TrialListSnippet {
         </td>
       </tr>
       case Right(trials) => {
-        trials.flatMap(trial => {
+        trials.filter(trial => !trial.isEDCTrial).flatMap(trial => {
           <tr>
             <td>
               {trial.abbreviation}

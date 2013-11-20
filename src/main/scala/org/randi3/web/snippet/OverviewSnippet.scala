@@ -65,7 +65,7 @@ class OverviewSnippet {
   }
 
   def randomizeOptions: NodeSeq = {
-    val trials = trialService.getAll.toOption.get
+    val trials = trialService.getAll.toOption.get.filter(!_.isEDCTrial)
     val trialsWithRandomizeRight = trials.filter(trial => trial.status == TrialStatus.ACTIVE && user.rights.filter(right => right.trial.id == trial.id).map(right => right.role).contains(Role.investigator))
     if (!trialsWithRandomizeRight.isEmpty) {
     <fieldset>
@@ -94,7 +94,7 @@ class OverviewSnippet {
   }
 
   def trialOverviewOptions: NodeSeq = {
-    val trials = trialService.getAll.toOption.get
+     val trials = trialService.getAll.toOption.get.filter(!_.isEDCTrial)
     val trialsWithRandomizeRight = trials.filter(trial => !user.rights.filter(right => right.trial.id == trial.id).map(right => right.role).isEmpty)
     if (!trialsWithRandomizeRight.isEmpty) {
       <fieldset>
