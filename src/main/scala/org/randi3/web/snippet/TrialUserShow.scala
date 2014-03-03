@@ -27,7 +27,6 @@ class TrialUserShow {
   
   def render(xhtml: NodeSeq): NodeSeq = generateUserTable(CurrentTrial.get.getOrElse(redirectTo("/trial/list")), xhtml)
     
-  def renderEDC(xhtml: NodeSeq): NodeSeq = generateUserTable(CurrentLocalEDCTrial.get.getOrElse{println("a");redirectTo("/edcTrial/list")}.trial.getOrElse{println("b");redirectTo("/edcTrial/list")}, xhtml)
   
   private def generateUserTable(trial: Trial, xhtml: NodeSeq): NodeSeq = {
 

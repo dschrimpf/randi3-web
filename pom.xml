@@ -6,12 +6,12 @@
     <parent>
         <artifactId>randi3</artifactId>
         <groupId>org.randi3</groupId>
-        <version>0.9.4-SNAPSHOT</version>
+        <version>0.9.4</version>
     </parent>
 
     <groupId>org.randi3</groupId>
     <artifactId>randi3-web</artifactId>
-    <version>0.9.4-SNAPSHOT</version>
+    <version>0.9.4</version>
     <packaging>war</packaging>
     <name>randi3-web Project</name>
 
@@ -42,12 +42,17 @@
         <dependency>
             <groupId>org.randi3</groupId>
             <artifactId>randi3-core</artifactId>
-            <version>0.9.4-SNAPSHOT</version>
+            <version>0.9.4</version>
+        </dependency>
+           <dependency>
+            <groupId>org.randi3</groupId>
+            <artifactId>randi3-simulation</artifactId>
+            <version>0.9.4</version>
         </dependency>
         <dependency>
             <groupId>org.randi3</groupId>
             <artifactId>randi3-edc</artifactId>
-            <version>0.9.4-SNAPSHOT</version>
+            <version>0.9.4</version>
         </dependency>
 
         <dependency>

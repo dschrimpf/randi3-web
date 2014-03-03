@@ -93,7 +93,12 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       trialSubjectRandomizationConfirmation,
       trialSubjectRandomizationResultMenu,
       trialSubjectStageMenu)
-
+      
+    val simulationMenu = Menu(S.?("menu.simulation")) / "simulation/start" >> If(() => CurrentLoggedInUser.isDefined && canCreateTrial, "") submenus (
+      Menu(Loc("simulate", List("simulation", "start"), S.?("menu.simulation"))),
+      Menu(Loc("simulationResult", List("simulation", "result"), S.?("menu.simResult"), If(() => canCreateTrial, ""))))
+      
+      
     val edcMenu = Menu("EDC") / "edcInfo" >> If(() => CurrentLoggedInUser.isDefined, "") submenus (
       Menu(Loc("edcTrialAdd", List("edcTrial", "listRemote"), "list remote EDC trials", If(() => canCreateTrial, ""))),
       //  Menu(Loc("edcTrialView", List("edcTrial", "viewRemoteDetails"), "view remote EDC trial", If(() => (canCreateTrial) && isEDCTrialSelected, ""))),
@@ -112,6 +117,7 @@ class Boot extends Utility with Logging with ConfigurationServiceComponent {
       trialSiteMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       userMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
       trialMenu >> If(() => CurrentLoggedInUser.isDefined, ""),
+      //simulationMenu,
       edcMenu,
       Menu(Loc("installServerURL", List("installation", "serverURL"), "serverURL", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),
       Menu(Loc("installDatabase", List("installation", "database"), "database", If(() => !configurationService.isConfigurationComplete, ""), Hidden)),

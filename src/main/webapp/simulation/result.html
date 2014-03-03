@@ -1,0 +1,56 @@
+<lift:surround with="default" at="content">
+
+    <h1><lift:loc locid="simulation.simulationResult">Simulation result</lift:loc></h1>
+    <hr/>
+
+
+    <form class="lift:SimulationSnippet.results?form=post">
+
+        <lift:msg id="simulationMsg" errorClass="err"/>
+       
+           <fieldset>
+                    <legend><lift:loc locid="general">General</lift:loc></legend>
+
+                    <ul>
+                       <li>
+                         <label for ="trialName">Trial name</label>
+                         <span id="trialName"><simulation:trialName/></span>
+                        </li>
+                          <li>
+                         <label for ="runs">Runs</label>
+                         <span id="runs"><simulation:runs/></span>
+                        </li>
+                         <li>
+                         <label for ="duration">Overall duration</label>
+                         <span id="duration"><simulation:duration/></span>
+                        </li>
+                    </ul>
+                </fieldset>
+                
+                <fieldset>
+                    <legend><lift:loc locid="Algortihm">Algorithm</lift:loc></legend>
+
+                    <ul>
+                        <simulation:algorithms/>
+                    </ul>
+                </fieldset> 
+                
+             <fieldset>
+                    <legend><lift:loc locid="Details">Details</lift:loc></legend>
+
+                    <ul>
+                        <simulation:details/>
+                    </ul>
+                </fieldset>             
+                
+            <fieldset>
+                    <legend><lift:loc locid="Download">Download</lift:loc></legend>
+
+                    <a href ="" ><h4>Download data</h4></a>
+                </fieldset>                  
+            
+                
+
+    </form>
+
+</lift:surround>

@@ -1,0 +1,135 @@
+<lift:surround with="default" at="content">
+    <script type="text/javascript">
+        $(function(){
+        // Tabs
+        $('#trialAddTabs').tabs();
+
+        $('#stagesTabs').tabs();
+
+        $('#startDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
+
+        $('#endDate').datepicker({ dateFormat: 'yy-mm-dd', changeYear: true, changeMonth: true });
+
+        });
+
+    </script>
+
+    <h1><lift:loc locid="simulation.simulation">Simulate a trial</lift:loc></h1>
+    <hr/>
+
+
+    <form class="lift:SimulationSnippet.simulate?form=post">
+
+        <lift:msg id="simulationMsg" errorClass="err"/>
+        <div id="trialAddTabs">
+            <ul>
+                <li><a href="#tabs-1"><lift:loc locid="general">General</lift:loc></a></li>
+                <li><a href="#tabs-3"><lift:loc locid="treatmentArms">Treatment arms</lift:loc></a></li>
+                <li><a href="#tabs-4"><lift:loc locid="subjectProperties">Subject properties</lift:loc></a></li>
+                <li><a href="#tabs-6"><lift:loc locid="randomization">Randomization</lift:loc></a></li>
+                <li><a href="#simulation"><lift:loc locid="simulation">Simulation</lift:loc></a></li>
+            </ul>
+
+            <div id="tabs-1">
+
+                <fieldset>
+                    <legend><lift:loc locid="generalInformation">General information</lift:loc></legend>
+                    <ul>
+                        <trial:name/>
+                        <trial:description/>
+                    </ul>
+                </fieldset>
+
+                <fieldset>
+                    <legend><lift:loc locid="duration">Duration</lift:loc></legend>
+
+                    <ul>
+                        <trial:startDate/>
+                        <trial:endDate/>
+                    </ul>
+                </fieldset>
+                
+                   <fieldset>
+                    <legend><lift:loc locid="trialSite">Trial site</lift:loc></legend>
+
+                    <ul>
+                        <trial:trialSiteCount/>
+                    </ul>
+                </fieldset>
+            </div>
+
+            <div id="tabs-3">
+                <div style="text-align: center;">
+                    <trial:addTreatmentArm/>
+                </div>
+                <hr/>
+                <div class="clearfix">
+                    <trial:treatmentArms/>
+                </div>
+            </div>
+
+            <div id="tabs-4">
+                <fieldset class="noBorder">
+                    <ul>
+                        <li>
+                            <label for="criterionSelect"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                           <span id="criterionSelect">
+                                <trial:criterionSelect/>
+                                <trial:addSelectedCriterion/>
+                            </span>
+                        </li>
+                    </ul>
+                </fieldset>
+                <hr/>
+                <div class="clearfix">
+                <trial:criterions/>
+                </div>
+            </div>
+
+
+            <div id="tabs-6">
+
+                <fieldset class="noBorder">
+                  <ul>
+                      <li>
+                         <label for="randomizationSelectionField"><lift:loc locid="pleaseSelect">Please select</lift:loc>:</label>
+                          <span id="randomizationSelectionField"><trial:randomizationMethodSelect/></span>
+                      </li>
+                  </ul>
+                </fieldset>
+
+                <trial:randomizationConfig/>
+            </div>
+            
+                 <div id="simulation">
+                    <fieldset>
+                    <legend><lift:loc locid="general">General</lift:loc></legend>
+                  
+                    <ul>
+                        <trial:simulationRuns/>
+                         <trial:seed/>
+                    </ul>
+                   </fieldset>    
+                   
+                    <trial:trialSiteDistributionConfig/>
+                   
+                   <trial:propertyDistributionConfig/>
+
+                    <fieldset>
+                    <legend><lift:loc locid="responseDistribution">Response distribution</lift:loc></legend>
+                  
+                    <ul>
+                        <div>No stage available</div>
+                    </ul>
+                   </fieldset>                
+
+                <trial:cancel/>
+                <trial:submit/>
+            </div>
+
+
+        </div>
+
+    </form>
+
+</lift:surround>

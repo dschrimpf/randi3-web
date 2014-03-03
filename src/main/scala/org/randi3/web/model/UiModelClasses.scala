@@ -9,6 +9,7 @@ import org.randi3.randomization.configuration.DoubleConfigurationType
 import org.randi3.randomization.configuration.OrdinalConfigurationType
 import org.randi3.randomization.configuration.ConfigurationProperty
 import org.randi3.randomization.configuration.IntegerConfigurationType
+import scala.collection.mutable.HashMap
 
 
 case class TreatmentArmTmp(id: Int, version: Int, var name: String, var description: String, var plannedSize: Int) {}
@@ -16,6 +17,9 @@ case class TreatmentArmTmp(id: Int, version: Int, var name: String, var descript
 case class CriterionTmp(id: Int, version: Int, typ: String, var name: String, var description: String, values: Option[ListBuffer[String]], var inclusionConstraint: Option[ConstraintTmp] = None, var strata: ListBuffer[ConstraintTmp] = new ListBuffer()) {}
 
 case class ConstraintTmp(id: Int = Int.MinValue, version: Int = 0, var minValue: Option[String] = None, var maxValue: Option[String] = None, ordinalValues: HashSet[(Boolean, String)] = new HashSet())
+
+case class CriterionDistributionTmp(id: Int, version: Int, typ: String, var name: String, var description: String, values: Option[ListBuffer[String]], var inclusionConstraint: Option[ConstraintTmp] = None, var strata: ListBuffer[ConstraintTmp] = new ListBuffer(), var ratio: HashMap[String, Int], var distibutionName: String = "") {}
+
 
 case class SubjectDataTmp(criterion: Criterion[Any, Constraint[Any]], var value: Any) {}
 
